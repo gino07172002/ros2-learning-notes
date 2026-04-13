@@ -1,63 +1,71 @@
-🧠 ROS 2 核心起手觀念與程式碼拆解
+# 🧠 ROS 2 核心起手觀念與程式碼拆解
 
-前情提要：在上一篇教學中，我們成功架設了雲端開發環境，並寫出了第一支讓機器人移動的 C++ 程式。
+**前情提要：**  
+在上一篇教學中，我們成功架設了雲端���發環境，並寫出了第一支讓機器人移動的 C++ 程式。  
 本篇將帶您「知其所以然」，拆解 ROS 2 的底層通訊邏輯與我們剛剛寫的 C++ 程式碼。
 
-📡 核心觀念：ROS 2 的「廣播電台」模型
+---
 
-在學習 ROS 2 時，請先忘掉傳統程式「A 呼叫 B 函數」的概念。你可以把 ROS 2 想像成一個大型廣播系統，或是 YouTube 的頻道訂閱機制。系統中包含四個最重要的核心名詞：
+## 📡 核心觀念：ROS 2 的「廣播電台」模型
 
-1. 節點 (Node)
+在學習 ROS 2 時，請先忘掉傳統程式「A 呼叫 B 函數」的概念。你可以把 ROS 2 想像成一個大型廣播系統，或是 YouTube 的頻道訂閱機制。系統中包含四個最重要的概念：
 
-這是一個獨立運作的程式。在機器人系統中，為了避免一個程式當機導致整台車毀滅，我們會把工作拆分成多個節點。
+### 1. 節點 (Node)
 
-範例：一個節點專門看攝影機、一個節點專門控制輪子馬達。我們剛剛寫的就是一個「發出移動指令」的節點。
+這是一個獨立運作的程式。在機器人系統中，為了避免一個程式當機導致整台車毀滅，我們會把工作拆分成多個節點。  
+**範例：**一個節點專門看攝影機、一個節點專門控制輪子馬達。我們剛剛寫的就是一個「發出移動指令」的節點。
 
-2. 主題 (Topic)
+### 2. 主題 (Topic)
 
-這是節點之間溝通的**「頻道」**。節點不需要知道其他節點是誰，它們只需要往特定的頻道丟資料，或去聽特定頻道的資料。
+這是節點之間溝通的**「頻道」**。節點不需要知道其他節點是誰，它們只需要往特定的頻道丟資料，或去聽特定頻道的資料。  
+**範例：** `/originbot_1/cmd_vel` 就是專門傳遞「速度指令」的專屬頻道。
 
-範例：/originbot_1/cmd_vel 就是專門傳遞「速度指令」的專屬頻道。
+### 3. 訊息 (Message / msg)
 
-3. 訊息 (Message / msg)
+這是在頻道裡流通的**「資料格式」**。不同的頻道需要不同的資料格式（就像收音機傳聲音、電視機傳影像）。  
+**範例：** 控制速度的標準格式叫做 `geometry_msgs/msg/Twist`，裡面規定了必須包含「線性速度 (linear)」和「角速度 (angular)」。
 
-這是在頻道裡流通的**「資料格式」**。不同的頻道需要不同的資料格式（就像收音機傳聲音、電視機傳影像）。
+### 4. 發布者 (Publisher) 與 訂閱者 (Subscriber)
 
-範例：控制速度的標準格式叫做 geometry_msgs/msg/Twist，裡面規定了必須包含「線性速度 (linear)」和「角速度 (angular)」。
+- **Publisher (發布者)**：在頻道上「講話」的人。你寫的 C++ 程式就是一個 Publisher，不斷對著頻道喊「往前走！」。
+- **Subscriber (訂閱者)**：在頻道上「聽話」的人。賽車的底層驅動程式就是一個 Subscriber，它一直在聽指令頻道，一聽到就立刻轉動實體馬達。
 
-4. 發布者 (Publisher) 與 訂閱者 (Subscriber)
+---
 
-Publisher (發布者)：在頻道上「講話」的人。你寫的 C++ 程式就是一個 Publisher，不斷對著頻道喊「往前走！」。
+## 🔄 架構示意圖
 
-Subscriber (訂閱者)：在頻道上「聽話」的人。賽車的底層驅動程式就是一個 Subscriber，它一直在聽指令頻道，一聽到就立刻轉動實體馬達。
-
-🔄 架構示意圖
-
+```
 [你的 C++ 程式]                       [賽車底層驅動]
  (Publisher)                          (Subscriber)
       │                                    ▲
       │ 發布 Twist 訊息 (前進 0.2m/s)        │ 接收 Twist 訊息並轉動馬達
       ▼                                    │
- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     Topic 頻道: /originbot_1/cmd_vel
- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
+---
 
-💻 C++ 程式碼逐行拆解
+## 💻 C++ 程式碼逐行拆解
 
-帶著上面的觀念，我們回頭看 auto_drive.cpp，你會發現一切都變得非常合理：
+帶著上面的觀念，我們回頭看 `auto_drive.cpp`，你會發現一切都變得非常合理：
 
-1. 引入核心工具包
+### 1. 引入核心工具包
 
+```cpp
 #include "rclcpp/rclcpp.hpp"             // ROS 2 C++ 的核心函式庫 (包含 Node 功能)
 #include "geometry_msgs/msg/twist.hpp"   // 引入 Twist 訊息格式 (定義了前進與旋轉速度)
 #include <chrono>
 
 using namespace std::chrono_literals;    // 讓我們可以寫出 500ms 這種直觀的時間單位
+```
 
+---
 
-2. 建立你的「節點」 (Node)
+### 2. 建立你的「節點」 (Node)
 
+```cpp
 // 繼承 rclcpp::Node，讓這個 Class 成為一個標準的 ROS 2 節點
 class AutoDriveNode : public rclcpp::Node
 {
@@ -65,26 +73,32 @@ public:
     // 初始化節點，並命名為 "auto_drive_node"
     AutoDriveNode() : Node("auto_drive_node")
     {
+```
 
+---
 
-3. 註冊「發布者」與「計時器」
+### 3. 註冊「發布者」與「計時器」
 
+```cpp
         // 宣告：我要建立一個 Publisher！
         // [資料格式]: geometry_msgs::msg::Twist
         // [目標頻道]: "/originbot_1/cmd_vel"
         // [佇列大小]: 10 (最多暫存 10 筆訊息)
         publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/originbot_1/cmd_vel", 10);
 
-        // 宣告一個計時器，每 500 毫秒 (0.5秒) 就自動觸發執行 timer_callback 函數
+        // 宣告一個計時器，每 500 毫秒 (0.5秒) 就自動��發執行 timer_callback 函數
         timer_ = this->create_wall_timer(
             500ms, std::bind(&AutoDriveNode::timer_callback, this));
             
         start_time_ = this->now(); // 記錄程式剛啟動的當下時間
     }
+```
 
+---
 
-4. 程式的大腦：計時器回呼函數 (Callback)
+### 4. 程式的大腦：計時器回呼函數 (Callback)
 
+```cpp
 private:
     void timer_callback()
     {
@@ -110,10 +124,13 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Time start_time_;
 };
+```
 
+---
 
-5. 啟動引擎 (Main 函數)
+### 5. 啟動引擎 (Main 函數)
 
+```cpp
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv); // 初始化 ROS 2 環境
@@ -125,10 +142,12 @@ int main(int argc, char * argv[])
     rclcpp::shutdown(); // 安全關閉 ROS 2 環境
     return 0;
 }
+```
 
+---
 
-🚀 下一步
+## 🚀 下一步
 
 到這裡，你已經精通了 ROS 2 中**「說話 (Publish)」**的技巧。
 
-既然機器人已經會盲目地往前走了，下一個階段，我們將學習如何讓機器人**「聽話 / 看見 (Subscribe)」**——撰寫一個 Subscriber 節點來讀取機器人前方的光達 (LiDAR) 數據，實現真正的智慧避障功能！
+既然機器人已經會盲目地往前走了，下一個階段，我們將學習如何讓機器人**「聽話 / 看見 (Subscribe)」**——撰寫一個 Subscriber 節點來讀取機器人前方的感測資料。
