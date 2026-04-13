@@ -149,7 +149,7 @@ int main(int argc, char * argv[]) {
 find_package(geometry_msgs REQUIRED)
 ```
 
-#### 2. 在檔案中下方的空白處加入編譯���則：
+#### 2. 在檔案中下方的空白處加入編譯規則：
 
 ```cmake
 add_executable(auto_drive src/auto_drive.cpp)
