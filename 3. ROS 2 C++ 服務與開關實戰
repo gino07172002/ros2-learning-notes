@@ -1,0 +1,188 @@
+📞 第五階段：服務 (Services) - 一問一答的通訊機制
+
+前情提要：我們已經實作了基於 Topic 的自動煞車系統。但 Topic 像是持續的廣播，如果我們想對機器人下達「單次且需要確認結果」的指令（例如：開啟/關閉避障系統），我們就需要引入 Service (服務) 機制。
+
+🧠 核心觀念：Topic vs. Service
+
+Topic (發布/訂閱)：廣播電台。不管有沒有人聽，持續發送（適合感測器數據、連續移動指令）。
+
+Service (服務)：打電話點餐。有請求 (Request) 才會有回應 (Response)。適合執行特定任務，並需要確認任務有沒有成功執行（適合開關切換、單次計算、拍照等）。
+
+Service 包含兩個角色：
+
+Server (服務提供者)：接電話的人。收到請求，執行任務，回傳結果。
+
+Client (客戶端)：打電話的人。發出請求，等待結果。
+
+本章節我們將修改避障程式，讓它同時成為一個 Service Server，接收外部的開關指令。
+
+💻 步驟一：撰寫帶有 Service 的 C++ 節點
+
+為了不破壞原本的程式，我們建立一支新的檔案：ros2_ws/src/my_cpp_pkg/src/auto_brake_service.cpp。
+
+我們將使用 ROS 2 內建的標準服務格式 std_srvs/srv/SetBool。它接收一個布林值 (true/false) 作為請求，並回傳成功狀態與訊息。
+
+#include "rclcpp/rclcpp.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+#include "sensor_msgs/msg/point_cloud2.hpp"
+#include "sensor_msgs/point_cloud2_iterator.hpp"
+#include "std_srvs/srv/set_bool.hpp" // 引入標準的 SetBool 服務格式
+
+using std::placeholders::_1;
+using std::placeholders::_2;
+
+class AutoBrakeServiceNode : public rclcpp::Node
+{
+public:
+    AutoBrakeServiceNode() : Node("auto_brake_service_node")
+    {
+        publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/originbot_1/cmd_vel", 10);
+        subscriber_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
+            "/livox/lidar", rclcpp::SensorDataQoS(), std::bind(&AutoBrakeServiceNode::cloud_callback, this, _1));
+
+        // 建立名為 "toggle_brake" 的服務伺服器 (Server)
+        service_ = this->create_service<std_srvs::srv::SetBool>(
+            "toggle_brake", std::bind(&AutoBrakeServiceNode::toggle_brake_callback, this, _1, _2));
+            
+        RCLCPP_INFO(this->get_logger(), "Advanced AEB System Started! Service 'toggle_brake' is ready.");
+    }
+
+private:
+    bool is_brake_active_ = true; // 系統開關變數
+
+    // 服務的回呼函數 (接電話處理邏輯)
+    void toggle_brake_callback(
+        const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+        std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+    {
+        is_brake_active_ = request->data; // 讀取 Client 傳來的 true/false
+        response->success = true;         // 設定回傳狀態
+        
+        if (is_brake_active_) {
+            response->message = "Brake system ENABLED.";
+            RCLCPP_WARN(this->get_logger(), ">>> Service called: System ENABLED <<<");
+        } else {
+            response->message = "Brake system DISABLED. Watch out!";
+            RCLCPP_WARN(this->get_logger(), ">>> Service called: System DISABLED <<<");
+        }
+    }
+
+    // 光達點雲回呼函數
+    void cloud_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+    {
+        // 如果服務將系統關閉，則直接退出不執行避障
+        if (!is_brake_active_) {
+            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, 
+                                 "Brake system is offline. Waiting for enable command...");
+            return; 
+        }
+
+        auto twist_msg = geometry_msgs::msg::Twist();
+        float min_forward_distance = 100.0; 
+        sensor_msgs::PointCloud2ConstIterator<float> iter_x(*msg, "x");
+        sensor_msgs::PointCloud2ConstIterator<float> iter_y(*msg, "y");
+
+        for (; iter_x != iter_x.end(); ++iter_x, ++iter_y) {
+            float x = *iter_x;
+            float y = *iter_y;
+            if (x > 0.0 && std::abs(y) < 0.2) {
+                if (x < min_forward_distance) min_forward_distance = x;
+            }
+        }
+
+        if (min_forward_distance > 1.0) {
+            twist_msg.linear.x = 0.2; 
+        } else {
+            twist_msg.linear.x = 0.0; 
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, 
+                                 "Obstacle detected at %.2fm! BRAKING!", min_forward_distance);
+        }
+        publisher_->publish(twist_msg);
+    }
+
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
+    rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr subscriber_;
+    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_;
+};
+
+int main(int argc, char * argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<AutoBrakeServiceNode>());
+    rclcpp::shutdown();
+    return 0;
+}
+
+
+🛠️ 步驟二：修改編譯設定
+
+因為引入了新的標準服務套件 std_srvs，我們必須更新配置檔。
+
+1. 修改 CMakeLists.txt
+在 find_package 區域加入：
+
+find_package(std_srvs REQUIRED)
+
+
+新增這支獨立程式的編譯規則：
+
+add_executable(auto_brake_service src/auto_brake_service.cpp)
+ament_target_dependencies(auto_brake_service rclcpp geometry_msgs sensor_msgs std_srvs)
+
+install(TARGETS
+  auto_drive
+  auto_brake
+  auto_brake_service  # 加入 install 名單
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+
+2. 修改 package.xml
+在 <buildtool_depend> 下方區塊加入：
+
+<depend>std_srvs</depend>
+
+
+🚀 步驟三：雙終端機實戰測試
+
+編譯並刷新環境 (colcon build & source install/setup.bash)。
+
+終端機 1：啟動主程式 (Server)
+
+ros2 run my_cpp_pkg auto_brake_service
+
+
+終端機 2：發送關閉請求 (Client)
+在第二個終端機輸入以下指令，直接呼叫服務：
+
+ros2 service call /toggle_brake std_srvs/srv/SetBool "{data: false}"
+
+
+📊 系統日誌解讀 (情境分析)
+
+成功執行後，您的終端機 1 (Server 端) 將會記錄下這套系統完美運作的三個情境變化。這精準地展示了 ROS 2 中 Topic (持續監聽) 和 Service (突發中斷指令) 完美結合的瞬間：
+
+1. 情境一：正常避障階段 (System ENABLED)
+
+[WARN] [1777213668.907] [auto_brake_service_node]: Obstacle detected at 0.87m! BRAKING!
+[WARN] [1777213669.995] [auto_brake_service_node]: Obstacle detected at 0.87m! BRAKING!
+
+
+解讀：此時系統開關 is_brake_active_ 為 true。車子正看著前方 0.87 公尺的牆壁，不斷地透過 Topic 發送速度 0.0 踩死煞車。
+
+2. 情境二：接聽電話瞬間 (Service Called)
+
+[WARN] [1777213670.410] [auto_brake_service_node]: >>> Service called: System DISABLED <<<
+
+
+解讀：這就是您從另一個終端機（Client 端）撥打 ros2 service call 的那一刻！C++ 程式瞬間放下了手邊的避障工作，接起了電話（觸發了 toggle_brake_callback），並把開關變數改成了 false。
+
+3. 情境三：進入休眠模式 (System DISABLED)
+
+[INFO] [1777213670.420] [auto_brake_service_node]: Brake system is offline. Waiting for enable command...
+[INFO] [1777213672.593] [auto_brake_service_node]: Brake system is offline. Waiting for enable command...
+
+
+解讀：電話掛斷後，光達的資料雖然還是一直進來（持續觸發 cloud_callback），但因為開關已經被關掉，程式直接執行 return; 跳出，不再對馬達發送任何煞車指令了。此時車子的避障系統完全解除！
+
+若要重新啟動避障功能，只需在終端機 2 將指令中的 false 改為 true 再次發送即可喚醒系統。
