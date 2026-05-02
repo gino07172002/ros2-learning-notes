@@ -151,15 +151,42 @@ ament_target_dependencies(auto_brake rclcpp geometry_msgs sensor_msgs)
 
 ## 步驟 4：編譯與執行
 
+> 兩種環境的差異只在「remap 到哪個 topic」。完整環境比較見 [SETUP.md](../SETUP.md)。
+
+### ☁️ TheConstructSim（OriginBot + Livox 3D 光達）
+
 ```bash
 cd ~/ros2_ws
 colcon build --packages-select my_cpp_pkg
 source install/setup.bash
 
-# 用 remapping 對應實際的 topic
 ros2 run my_cpp_pkg auto_brake --ros-args \
   -r cmd_vel:=/originbot_1/cmd_vel \
   -r lidar_points:=/livox/lidar
+```
+
+### 💻 本機 WSL2（turtlebot3 + Gazebo）
+
+turtlebot3 預設配 2D LaserScan（`/scan`），不是 PointCloud2。**有兩個做法**：
+
+**做法 1：改用 LaserScan 版本**（推薦，turtlebot3 原生支援）
+
+把 `auto_brake.cpp` 的 `PointCloud2` 換成 `sensor_msgs::msg::LaserScan`，改用 `msg->ranges` 陣列做避障。本章先聚焦 PointCloud2，LaserScan 版可參考[官方範例](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)當作練習。
+
+**做法 2：用 Gazebo 的 depth camera 模擬 3D 點雲**（接近原本程式）
+
+```bash
+# Terminal 1: 起 Gazebo + turtlebot3 (waffle 版本內建深度相機)
+export TURTLEBOT3_MODEL=waffle
+ros2 launch turtlebot3_gazebo turtlebot3_house.launch.py
+
+# Terminal 2: 看 PointCloud2 topic 名稱
+ros2 topic list | grep -i point
+# 通常會看到 /intel_realsense_r200_depth/points 之類的
+
+# Terminal 3: 跑程式（替換成你看到的實際 topic 名稱）
+ros2 run my_cpp_pkg auto_brake --ros-args \
+  -r lidar_points:=/intel_realsense_r200_depth/points
 ```
 
 ---
@@ -181,3 +208,7 @@ ros2 run my_cpp_pkg auto_brake --ros-args \
 
 學會了 Topic 雙向通訊。但 Topic 是「持續廣播」，如果想下達「單次且需要確認」的指令（如開關功能）呢？
 - [Phase 04 — Services 開關](../phase-04-services-toggle/)
+
+---
+
+<sub>🐍 想用 Python (rclpy) 寫同一個 Subscriber + 光達避障？看 [python/](python/)。含 NumPy 向量化加速版。</sub>

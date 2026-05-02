@@ -146,16 +146,48 @@ install(TARGETS auto_drive
 
 ## 步驟 6：編譯與執行
 
+> 兩種環境的差異只在「remap 到哪個 topic」。完整環境比較與設定見 [SETUP.md](../SETUP.md)。
+
+### ☁️ TheConstructSim（OriginBot 場景）
+
 ```bash
 cd ~/ros2_ws
 colcon build --packages-select my_cpp_pkg
 source install/setup.bash
 
-# 用 remapping 對應實際 topic
 ros2 run my_cpp_pkg auto_drive --ros-args -r cmd_vel:=/originbot_1/cmd_vel
 ```
 
-**成功指標**：模擬器中的車子向前開 3 秒後停下。
+### 💻 本機 WSL2
+
+**選項 A：用 turtlesim（最輕量，適合驗證 ROS 2 安裝）**
+
+```bash
+# Terminal 1: 起 turtlesim
+ros2 run turtlesim turtlesim_node
+
+# Terminal 2: 跑你的程式
+cd ~/ros2_ws
+colcon build --packages-select my_cpp_pkg
+source install/setup.bash
+ros2 run my_cpp_pkg auto_drive --ros-args -r cmd_vel:=/turtle1/cmd_vel
+```
+
+**選項 B：用 turtlebot3 + Gazebo（更接近真實機器人）**
+
+```bash
+# Terminal 1: 起 Gazebo + turtlebot3
+export TURTLEBOT3_MODEL=burger
+ros2 launch turtlebot3_gazebo empty_world.launch.py
+
+# Terminal 2: 跑你的程式（turtlebot3 預設訂閱 /cmd_vel，不用 remap）
+cd ~/ros2_ws
+colcon build --packages-select my_cpp_pkg
+source install/setup.bash
+ros2 run my_cpp_pkg auto_drive
+```
+
+**成功指標**：模擬器中的車子（或烏龜）向前開 3 秒後停下。
 
 ---
 
@@ -173,3 +205,7 @@ ros2 run my_cpp_pkg auto_drive --ros-args -r cmd_vel:=/originbot_1/cmd_vel
 
 - 觀念補強：[Phase 02 — 通訊機制核心觀念](../phase-02-communication-concepts/)
 - 進階實作：[Phase 03 — Subscriber + 光達避障](../phase-03-subscriber-lidar-brake/)
+
+---
+
+<sub>🐍 想用 Python (rclpy) 寫同一個 Publisher？看 [python/](python/)。</sub>
