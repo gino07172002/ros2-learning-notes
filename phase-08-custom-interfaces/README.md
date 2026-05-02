@@ -12,6 +12,8 @@
 - [`code/my_robot_interfaces/`](code/my_robot_interfaces/) — 純 .msg/.srv/.action 定義包
 - [`code/my_cpp_pkg/`](code/my_cpp_pkg/) — 用自訂型別的 smart_brake_v2 + approach_client
 
+**環境**：☁️ TheConstructSim + 💻 本機 WSL 雙環境通用。本機用 fake_lidar 模擬，雲端可直接接 OriginBot 真模擬光達。
+
 ---
 
 ## 為什麼這章是「真正的核心」
@@ -234,14 +236,55 @@ ament_target_dependencies(smart_brake_v2
 
 ## 🚀 完整 Demo 流程
 
-### Step 1：先 build interface 套件
+> 兩種環境的差異：
+> - **本機 WSL**：用 `cp` 把套件搬進 `~/ros2_ws/src/`，光達訊息靠 `fake_lidar.py` 產生
+> - **TheConstructSim**：用 web Code Editor 直接建套件、或 `git clone` 拉 repo；有真模擬光達 `/livox/lidar` 不需要 fake_lidar
+>
+> 完整環境差異見 [SETUP.md](../SETUP.md)。
+
+### Step 1：把套件放進工作區
+
+#### ☁️ TheConstructSim
+
+進到 ROSject 後，**用 git clone** 最方便：
 
 ```bash
-cp -r my_robot_interfaces ~/ros2_ws/src/
+cd ~/ros2_ws/src
+git clone https://github.com/gino07172002/ros2-learning-notes.git
+# 把 Phase 08 的兩個套件 symlink / 複製進來
+ln -s ros2-learning-notes/phase-08-custom-interfaces/code/my_robot_interfaces .
+ln -s ros2-learning-notes/phase-08-custom-interfaces/code/my_cpp_pkg .
+```
+
+或用 ROSject 內建的 **Code Editor** 手動建立檔案——優點是邊編輯邊跑，缺點是要逐一複製貼上。
+
+#### 💻 本機 WSL2
+
+```bash
+cp -r /mnt/d/ros_learn/ros2-learning-notes/phase-08-custom-interfaces/code/my_robot_interfaces \
+      ~/ros2_ws/src/
+
+cp -r /mnt/d/ros_learn/ros2-learning-notes/phase-08-custom-interfaces/code/my_cpp_pkg \
+      ~/ros2_ws/src/phase08_pkg
+
+# 改名避免跟其他 phase 撞名
+sed -i 's|<name>my_cpp_pkg</name>|<name>phase08_pkg</name>|' ~/ros2_ws/src/phase08_pkg/package.xml
+sed -i 's|project(my_cpp_pkg)|project(phase08_pkg)|' ~/ros2_ws/src/phase08_pkg/CMakeLists.txt
+```
+
+> 💡 為什麼本機要改名：本機工作區同時放了 phase01–07 全部套件，避免 colcon 看到兩個 `my_cpp_pkg` 衝突。雲端環境每次重新建一個 ROSject 就乾淨，不用改名。
+
+### Step 2：build interface 套件（**順序很重要**）
+
+兩種環境通用：
+
+```bash
 cd ~/ros2_ws
 colcon build --packages-select my_robot_interfaces
 source install/setup.bash
 ```
+
+> ⚠️ **必須先 build 這個再 build 邏輯套件**——下游 `phase08_pkg` 用到生成的 .hpp 標頭檔，順序不對會找不到。
 
 驗證 ROS 看得到型別：
 
@@ -256,29 +299,55 @@ ros2 interface show my_robot_interfaces/msg/BrakeStatus
 
 > 🎯 看到 `ros2 interface show` 把你寫的 .msg 完整印出來、且 `std_msgs/Header` 自動展開成 `builtin_interfaces/Time stamp + string frame_id`——這就是 rosidl 工作的證明。
 
-### Step 2：build 邏輯套件
+### Step 3：build 邏輯套件
 
+#### ☁️ TheConstructSim
 ```bash
-cp -r my_cpp_pkg ~/ros2_ws/src/phase08_pkg
+colcon build --packages-select my_cpp_pkg
+source install/setup.bash
+```
+
+#### 💻 本機 WSL2
+```bash
 colcon build --packages-select phase08_pkg
 source install/setup.bash
 ```
 
-### Step 3：啟動系統
+### Step 4：啟動系統
 
-Terminal 1（fake lidar，產生 0.5m 障礙物）：
+#### ☁️ TheConstructSim（用真模擬光達）
+
+ROSject 提供的 OriginBot 場景已經在 `/livox/lidar` 持續發 PointCloud2，**不需要 fake_lidar**。
+
+**Terminal 1**（smart_brake_v2，把訂閱改到真光達）：
+```bash
+ros2 run my_cpp_pkg smart_brake_v2 --ros-args \
+  -r lidar_points:=/livox/lidar \
+  -r cmd_vel:=/originbot_1/cmd_vel
+```
+
+> 重點：用 `--ros-args -r` 把程式裡的相對名稱 `lidar_points` 對應到場景的真實 topic `/livox/lidar`。這就是 Phase 01 教的 remap 在這裡發揮價值。
+
+#### 💻 本機 WSL2（用 fake_lidar 製造障礙物）
+
+**Terminal 1**（fake lidar，模擬 0.5m 前方障礙物）：
 ```bash
 python3 ~/fake_lidar.py 0.5
 ```
 
-Terminal 2（smart_brake_v2）：
+**Terminal 2**（smart_brake_v2，預設 topic 名稱跟 fake_lidar 對齊）：
 ```bash
 ros2 run phase08_pkg smart_brake_v2
 ```
 
-### Step 4：Demo 1 — 看自訂 Topic 廣播
+> 💡 沒有真光達的本機環境必須靠 `fake_lidar.py` 製造 PointCloud2 訊息給 smart_brake_v2 訂閱。雲端因為已經有真模擬，省了這一步。
 
-Terminal 3：
+### Step 5：Demo 1 — 看自訂 Topic 廣播
+
+> 以下 Demo 1/2/3 在兩種環境**指令完全相同**——因為 ros2 CLI 工具直接認 topic/service/action 名稱，跟你的套件名無關。差別只在最後 Demo 3 的 `ros2 run` 套件名（雲端 `my_cpp_pkg` vs 本機 `phase08_pkg`）。
+
+新開一個 terminal：
+
 ```bash
 ros2 topic echo /brake_status --once
 ```
@@ -297,7 +366,11 @@ status_text: '[ENABLED] speed=0.15 obstacle=0.50m'
 
 🎯 **這就是自訂 BrakeStatus 訊息的實際內容**——一個訊息塞 5 個有用欄位，比 `std_msgs/Float32` 強多了。
 
-### Step 5：Demo 2 — 呼叫自訂 Service
+> 💡 **TheConstruct 上要看數值有變化**，因為光達是真模擬，車子接近障礙物時 `closest_obstacle_distance` 會逐漸減少。本機 fake_lidar 是固定值。
+
+### Step 6：Demo 2 — 呼叫自訂 Service
+
+兩種環境通用：
 
 ```bash
 # 切換到 EMERGENCY 模式（mode=2）
@@ -315,10 +388,18 @@ message: 'OK: testing emergency'
 
 🎯 **比 SetBool 強**：Request 一次傳 3 個欄位、Response 回傳新舊狀態 diff、自帶 reason 訊息。
 
-### Step 6：Demo 3 — 呼叫自訂 Action
+> 💡 **TheConstruct 上**：set EMERGENCY 後 OriginBot 會立刻停下（cmd_vel.linear.x = 0）。Gazebo 視窗能直接看到效果。
+> **本機**：因為沒接 turtlesim，只能從 `/cmd_vel` topic 看數值變化（用 `ros2 topic echo /cmd_vel`）。
 
+### Step 7：Demo 3 — 呼叫自訂 Action
+
+#### ☁️ TheConstructSim
 ```bash
-# 送 Approach goal: 靠近到 0.5m，速度 0.3
+ros2 run my_cpp_pkg approach_client 0.5 0.3
+```
+
+#### 💻 本機 WSL2
+```bash
 ros2 run phase08_pkg approach_client 0.5 0.3
 ```
 
@@ -330,6 +411,9 @@ ros2 run phase08_pkg approach_client 0.5 0.3
 ```
 
 🎯 **Action 的三段（goal/feedback/result）全部運作**——goal 被接受、feedback 持續送、result 結算。Phase 13 會深入 action 的進階用法（cancel、abort、長任務）。
+
+> 💡 **TheConstruct 上可以看到動態效果**：因為 OriginBot 真的會邊走邊靠近障礙物，feedback 會印出多筆 `current_distance` 從遠到近遞減（`1.20m → 0.95m → 0.70m → 0.50m`），最後 SUCCESS。
+> **本機 fake_lidar 0.5m 固定值** 一啟動就符合 target，會看到 0.0s 即時 SUCCESS（單筆 feedback）——驗證機制正確但無法觀察「靠近過程」。
 
 ---
 
@@ -392,6 +476,16 @@ find_package(rclcpp_action REQUIRED)
 ament_target_dependencies(your_node
   rclcpp rclcpp_action ...)   # ← 別忘 rclcpp_action
 ```
+
+### 雷 7（TheConstruct 環境特有）：套件改完沒重 source
+TheConstruct 的 web terminal 開了 5 分鐘以上，記憶體中的 `LD_LIBRARY_PATH` 可能跟最新 build 不同步。`ros2 run` 出現「找不到自訂訊息類型」時：
+```bash
+source ~/ros2_ws/install/setup.bash    # 強制重新 source
+```
+特別是改完 .msg/.srv/.action **重 build 之後**必須重 source。
+
+### 雷 8（TheConstruct 環境特有）：免費帳號 session 中斷
+TheConstruct 免費帳號每次連線約 1 小時。session 中斷後 `ros2_ws/install/` 可能保留、可能不保留——再進 ROSject 時先 `colcon build` 一次保險。
 
 ---
 
