@@ -12,6 +12,7 @@
 | [02](phase-02-communication-concepts/) | 通訊機制核心觀念 | Node / Topic / Message / Pub-Sub 模型，回頭拆解 Phase 01 的程式 | Phase 01 | — |
 | [03](phase-03-subscriber-lidar-brake/) | Subscriber + 光達避障 | 寫 Subscriber、QoS（SensorDataQoS）、解析 PointCloud2、做避障邏輯 | Phase 01 | ✅ |
 | [04](phase-04-services-toggle/) | Service Server + 開關 | Service vs Topic、實作 SetBool 服務、雙終端機驗證 | Phase 03 | — |
+| [05](phase-05-debug-tools/) | Debug 工具集 | rqt_graph 看通訊圖、ros2 bag 錄製/重播、rqt_plot 即時繪圖、rqt_console 集中 log | Phase 01 | — |
 
 > 🐍 欄位：✅ 有 rclpy 對照版（資料夾內 `python/`） ｜ — 純觀念或暫無對照
 

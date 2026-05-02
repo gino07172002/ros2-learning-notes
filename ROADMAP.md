@@ -41,7 +41,7 @@ Phase 01–13   ──────┤
 | 02 | 通訊機制核心觀念 | 1 hr | ✅ |
 | 03 | Subscriber + 光達避障（QoS, PointCloud2） | 3 hr | ✅ |
 | 04 | Services（SetBool 開關） | 2 hr | ✅ |
-| 05 | **Debug 工具集**（rqt_graph / rqt_plot / ros2 bag / RViz2 基操） | 3 hr | ⬜ |
+| 05 | **Debug 工具集**（rqt_graph / rqt_plot / ros2 bag / rqt_console） | 3 hr | ✅ |
 | 06 | Parameters（外部動態調參） | 2 hr | ⬜ |
 | 07 | Custom Interfaces（自訂 .msg / .srv / .action） | 3 hr | ⬜ |
 | 08 | Executors / Callback Groups / LifecycleNode | 4 hr | ⬜ |
