@@ -1,0 +1,35 @@
+# Default: normalize line endings to LF in repo, auto-convert on checkout
+* text=auto eol=lf
+
+# Source code and config — always LF (will be executed/parsed on Linux/WSL)
+*.cpp   text eol=lf
+*.hpp   text eol=lf
+*.h     text eol=lf
+*.c     text eol=lf
+*.py    text eol=lf
+*.sh    text eol=lf
+*.bash  text eol=lf
+
+# ROS 2 build files
+CMakeLists.txt  text eol=lf
+*.cmake         text eol=lf
+*.xml           text eol=lf
+*.yaml          text eol=lf
+*.yml           text eol=lf
+*.cfg           text eol=lf
+*.toml          text eol=lf
+package.xml     text eol=lf
+setup.py        text eol=lf
+setup.cfg       text eol=lf
+
+# Docs
+*.md  text eol=lf
+
+# Binary files — never convert
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.pdf  binary
+*.bag  binary
+*.db3  binary
