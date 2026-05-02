@@ -43,6 +43,25 @@ phase-XX-kebab-case-topic/
 - C++ 套件統一叫 `my_cpp_pkg`（每章獨立，刻意重名）
 - Python 套件統一叫 `my_py_pkg`
 - 執行檔用 snake_case，貼近功能（`auto_drive`、`auto_brake_service`）
+- 截圖：放在 `images/` 子資料夾，**檔名一律英文 kebab-case**（不用中文檔名，git/markdown 渲染會出問題）
+
+### 截圖規則
+
+實際跑過的章節**強烈建議加截圖**，新讀者一眼知道「應該看到什麼樣子」。流程：
+
+1. 章節寫完 + code 跑通的當下，順手截圖 GUI 視窗
+2. 存到 `phase-XX/images/<descriptive-name>.png`
+3. 在 README 對應位置插入：
+   ```markdown
+   ![alt text 描述圖片內容](images/xxx.png)
+   ```
+4. 圖下方加一段「**截圖解讀**」引言（用 `>` blockquote），點出讀者該注意什麼細節（時間戳、特殊狀態、軸標籤等）
+5. 不要單純放圖不解釋——圖只是輔助，文字才是主軸
+
+**檔名範例**：
+- ✅ `rqt_graph_normal.png`、`rqt_graph_disconnected.png`、`turtlesim_with_turtle.png`
+- ❌ `螢幕擷取畫面 2026-05-02.png`（中文 + 空格）
+- ❌ `image1.png`、`screenshot.png`（沒語意）
 
 ---
 

@@ -53,6 +53,9 @@ rqt_graph
 
 ### 你會看到的圖
 
+![rqt_graph 顯示 auto_drive_node 透過 /turtle1/cmd_vel 連到 /turtlesim](images/rqt_graph_normal.png)
+
+ASCII 對應：
 ```
 [/auto_drive_node] ──/turtle1/cmd_vel──▶ [/turtlesim]
 ```
@@ -223,6 +226,10 @@ rqt --standalone rqt_console.console.Console
 
 4. 你會看到 **兩條 sin/cos 形狀的波**互相錯開 90 度——這就是圓周運動的數學本質：x = r·cos(θ), y = r·sin(θ)。
 
+![rqt_plot 顯示 turtle1 的 x 與 y 座標即時曲線](images/rqt_plot.png)
+
+> 截圖中烏龜剛好停在 (x≈7.2, y≈7.0)，所以兩條線是水平的。烏龜移動時會看到曲線即時變化。注意右上角 ✓ **autoscroll** 是勾選狀態——X 軸會自動跟著時間捲動。
+
 ### 重點設定
 
 - **右上角 ✓ autoscroll**：勾選 → 圖表自動跟時間捲動。不勾 → 畫面凍結，曲線會跑出畫面。
@@ -263,6 +270,9 @@ ros2 run phase04_pkg auto_brake_service
 
 ### 你會在 rqt_console 看到
 
+![rqt_plot 與 rqt_console 並列：左側 plot、右側 console 顯示 27 條 Warn 訊息](images/rqt_plot_console.png)
+
+訊息範例：
 ```
 [WARN]  auto_brake_service_node  Obstacle detected at 0.50m! BRAKING!
 [WARN]  auto_brake_service_node  Obstacle detected at 0.50m! BRAKING!
@@ -270,6 +280,8 @@ ros2 run phase04_pkg auto_brake_service
 ```
 
 訊息會即時滾動進來，最新的在最上面。
+
+> 截圖右側「Displaying 27 messages」可以看到 #27 與 #26 兩筆 Warn 的 **Stamp 欄位差距正好 1 秒**（18:27:04.874 / 18:27:03.874）——這就是 code 裡 `RCLCPP_WARN_THROTTLE(... 1000 ...)` 的效果，每 1 秒最多印一筆。
 
 ### 過濾功能（這才是真正的價值）
 
