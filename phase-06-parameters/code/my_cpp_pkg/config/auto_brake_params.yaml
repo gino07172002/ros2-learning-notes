@@ -1,0 +1,9 @@
+# YAML 結構：<node_name>: ros__parameters: <param>: <value>
+# 必須與 Node 建構子 super::Node("auto_brake_param_node") 的名字完全一致。
+# 也支援 wildcard：'/**:' 對所有 Node 套用。
+
+auto_brake_param_node:
+  ros__parameters:
+    safe_distance: 0.8       # 比預設 1.0 略寬鬆
+    max_speed: 0.15          # 比預設 0.2 慢
+    corridor_width: 0.5      # 比預設 0.4 寬一點

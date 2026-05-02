@@ -13,6 +13,7 @@
 | [03](phase-03-subscriber-lidar-brake/) | Subscriber + 光達避障 | 寫 Subscriber、QoS（SensorDataQoS）、解析 PointCloud2、做避障邏輯 | Phase 01 | ✅ |
 | [04](phase-04-services-toggle/) | Service Server + 開關 | Service vs Topic、實作 SetBool 服務、雙終端機驗證 | Phase 03 | — |
 | [05](phase-05-debug-tools/) | Debug 工具集 | rqt_graph 看通訊圖、ros2 bag 錄製/重播、rqt_plot 即時繪圖、rqt_console 集中 log | Phase 01 | — |
+| [06](phase-06-parameters/) | Parameters（參數系統） | declare/get/on_set callback、YAML 設定檔、rqt_reconfigure GUI 即時調參 | Phase 03 | — |
 
 > 🐍 欄位：✅ 有 rclpy 對照版（資料夾內 `python/`） ｜ — 純觀念或暫無對照
 
