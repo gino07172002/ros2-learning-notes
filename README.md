@@ -6,20 +6,40 @@
 
 ## 🗺️ 學什麼，看哪一章
 
-| Phase | 主題 | 學到什麼 | 前置 | 🐍 Py |
-|-------|------|----------|------|------|
-| [01](phase-01-cloud-env-first-publisher/) | 雲端環境 + 第一支 Publisher | 建 ROS 2 套件、用 colcon 編譯、寫 Publisher 讓車子前進 | C++ 基礎、Linux terminal | ✅ |
-| [02](phase-02-communication-concepts/) | 通訊機制核心觀念 | Node / Topic / Message / Pub-Sub 模型，回頭拆解 Phase 01 的程式 | Phase 01 | — |
-| [03](phase-03-subscriber-lidar-brake/) | Subscriber + 光達避障 | 寫 Subscriber、QoS（SensorDataQoS）、解析 PointCloud2、做避障邏輯 | Phase 01 | ✅ |
-| [04](phase-04-services-toggle/) | Service Server + 開關 | Service vs Topic、實作 SetBool 服務、雙終端機驗證 | Phase 03 | — |
-| [05](phase-05-debug-tools/) | Debug 工具集 | rqt_graph 看通訊圖、ros2 bag 錄製/重播、rqt_plot 即時繪圖、rqt_console 集中 log | Phase 01 | — |
-| [06](phase-06-parameters/) | Parameters（參數系統） | declare/get/on_set callback、YAML 設定檔、rqt_reconfigure GUI 即時調參 | Phase 03 | — |
+> 章節依「**學習層次**」分成幾個 Part。每個 Part 內各章可跳讀，但 Part 之間有遞進關係——下一個 Part 假設你能用前一個 Part 的東西。
+
+### 📖 Part 1: 通訊基礎 — 讓 Node 能講話
+> 學完 Part 1 你能用現成的 ROS 訊息類型寫出 Pub/Sub/Service Node。
+
+| Phase | 主題 | 學到什麼 | 🐍 Py |
+|-------|------|----------|------|
+| [01](phase-01-cloud-env-first-publisher/) | 雲端環境 + 第一支 Publisher | 建 ROS 2 套件、用 colcon 編譯、寫 Publisher 讓車子前進 | ✅ |
+| [02](phase-02-communication-concepts/) | 通訊機制核心觀念 | Node / Topic / Message / Pub-Sub 模型，回頭拆解 Phase 01 的程式 | — |
+| [03](phase-03-subscriber-lidar-brake/) | Subscriber + 光達避障 | 寫 Subscriber、QoS（SensorDataQoS）、解析 PointCloud2、做避障邏輯 | ✅ |
+| [04](phase-04-services-toggle/) | Service Server + 開關 | Service vs Topic、實作 SetBool 服務、雙終端機驗證 | — |
+
+### 🔧 Part 2: 工具與治理 — 看清楚系統 + 微調系統
+> 學完 Part 2 你能 debug 不熟的 ROS 系統、調整 Node 行為而不改 code。
+
+| Phase | 主題 | 學到什麼 | 🐍 Py |
+|-------|------|----------|------|
+| [05](phase-05-debug-tools/) | Debug 工具集 | rqt_graph 看通訊圖、ros2 bag 錄製/重播、rqt_plot 即時繪圖、rqt_console 集中 log | — |
+| [06](phase-06-parameters/) | Parameters（參數系統） | declare/get/on_set callback、YAML 設定檔、rqt_reconfigure GUI 即時調參 | — |
+
+### 🏗️ Part 3: 系統設計 — 自己定義協議與架構
+> **核心分水嶺**：從「使用現成 ROS 元件」進到「設計自己的 ROS 系統」。學完 Part 3 你能組起一個多節點專案。
+
+| Phase | 主題 | 學到什麼 | 🐍 Py |
+|-------|------|----------|------|
+| [07](phase-07-custom-interfaces/) | Custom Interfaces（自訂訊息） | 定義 .msg / .srv / .action、interface 套件分離、rosidl 生成 C++ class | — |
+| 08 | Executors / Lifecycle Node | （待完成） | — |
+| 09 | Launch Files | （待完成） | — |
+| 10 | 測試（gtest + launch_testing） | （待完成） | — |
+| 11 | Actions | （待完成） | — |
 
 > 🐍 欄位：✅ 有 rclpy 對照版（資料夾內 `python/`） ｜ — 純觀念或暫無對照
 
-完整學習路徑（包含尚未完成的章節、機械手臂分支、生產化部署）見 [ROADMAP.md](ROADMAP.md)。
-
-**ROADMAP 結構**：共用核心（Phase 01–15）→ 分流為 Track A（Mobile Robot）或 Track B（Manipulator）→ 收斂於生產化部署（Docker、CI、多機、DDS）。
+完整學習路徑（含 Part 4「機器人形體」/ Part 5「領域應用」/ Part 6「生產化部署」、Track A/B 分流）見 [ROADMAP.md](ROADMAP.md)。
 
 ---
 
