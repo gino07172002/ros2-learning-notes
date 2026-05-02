@@ -193,24 +193,42 @@ ros2 service call /toggle_brake std_srvs/srv/SetBool "{data: false}"
 成功後會看到三個情境清楚展示 Topic（持續）vs Service（突發）：
 
 ### 情境 1：正常避障（System ENABLED）
-```
-[WARN] [auto_brake_service_node]: Obstacle at 0.87m! BRAKING!
-[WARN] [auto_brake_service_node]: Obstacle at 0.87m! BRAKING!
-```
-`is_brake_active_` = true，光達持續觸發 callback，發送速度 0.0。
 
-### 情境 2：呼叫 Service 的瞬間
-```
-[WARN] [auto_brake_service_node]: >>> Service: DISABLED <<<
-```
-從另一終端機 `ros2 service call` 的那一刻，觸發 `toggle_brake_callback`。
+![兩個 terminal 對照：上方 fake_lidar 在發 PointCloud2，下方 auto_brake_service 持續輸出 BRAKING](images/state_braking.png)
 
-### 情境 3：休眠模式（System DISABLED）
+> 上方 Terminal 1 是 `fake_lidar.py`，每 0.1 秒往 `/lidar_points` 發一筆「障礙物在 0.5m」的 PointCloud2。
+> 下方 Terminal 2 是 `auto_brake_service`，每秒 throttle 出一筆 `BRAKING` warning。`is_brake_active_` = true，光達持續觸發 callback，發送速度 0.0。
+
 ```
-[INFO] [auto_brake_service_node]: Brake system offline. Waiting for enable command...
-[INFO] [auto_brake_service_node]: Brake system offline. Waiting for enable command...
+[WARN] [auto_brake_service_node]: Obstacle detected at 0.50m! BRAKING!
+[WARN] [auto_brake_service_node]: Obstacle detected at 0.50m! BRAKING!
 ```
-光達資料仍持續進來（`cloud_callback` 仍被觸發），但 `is_brake_active_` = false 直接 return，不發任何指令。
+
+### 情境 2 & 3：Service 呼叫瞬間 + 進入休眠
+
+![完整故事：上半 Terminal 2 的 BRAKING → DISABLED → offline 三段轉換，下半 Terminal 3 的 service call 與 Response](images/service_toggle_full.png)
+
+> 一張圖看完整個 Service 通訊故事——
+>
+> **下半 Terminal 3** 跑 `ros2 service call /toggle_brake std_srvs/srv/SetBool "{data: false}"`：
+> - `requester: making request: SetBool_Request(data=False)` ← Client 端送 request
+> - `response: SetBool_Response(success=True, message='Brake system DISABLED. Watch out!')` ← Server 回 response
+>
+> **上半 Terminal 2** 同步看到狀態切換：
+> - 一連串 `BRAKING`（System ENABLED 期間）
+> - 中斷一行 `>>> Service: DISABLED <<<`（toggle_brake_callback 被觸發那瞬間）
+> - 之後變成 `Brake system offline. Waiting for enable command...`（cloud_callback 還在被光達觸發，但因為 `is_brake_active_=false` 直接 return）
+
+訊息範例：
+```
+[WARN] >>> Service: DISABLED <<<                                ← 攔截到 service call
+[INFO] Brake system offline. Waiting for enable command...      ← 進入休眠
+[INFO] Brake system offline. Waiting for enable command...
+```
+
+🎯 **這就是 Service vs Topic 的對照**：
+- **Topic（光達 PointCloud2）**：持續廣播，`cloud_callback` 每秒被觸發 10 次（即使在休眠狀態）
+- **Service（toggle_brake）**：只在被呼叫的「那一瞬間」執行 `toggle_brake_callback` 一次
 
 ---
 
