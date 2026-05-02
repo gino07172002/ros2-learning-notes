@@ -14,28 +14,31 @@
 | Phase | 主題 | 學到什麼 | 🐍 Py |
 |-------|------|----------|------|
 | [01](phase-01-cloud-env-first-publisher/) | 雲端環境 + 第一支 Publisher | 建 ROS 2 套件、用 colcon 編譯、寫 Publisher 讓車子前進 | ✅ |
-| [02](phase-02-communication-concepts/) | 通訊機制核心觀念 | Node / Topic / Message / Pub-Sub 模型，回頭拆解 Phase 01 的程式 | — |
+| [02](phase-02-communication-concepts/) | **ROS 2 設計哲學** | DDS / 節點發現 / 訊息序列化 / 與 MQTT/gRPC/ROS 1 對比 | — |
 | [03](phase-03-subscriber-lidar-brake/) | Subscriber + 光達避障 | 寫 Subscriber、QoS（SensorDataQoS）、解析 PointCloud2、做避障邏輯 | ✅ |
 | [04](phase-04-services-toggle/) | Service Server + 開關 | Service vs Topic、實作 SetBool 服務、雙終端機驗證 | — |
 
 ### 🔧 Part 2: 工具與治理 — 看清楚系統 + 微調系統
-> 學完 Part 2 你能 debug 不熟的 ROS 系統、調整 Node 行為而不改 code。
+> 學完 Part 2 你能 debug 不熟的 ROS 系統、調整 Node 行為而不改 code，且能組合既有元件做小作品。
 
 | Phase | 主題 | 學到什麼 | 🐍 Py |
 |-------|------|----------|------|
 | [05](phase-05-debug-tools/) | Debug 工具集 | rqt_graph 看通訊圖、ros2 bag 錄製/重播、rqt_plot 即時繪圖、rqt_console 集中 log | — |
 | [06](phase-06-parameters/) | Parameters（參數系統） | declare/get/on_set callback、YAML 設定檔、rqt_reconfigure GUI 即時調參 | — |
+| 🎯 07 | **Mini Capstone 1**：可調參數 + 遠端開關的避障車 | 整合 Phase 03/04/06，一個下午搞定 | — |
 
 ### 🏗️ Part 3: 系統設計 — 自己定義協議與架構
 > **核心分水嶺**：從「使用現成 ROS 元件」進到「設計自己的 ROS 系統」。學完 Part 3 你能組起一個多節點專案。
 
 | Phase | 主題 | 學到什麼 | 🐍 Py |
 |-------|------|----------|------|
-| [07](phase-07-custom-interfaces/) | Custom Interfaces（自訂訊息） | 定義 .msg / .srv / .action、interface 套件分離、rosidl 生成 C++ class | — |
-| 08 | Executors / Lifecycle Node | （待完成） | — |
-| 09 | Launch Files | （待完成） | — |
-| 10 | 測試（gtest + launch_testing） | （待完成） | — |
-| 11 | Actions | （待完成） | — |
+| [08](phase-08-custom-interfaces/) | Custom Interfaces（自訂訊息） | 定義 .msg / .srv / .action、interface 套件分離、rosidl 生成 C++ class | — |
+| 09 | Executors / Lifecycle / Composition | （待完成） | — |
+| 10 | Launch Files 基礎 | （待完成） | — |
+| 11 | Launch Files 進階 | （待完成） | — |
+| 12 | 測試（gtest + launch_testing） | （待完成） | — |
+| 13 | Actions | （待完成） | — |
+| 🎯 Capstone 1 | 整合 Action + Lifecycle + Launch + 測試（GitHub-ready） | （待完成） | — |
 
 > 🐍 欄位：✅ 有 rclpy 對照版（資料夾內 `python/`） ｜ — 純觀念或暫無對照
 
