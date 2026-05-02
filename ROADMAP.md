@@ -48,7 +48,7 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 |-------|------|---------|------|------|
 | 05 | Debug 工具集（rqt_graph / ros2 bag / rqt_plot / rqt_console） | 3 hr | ☁️💻 | ✅ |
 | 06 | Parameters（外部動態調參） | 2 hr | ☁️💻 | ✅ |
-| **🎯 07** | **Mini Capstone 1**：可調參數 + 遠端開關的避障車 | 4 hr | ☁️💻 | ⬜ |
+| **🎯 07** | **Mini Capstone 1**：智能煞車車（Param + Service + LiDAR + turtlesim 整合） | 4 hr | ☁️💻 | ✅ |
 
 > **Mini Capstone 1**：整合 Phase 03/04/06 的所有東西做一個 demo，避免學完一堆機制卻組不起來。一個下午搞定。
 

@@ -25,7 +25,7 @@
 |-------|------|----------|------|
 | [05](phase-05-debug-tools/) | Debug 工具集 | rqt_graph 看通訊圖、ros2 bag 錄製/重播、rqt_plot 即時繪圖、rqt_console 集中 log | — |
 | [06](phase-06-parameters/) | Parameters（參數系統） | declare/get/on_set callback、YAML 設定檔、rqt_reconfigure GUI 即時調參 | — |
-| 🎯 07 | **Mini Capstone 1**：可調參數 + 遠端開關的避障車 | 整合 Phase 03/04/06，一個下午搞定 | — |
+| [🎯 07](phase-07-mini-capstone-1/) | **Mini Capstone 1**：智能煞車車（整合 Param + Service + LiDAR + turtlesim） | 寫一個 Node 同時當 5 個角色、launch file 入門 | — |
 
 ### 🏗️ Part 3: 系統設計 — 自己定義協議與架構
 > **核心分水嶺**：從「使用現成 ROS 元件」進到「設計自己的 ROS 系統」。學完 Part 3 你能組起一個多節點專案。
