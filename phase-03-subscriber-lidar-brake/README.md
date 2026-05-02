@@ -196,6 +196,34 @@ ros2 run my_cpp_pkg auto_brake --ros-args \
 - 終端機印出車子前進中的距離資訊。
 - 接近牆壁（< 1.0m）時 terminal 顯示黃色 `[WARN]`，車子煞車。
 
+### 看 BRAKING log 在 terminal 滾動
+
+最直接的「程式正在工作」證明——`tail -f /tmp/brake.log`（或 `ros2 run` 直接看 stdout）：
+
+![terminal 顯示 7 行連續 BRAKING WARN，每筆相隔約 1 秒](images/auto_brake_log.png)
+
+> ⏱️ 仔細看 timestamp：`...720`、`...721`、`...722`...，**每筆間隔約 1 秒**。這就是 code 裡 `RCLCPP_WARN_THROTTLE(... 1000 ...)` 的效果——光達其實每秒進來 10 筆訊息，但 throttle 過濾後 log 只印 1 筆。沒有 throttle 你的 terminal 會被洗版。
+
+### 用 rqt_graph 看通訊架構
+
+開另一個 terminal 跑 `rqt_graph`，**取消預設的 Hide 設定後**會看到：
+
+![rqt_graph 顯示 fake_lidar 經 /lidar_points 連到 auto_brake_node](images/rqt_graph_clean.png)
+
+> **預設 Hide: Dead sinks / Leaf topics / Debug 都勾選時看到的乾淨主鏈路**——`fake_lidar` 透過 `/lidar_points` 把 PointCloud2 送給 `auto_brake_node`。
+>
+> 注意 `auto_brake_node` 雖然也發 `/cmd_vel`，但因為**沒人訂閱 cmd_vel**（這個 demo 沒接 turtlesim/Gazebo），那條 topic 被 Hide: Dead sinks 藏起來了。
+
+把 Hide 全部取消勾選後：
+
+![rqt_graph 取消 Hide，多出 rqt_gui_py_node 與 _ros2cli_daemon 兩個系統節點](images/rqt_graph_unhidden.png)
+
+> 多出兩個節點：
+> - `/rqt_gui_py_node_142234` — **rqt_graph 自己也是一個 ROS Node**！它就是訂閱整個 graph 才能畫出來
+> - `/_ros2cli_daemon_...` — `ros2 node list`、`ros2 topic list` 這些 CLI 用的常駐 daemon
+>
+> 預設 `Hide: Debug` 把這兩個藏起來避免畫面雜訊，但學習階段看一眼有助理解「ROS 工具鏈也都用同樣的 ROS 通訊機制做出來的」。
+
 ---
 
 ## 🌟 挑戰
