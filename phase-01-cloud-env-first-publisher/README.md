@@ -189,6 +189,30 @@ ros2 run my_cpp_pkg auto_drive
 
 **成功指標**：模擬器中的車子（或烏龜）向前開 3 秒後停下。
 
+### 跑起來會看到的畫面
+
+![turtlesim 視窗，藍底，烏龜剛被推動到中央偏右一點](images/turtlesim_after_drive.png)
+
+> 烏龜出生在 (5.5, 5.5) 中央。執行 `auto_drive` 後它前進 3 秒（速度 0.2 m/s）共 0.6 公尺，停在 (6.16, 5.5) 附近——所以你看到烏龜「微微往右偏離中心」。
+
+### 用 ros2 topic echo 看背後在發什麼訊息
+
+打開**第二個 terminal**，執行：
+
+```bash
+ros2 topic echo /turtle1/cmd_vel
+```
+
+你會看到 Twist 訊息每 0.5 秒滾出來一筆：
+
+![terminal 顯示連續兩筆 Twist 訊息，linear 與 angular 各 x/y/z 都是 0.0](images/ros2_topic_echo.png)
+
+> ⚠️ **這張圖看似無聊但很重要**——`linear.x = 0.0` 是「煞車狀態」，但訊息**還是每 0.5 秒持續發送**。
+>
+> 這是新手常見誤解：「車子停了 = publisher 沒在發」。錯。看你的 `timer_callback` code，**過了 3 秒之後 timer 還是繼續觸發**，只是把 `linear.x` 設成 0 而已。
+>
+> ROS Topic 預設是「**持續廣播**」（state-driven），不是 event-driven。如果你的訂閱者只在收到非 0 訊息時動作，得自己過濾。Phase 02 會深入這個設計哲學。
+
 ---
 
 ## 🎯 學到的關鍵概念
