@@ -32,7 +32,7 @@
 
 | Phase | 主題 | 學到什麼 | 🐍 Py |
 |-------|------|----------|------|
-| [08](phase-08-custom-interfaces/) | Custom Interfaces（自訂訊息） | 定義 .msg / .srv / .action、interface 套件分離、rosidl 生成 C++ class | — |
+| [08](phase-08-custom-interfaces/) | **Custom Interfaces**（自訂訊息）✨ | 定義 .msg / .srv / .action、interface 套件分離、rosidl 生成 C++ class、smart_brake_v2 + Action client | — |
 | 09 | Executors / Lifecycle / Composition | （待完成） | — |
 | 10 | Launch Files 基礎 | （待完成） | — |
 | 11 | Launch Files 進階 | （待完成） | — |

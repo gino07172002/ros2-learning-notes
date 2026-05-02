@@ -1,0 +1,45 @@
+# Approach.action
+# 「往前靠近到目標距離」的長時間任務。
+# 例子：機器人邊走邊看光達，直到正前方障礙物剩 target_distance 才停下。
+#
+# .action 用兩組 --- 分隔三段：
+#   <Goal 欄位>
+#   ---
+#   <Result 欄位>
+#   ---
+#   <Feedback 欄位>
+#
+# Goal: client 一開始送一次
+# Feedback: server 在執行中持續送（給 client 看進度）
+# Result: 任務結束時 server 送一次
+
+# === Goal: client 開始時送 ===
+# 想停下來時、距離目標物多近（公尺）
+float32 target_distance
+
+# 接近時用多快的速度（m/s）
+float32 approach_speed
+
+---
+
+# === Result: 任務結束時 server 送 ===
+# 是否成功（取消、超時都算 false）
+bool success
+
+# 結束時實際距離
+float32 final_distance
+
+# 任務跑了幾秒
+float32 elapsed_seconds
+
+---
+
+# === Feedback: server 持續送 ===
+# 目前距離目標物多遠
+float32 current_distance
+
+# 已經跑了幾秒
+float32 elapsed_seconds
+
+# 給人看的進度文字
+string status

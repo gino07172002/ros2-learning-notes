@@ -1,0 +1,32 @@
+# SetBrakeMode.srv
+# 一次設定模式 + 速度上限的 service。比 std_srvs/SetBool 強，因為可以傳多個欄位。
+#
+# .srv 用三個 dash --- 分隔 Request 與 Response：
+#   <Request 欄位>
+#   ---
+#   <Response 欄位>
+
+# === Request ===
+# 期望的新模式：應該對應 BrakeStatus.MODE_*
+uint8 mode
+
+# 新的速度上限（m/s）；若 < 0 表示「不改變」
+float32 max_speed
+
+# 給 server 看的解釋訊息（log 用）
+string reason
+
+---
+
+# === Response ===
+# 是否成功套用
+bool success
+
+# 套用之前的舊模式（給 client 看「我改了什麼」）
+uint8 previous_mode
+
+# 套用後的實際速度上限
+float32 applied_max_speed
+
+# 失敗原因（success=false 時填）
+string message

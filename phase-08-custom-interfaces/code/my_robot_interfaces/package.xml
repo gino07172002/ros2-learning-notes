@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>my_robot_interfaces</name>
+  <version>0.0.1</version>
+  <description>
+    Custom ROS 2 interfaces (msg/srv/action) for the smart_brake demo system.
+    純定義包，不含可執行檔。
+  </description>
+  <maintainer email="gino.tsai@goodlinker.io">gino</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- 注意：interface 套件用 ament_cmake 不是 ament_python，
+       即使你之後想用 Python 訂閱也是同一個 ament_cmake 套件 -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- ⚠️ 三個必備 build dependency for IDL 生成 -->
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <!-- 我們的 .msg 內用到 std_msgs/Header，必須宣告依賴 -->
+  <depend>std_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
