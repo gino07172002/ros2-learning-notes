@@ -38,7 +38,7 @@
 | [11](phase-11-launch-files-advanced/) | Launch Files 進階 ✨ | IncludeLaunchDescription、event_handler、條件啟動、namespace 多機器人 | — |
 | [12](phase-12-testing/) | 測試（gtest + rclcpp） ✨ | 純邏輯單元測試 + rclcpp 整合測試、colcon test、XML 報告 | — |
 | [13](phase-13-actions-advanced/) | Actions 進階 ✨ | reject/abort/cancel 全套處理、SIGINT 觸發 cancel、Countdown demo | — |
-| 🎯 Capstone 1 | 整合 Action + Lifecycle + Launch + 測試（GitHub-ready） | （待完成） | — |
+| [🎯 Capstone 1](phase-14-capstone-1/) | ApproachController：Lifecycle + Action + Custom Interfaces + Tests 整合 ✨ | 6 角色 LifecycleNode + 自動化 launch + 5 個單元測試（GitHub portfolio-ready） | — |
 
 > 🐍 欄位：✅ 有 rclpy 對照版（資料夾內 `python/`） ｜ — 純觀念或暫無對照
 
