@@ -36,7 +36,7 @@
 | [09](phase-09-executors-lifecycle-composition/) | Executors / Lifecycle / Composition ✨ | Single vs Multi Executor、CallbackGroup、Lifecycle 五狀態、rclcpp_components | — |
 | [10](phase-10-launch-files-basics/) | Launch Files 基礎 ✨ | 4 個漸進範例：最小、remap+param、YAML、CLI args | — |
 | [11](phase-11-launch-files-advanced/) | Launch Files 進階 ✨ | IncludeLaunchDescription、event_handler、條件啟動、namespace 多機器人 | — |
-| 12 | 測試（gtest + launch_testing） | （待完成） | — |
+| [12](phase-12-testing/) | 測試（gtest + rclcpp） ✨ | 純邏輯單元測試 + rclcpp 整合測試、colcon test、XML 報告 | — |
 | [13](phase-13-actions-advanced/) | Actions 進階 ✨ | reject/abort/cancel 全套處理、SIGINT 觸發 cancel、Countdown demo | — |
 | 🎯 Capstone 1 | 整合 Action + Lifecycle + Launch + 測試（GitHub-ready） | （待完成） | — |
 
