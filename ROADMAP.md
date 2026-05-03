@@ -63,7 +63,7 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 |-------|------|---------|------|------|
 | 08 | Custom Interfaces（自訂 .msg / .srv / .action） | 3 hr | ☁️💻 | ✅ |
 | 09 | Executors / Callback Groups / LifecycleNode / Composition | 5 hr | ☁️💻 | ⬜ |
-| 10 | Launch Files 基礎（Python launch script） | 3 hr | ☁️💻 | ⬜ |
+| 10 | Launch Files 基礎（Python launch script） | 3 hr | ☁️💻 | ✅ |
 | 11 | Launch Files 進階（IncludeLaunchDescription / event_handlers / xacro） | 3 hr | ☁️💻 | ⬜ |
 | 12 | 單元測試與 launch 整合測試（gtest + launch_testing） | 4 hr | ☁️💻 | ⬜ |
 | 13 | Actions（長時間任務 + Feedback + Cancel） | 3 hr | ☁️💻 | ⬜ |

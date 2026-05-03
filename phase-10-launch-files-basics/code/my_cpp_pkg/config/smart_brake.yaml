@@ -1,0 +1,13 @@
+# smart_brake.yaml
+# 給 03_yaml_params.launch.py 用的參數檔
+#
+# YAML 結構：
+#   <node_name>:
+#     ros__parameters:
+#       <param_name>: <value>
+#
+# Node 名稱必須跟 launch file 內 Node(name='xxx') 完全一致
+
+smart_brake_v2:
+  ros__parameters:
+    use_sim_time: false
