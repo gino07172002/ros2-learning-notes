@@ -46,7 +46,7 @@
 | Phase | 主題 | 學到什麼 | 🐍 Py |
 |-------|------|----------|------|
 | [15](phase-15-urdf/) | URDF + robot_state_publisher ✨ | xacro 巨集、joint 類型、TF tree 自動生成、tf2_echo CLI 驗證 | — |
-| 16 | TF2 進階 | （待完成） | — |
+| [16](phase-16-tf2/) | TF2 進階 ✨ | static/dynamic broadcaster、Listener + Buffer、lookupTransform、業界口訣 | — |
 | 17 | Gazebo 整合 | （待完成） | — |
 | 18 | ros2_control | （待完成） | — |
 | 19 | pluginlib | （待完成） | — |
