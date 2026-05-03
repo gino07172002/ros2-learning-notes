@@ -1,0 +1,16 @@
+# context = repo root,只白名單需要的 phase
+
+*
+
+!phase-17-gazebo/code/my_gazebo_demo/**
+!phase-22A-nav2-basics/code/my_nav2_demo/**
+!phase-23A-nav2-bt-plugin/code/my_bt_plugin/**
+!phase-CapstoneA-mobile/code/capstone_a/**
+!phase-Capstone-Final/code/docker-capstone-a/**
+
+**/build/
+**/install/
+**/log/
+**/__pycache__/
+**/*.pyc
+.git/

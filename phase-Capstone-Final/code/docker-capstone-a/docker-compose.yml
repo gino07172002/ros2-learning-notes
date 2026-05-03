@@ -1,0 +1,30 @@
+# docker-compose.yml — Capstone Final
+#
+# 一鍵跑整個 Capstone A:
+#   docker compose -f phase-Capstone-Final/code/docker-capstone-a/docker-compose.yml up --build
+#
+# Container 內跑:
+#   - Gazebo headless + turtlebot3
+#   - Nav2 完整 stack(8 個 lifecycle node)
+#   - 自訂 BT plugin(Phase 23A)
+#   - auto_navigator 自動 patrol 三個 waypoint
+#
+# 等同 Capstone A 在 host 跑,只是封裝成 docker
+
+services:
+
+  capstone:
+    build:
+      # context 是 repo root
+      context: ../../..
+      dockerfile: phase-Capstone-Final/code/docker-capstone-a/Dockerfile
+    image: capstone-final:latest
+    container_name: capstone-final
+    network_mode: host                 # Phase 24 學的:DDS multicast 必需
+    ipc: shareable                     # Phase 24 學的:跨 container SHM 必需
+    environment:
+      - ROS_DOMAIN_ID=99                 # 跟 host 預設(0)隔離
+      - TURTLEBOT3_MODEL=burger
+      - RCUTILS_COLORIZED_OUTPUT=1
+    stdin_open: true
+    tty: true
