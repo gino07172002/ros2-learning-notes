@@ -1,0 +1,25 @@
+<!--
+  plugins.xml — pluginlib 的「插件清單」
+  外部 ClassLoader 用這個檔案找哪些 plugin 可以載入
+
+  格式：
+    <library path="lib_name">
+      <class name="..." type="..." base_class_type="..." />
+    </library>
+
+  注意 path：是 .so 檔案名稱（不含 lib 前綴與 .so 副檔名）
+-->
+
+<library path="brake_strategy_plugins">
+  <class
+    type="brake_strategy_plugins::ConservativeStrategy"
+    base_class_type="brake_strategy_base::BrakeStrategy">
+    <description>Stop completely when obstacle is closer than safe_distance.</description>
+  </class>
+
+  <class
+    type="brake_strategy_plugins::AggressiveStrategy"
+    base_class_type="brake_strategy_base::BrakeStrategy">
+    <description>Slow to 30% speed when near obstacle (don't stop).</description>
+  </class>
+</library>

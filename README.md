@@ -49,7 +49,7 @@
 | [16](phase-16-tf2/) | TF2 進階 ✨ | static/dynamic broadcaster、Listener + Buffer、lookupTransform、業界口訣 | — |
 | 17 | Gazebo 整合 | （待完成） | — |
 | 18 | ros2_control | （待完成） | — |
-| 19 | pluginlib | （待完成） | — |
+| [19](phase-19-pluginlib/) | pluginlib ✨ | runtime 載入 C++ class、三套件分離（base/plugins/demo）、Nav2 擴充基礎 | — |
 | 20 | 多機通訊 | （待完成） | — |
 
 > 🐍 欄位：✅ 有 rclpy 對照版（資料夾內 `python/`） ｜ — 純觀念或暫無對照
