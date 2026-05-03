@@ -80,6 +80,7 @@
 | [21A](phase-21A-slam-toolbox/) | SLAM with slam_toolbox | online async mapping、map→odom TF、WSL GPU 不足造成 queue full 雷的完整解析 | — |
 | [22A](phase-22A-nav2-basics/) | Nav2 入門 | 8 個 lifecycle node 全套、planner/controller plugin、base_footprint 雷、/initialpose 必下 | — |
 | [23A](phase-23A-nav2-bt-plugin/) | 自訂 Nav2 BT plugin | BT.cpp ConditionNode、BT_REGISTER_NODES 巨集、blackboard 共享 node、4 個 gtest 全過 | — |
+| [30](phase-30-nav2-bt-advanced/) | Nav2 BT 進階(4 種 node + 整合)| StatefulActionNode、DecoratorNode、OutputPort、6 個 gtest case、完整充電/巡邏 BT XML | — |
 | [🎯 Capstone A](phase-CapstoneA-mobile/) | **Mobile Robot 整合** | Gazebo + Nav2 + 自訂 BT plugin + Action client 自動 waypoint sequence 整合 | — |
 
 #### 🅱️ Track B:機械手臂(MoveIt 2)

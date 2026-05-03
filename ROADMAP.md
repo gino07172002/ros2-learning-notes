@@ -108,6 +108,7 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 | 21A | SLAM（slam_toolbox 即時建圖） | 2 day | ☁️💻 | ✅ |
 | 22A | Nav2 入門（Costmap、Planner、Controller、Behavior Tree） | 3–5 day | ☁️💻 | ✅ |
 | 23A | Nav2 進階（自訂 BT plugin、動態避障、多目標巡邏） | 3 day | ☁️💻 | ✅ |
+| 30  | Nav2 BT 進階（4 種 node 完整 plugin 集 + 整合 BT XML） | 1 day | ☁️💻 | ✅ |
 | **🎯 Capstone A** | **本機 Gazebo 起 TurtleBot3 → SLAM 建圖 → Nav2 自動導航到指定點，錄影驗證** | 2 day | ☁️💻 | ✅ |
 
 ### 🅱️ Track B：機械手臂（Manipulator）

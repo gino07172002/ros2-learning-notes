@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+  patrol_with_charging.xml — Phase 30
+  完整充電 + 巡邏 BT,可塞給 nav2_bt_navigator
+
+  邏輯:
+  ┌── Fallback ───────────────────────────────────────────────┐
+  │   1. 電量低 → 去充電(任務 1 完成才會試任務 2)              │
+  │   2. 否則巡邏:每 3 秒走一個 waypoint,連走 3 個算一輪      │
+  └────────────────────────────────────────────────────────────┘
+
+  讀法:Fallback (?) 從上往下試 child,**第一個非 FAILURE 的 child 決定整個 Fallback**:
+  - 電量低且充電成功 → IsBatteryLow SUCCESS → Sequence SUCCESS → Fallback SUCCESS
+  - 電量正常 → IsBatteryLow FAILURE → 進到第二個 child 巡邏
+-->
+<root main_tree_to_execute="MainTree">
+
+  <BehaviorTree ID="MainTree">
+
+    <Fallback name="charge_or_patrol">
+
+      <!-- 任務 1:電量低就去充電 -->
+      <Sequence name="charge_sequence">
+        <IsBatteryLow battery_topic="/battery_state" min_battery="0.2"/>
+        <GoToCharger travel_time="3.0" result_msg="{charge_result}"/>
+      </Sequence>
+
+      <!-- 任務 2:巡邏(每 3 秒走一個 waypoint,連走 3 個算一輪) -->
+      <CountSuccesses target_count="3">
+        <OnceEvery seconds="3.0">
+          <PatrolWaypoint
+            total_waypoints="3"
+            travel_time="1.0"
+            current_waypoint="{wp_idx}"/>
+        </OnceEvery>
+      </CountSuccesses>
+
+    </Fallback>
+
+  </BehaviorTree>
+
+</root>
