@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!--
+  diffbot.urdf.xacro - 兩輪差速車的最小 URDF（用 xacro 巨集系統）
+
+  結構：
+    base_link (主體, 0.4 × 0.3 × 0.2 m 立方體)
+      ├── left_wheel (左輪, 直徑 0.1 m)
+      ├── right_wheel (右輪, 直徑 0.1 m)
+      └── lidar_link (光達, 圓柱 0.05 m 高)
+
+  xacro 比純 URDF 強在：
+    - <xacro:property> 定義常數
+    - <xacro:macro> 重複用同個 link/joint 結構（兩個輪子用同一個 macro）
+    - <xacro:include> 模組化（大型機器人會切多檔）
+-->
+<robot name="diffbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ===== 常數定義 ===== -->
+  <xacro:property name="base_length" value="0.4" />
+  <xacro:property name="base_width" value="0.3" />
+  <xacro:property name="base_height" value="0.2" />
+  <xacro:property name="wheel_radius" value="0.05" />
+  <xacro:property name="wheel_thickness" value="0.04" />
+
+  <!-- ===== Macro: 輪子（左右共用） ===== -->
+  <xacro:macro name="wheel" params="prefix y_offset">
+    <link name="${prefix}_wheel">
+      <visual>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_thickness}" />
+        </geometry>
+        <material name="black"><color rgba="0.1 0.1 0.1 1.0" /></material>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_thickness}" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.5" />
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="base_link" />
+      <child link="${prefix}_wheel" />
+      <!-- xyz: 輪子相對 base_link 的位置 -->
+      <origin xyz="0 ${y_offset} 0" rpy="-1.5708 0 0" />
+      <axis xyz="0 0 1" />
+    </joint>
+  </xacro:macro>
+
+  <!-- ===== base_link（主體） ===== -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="${base_length} ${base_width} ${base_height}" />
+      </geometry>
+      <material name="blue"><color rgba="0.2 0.4 0.8 1.0" /></material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${base_length} ${base_width} ${base_height}" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="5.0" />
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1" />
+    </inertial>
+  </link>
+
+  <!-- 用 macro 生成兩個輪子 -->
+  <xacro:wheel prefix="left" y_offset="${base_width/2 + wheel_thickness/2}" />
+  <xacro:wheel prefix="right" y_offset="-${base_width/2 + wheel_thickness/2}" />
+
+  <!-- ===== lidar（光達） ===== -->
+  <link name="lidar_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.05" />
+      </geometry>
+      <material name="red"><color rgba="0.8 0.1 0.1 1.0" /></material>
+    </visual>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="lidar_link" />
+    <!-- 光達裝在車頂正中央偏前 -->
+    <origin xyz="0.1 0 ${base_height/2 + 0.025}" rpy="0 0 0" />
+  </joint>
+
+</robot>

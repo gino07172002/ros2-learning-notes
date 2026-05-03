@@ -80,12 +80,12 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 
 | Phase | 主題 | 預計時長 | 環境 | 狀態 |
 |-------|------|---------|------|------|
-| 14 | URDF + robot_state_publisher | 1 day | ☁️💻 | ⬜ |
-| 15 | TF2 座標轉換樹（含時間戳處理、buffer/listener） | 1 day | ☁️💻 | ⬜ |
-| 16 | Gazebo 整合（spawn URDF, gazebo_ros plugins） | 1 day | 💻 | ⬜ |
-| 17 | ros2_control（硬體抽象層 + controller manager） | 2 day | 💻 | ⬜ |
-| 18 | **pluginlib**（自訂 controller / planner / BT node） | 1 day | ☁️💻 | ⬜ |
-| 19 | **多機通訊**（ROS_DOMAIN_ID, FastDDS Discovery Server） | 1 day | 💻 | ⬜ |
+| 15 | URDF + robot_state_publisher | 1 day | ☁️💻 | ✅ |
+| 16 | TF2 座標轉換樹（含時間戳處理、buffer/listener） | 1 day | ☁️💻 | ⬜ |
+| 17 | Gazebo 整合（spawn URDF, gazebo_ros plugins） | 1 day | 💻 | ⬜ |
+| 18 | ros2_control（硬體抽象層 + controller manager） | 2 day | 💻 | ⬜ |
+| 19 | **pluginlib**（自訂 controller / planner / BT node） | 1 day | ☁️💻 | ⬜ |
+| 20 | **多機通訊**（ROS_DOMAIN_ID, FastDDS Discovery Server） | 1 day | 💻 | ⬜ |
 
 > **新增 Phase 18 pluginlib**：業界職缺剛需。Nav2 自訂 BT plugin、MoveIt 自訂 planner、ros2_control 自訂 controller 全靠它。
 > **Phase 19 多機通訊提前**：原本放 Part 6，但實機測試很早就會用（筆電開 RViz、機器人跑節點），提前到 Part 4 結尾。

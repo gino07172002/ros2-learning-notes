@@ -40,9 +40,21 @@
 | [13](phase-13-actions-advanced/) | Actions 進階 ✨ | reject/abort/cancel 全套處理、SIGINT 觸發 cancel、Countdown demo | — |
 | [🎯 Capstone 1](phase-14-capstone-1/) | ApproachController：Lifecycle + Action + Custom Interfaces + Tests 整合 ✨ | 6 角色 LifecycleNode + 自動化 launch + 5 個單元測試（GitHub portfolio-ready） | — |
 
+### 🤖 Part 4: 機器人形體 — 給 Node 們一個身體
+> 描述機器人物理結構（關節、感測器位置），為 SLAM/Nav2/MoveIt 鋪路。
+
+| Phase | 主題 | 學到什麼 | 🐍 Py |
+|-------|------|----------|------|
+| [15](phase-15-urdf/) | URDF + robot_state_publisher ✨ | xacro 巨集、joint 類型、TF tree 自動生成、tf2_echo CLI 驗證 | — |
+| 16 | TF2 進階 | （待完成） | — |
+| 17 | Gazebo 整合 | （待完成） | — |
+| 18 | ros2_control | （待完成） | — |
+| 19 | pluginlib | （待完成） | — |
+| 20 | 多機通訊 | （待完成） | — |
+
 > 🐍 欄位：✅ 有 rclpy 對照版（資料夾內 `python/`） ｜ — 純觀念或暫無對照
 
-完整學習路徑（含 Part 4「機器人形體」/ Part 5「領域應用」/ Part 6「生產化部署」、Track A/B 分流）見 [ROADMAP.md](ROADMAP.md)。
+完整學習路徑（含 Part 5「領域應用」/ Part 6「生產化部署」、Track A/B 分流）見 [ROADMAP.md](ROADMAP.md)。
 
 ---
 
