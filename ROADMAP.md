@@ -82,10 +82,10 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 |-------|------|---------|------|------|
 | 15 | URDF + robot_state_publisher | 1 day | ☁️💻 | ✅ |
 | 16 | TF2 座標轉換樹（含時間戳處理、buffer/listener） | 1 day | ☁️💻 | ✅ |
-| 17 | Gazebo 整合（spawn URDF, gazebo_ros plugins） | 1 day | 💻 | ⬜ |
+| 17 | Gazebo 整合（spawn URDF, gazebo_ros plugins） | 1 day | 💻 | ✅ |
 | 18 | ros2_control（硬體抽象層 + controller manager） | 2 day | 💻 | ✅ |
 | 19 | **pluginlib**（自訂 controller / planner / BT node） | 1 day | ☁️💻 | ✅ |
-| 20 | **多機通訊**（ROS_DOMAIN_ID, FastDDS Discovery Server） | 1 day | 💻 | ⬜ |
+| 20 | **多機通訊**（ROS_DOMAIN_ID, FastDDS Discovery Server） | 1 day | 💻 | ✅ |
 
 > **新增 Phase 18 pluginlib**：業界職缺剛需。Nav2 自訂 BT plugin、MoveIt 自訂 planner、ros2_control 自訂 controller 全靠它。
 > **Phase 19 多機通訊提前**：原本放 Part 6，但實機測試很早就會用（筆電開 RViz、機器人跑節點），提前到 Part 4 結尾。
@@ -104,11 +104,11 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 
 | Phase | 主題 | 預計時長 | 環境 | 狀態 |
 |-------|------|---------|------|------|
-| 20A | Odometry 基礎 + robot_localization (EKF 融合 IMU/odom) | 2 day | 💻 | ⬜ |
-| 21A | SLAM（slam_toolbox 即時建圖） | 2 day | 💻 | ⬜ |
-| 22A | Nav2 入門（Costmap、Planner、Controller、Behavior Tree） | 3–5 day | 💻 | ⬜ |
-| 23A | Nav2 進階（自訂 BT plugin、動態避障、多目標巡邏） | 3 day | 💻 | ⬜ |
-| **🎯 Capstone A** | **本機 Gazebo 起 TurtleBot3 → SLAM 建圖 → Nav2 自動導航到指定點，錄影驗證** | 2 day | 💻 | ⬜ |
+| 20A | Odometry 基礎 + robot_localization (EKF 融合 IMU/odom) | 2 day | ☁️💻 | ✅ |
+| 21A | SLAM（slam_toolbox 即時建圖） | 2 day | ☁️💻 | ✅ |
+| 22A | Nav2 入門（Costmap、Planner、Controller、Behavior Tree） | 3–5 day | ☁️💻 | ✅ |
+| 23A | Nav2 進階（自訂 BT plugin、動態避障、多目標巡邏） | 3 day | ☁️💻 | ✅ |
+| **🎯 Capstone A** | **本機 Gazebo 起 TurtleBot3 → SLAM 建圖 → Nav2 自動導航到指定點，錄影驗證** | 2 day | ☁️💻 | ✅ |
 
 ### 🅱️ Track B：機械手臂（Manipulator）
 
@@ -117,9 +117,9 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 
 | Phase | 主題 | 預計時長 | 環境 | 狀態 |
 |-------|------|---------|------|------|
-| 20B | 手臂 URDF（joint 類型、xacro、SRDF） | 2 day | ☁️💻 | ⬜ |
+| 20B | 手臂 URDF（joint 類型、xacro、SRDF） | 2 day | ☁️💻 | ✅ |
 | 21B | MoveIt 2 入門（MoveIt Setup Assistant、RViz 操作面板） | 2 day | 💻 | ⬜ |
-| 22B | MoveIt 2 程式控制（C++ MoveGroupInterface、軌跡規劃 API） | 3 day | 💻 | ⬜ |
+| 22B | MoveIt 2 程式控制（C++ MoveGroupInterface、軌跡規劃 API） | 3 day | ☁️💻 | ✅ |
 | 23B | 進階主題（碰撞檢測、Pick & Place、視覺整合） | 3–5 day | 💻 | ⬜ |
 | **🎯 Capstone B** | **Gazebo 起 UR5/Panda 手臂 → MoveIt 規劃路徑 → 模擬抓取一個方塊，錄影驗證** | 2 day | 💻 | ⬜ |
 
@@ -131,11 +131,11 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 
 | Phase | 主題 | 預計時長 | 環境 | 狀態 |
 |-------|------|---------|------|------|
-| 24 | Docker + Dev Container（含 ROS 2 image 最佳實踐） | 2 day | 💻 | ⬜ |
+| 24 | Docker + Dev Container（含 ROS 2 image 最佳實踐） | 2 day | 💻 | ✅ |
 | 25 | CI/CD（GitHub Actions 跑 colcon test、image build） | 1 day | 💻 | ✅ |
 | 26 | DDS QoS 調校（Reliability、Durability、Deadline） | 2 day | 💻 | ✅ |
 | 27 | 部署到實機（Raspberry Pi / Jetson / 工控機） | 2–3 day | 💻 | ⬜ |
-| **🎯 Capstone Final** | **把 Capstone A 或 B 完整 docker 化，CI 跑測試，一鍵 `docker compose up` 重現** | 2 day | 💻 | ⬜ |
+| **🎯 Capstone Final** | **把 Capstone A 或 B 完整 docker 化，CI 跑測試，一鍵 `docker compose up` 重現** | 2 day | 💻 | ✅ |
 
 ---
 

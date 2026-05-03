@@ -47,10 +47,33 @@
 |-------|------|----------|------|
 | [15](phase-15-urdf/) | URDF + robot_state_publisher ✨ | xacro 巨集、joint 類型、TF tree 自動生成、tf2_echo CLI 驗證 | — |
 | [16](phase-16-tf2/) | TF2 進階 ✨ | static/dynamic broadcaster、Listener + Buffer、lookupTransform、業界口訣 | — |
-| 17 | Gazebo 整合 | （待完成） | — |
+| [17](phase-17-gazebo/) | Gazebo 整合(headless)✨ | gazebo.launch.py vs gzserver、URDF vs SDF、spawn_entity 雷、use_sim_time 必設 | — |
 | [18](phase-18-ros2-control/) | ros2_control ✨ | URDF 內 hardware 宣告、controller_manager + mock_components、command/state 流動 | — |
 | [19](phase-19-pluginlib/) | pluginlib ✨ | runtime 載入 C++ class、三套件分離（base/plugins/demo）、Nav2 擴充基礎 | — |
-| 20 | 多機通訊 | （待完成） | — |
+| [20](phase-20-multi-machine/) | 多機通訊 ✨ | ROS_DOMAIN_ID 隔離、FastDDS Discovery Server 取代 multicast、docker compose 模擬多機 | — |
+| [20A](phase-20A-odometry-ekf/) | Odometry + robot_localization (EKF) ✨ | nav_msgs/Odometry 與 IMU covariance、EKF YAML 設定、實測 EKF 勝過 wheel-only 8 倍 | — |
+| [20B](phase-20B-arm-urdf/) | 手臂 URDF (xacro + SRDF) ✨ | xacro macro 抽 6 個 link 模板、SRDF 為 MoveIt 鋪路、ParameterValue str 雷 | — |
+| [22B](phase-22B-moveit-cpp/) | MoveIt 2 C++ API ✨ | MoveGroupInterface plan + 4 種 target、3 份 description params、IK 失敗雷 | — |
+| [21A](phase-21A-slam-toolbox/) | SLAM with slam_toolbox ✨ | online async mapping、map→odom TF、WSL GPU 不足造成 queue full 雷的完整解析 | — |
+| [22A](phase-22A-nav2-basics/) | Nav2 入門 ✨ | 8 個 lifecycle node 全套、planner/controller plugin、base_footprint 雷、/initialpose 必下 | — |
+| [23A](phase-23A-nav2-bt-plugin/) | 自訂 Nav2 BT plugin ✨ | BT.cpp ConditionNode、BT_REGISTER_NODES 巨集、blackboard 共享 node、4 個 gtest 全過 | — |
+| [🎯 Capstone A](phase-CapstoneA-mobile/) | Mobile Robot 整合 ✨ | Gazebo + Nav2 + 自訂 BT plugin + Action client 自動 waypoint sequence 整合 | — |
+
+### 🏁 Capstone Final
+> 整個 repo 的最終整合 + 生產化形式
+
+| Phase | 主題 | 學到什麼 | 🐍 Py |
+|-------|------|----------|------|
+| [🎯 Capstone Final](phase-Capstone-Final/) | Docker 化 Capstone A ✨ | multi-stage build、host network、ipc shareable、可 push GHCR、實機部署模板 | — |
+
+### 📦 Part 6: 生產化部署 — 上線
+> 不論做 mobile 還是 arm,要把作品交付都需要這些。
+
+| Phase | 主題 | 學到什麼 | 🐍 Py |
+|-------|------|----------|------|
+| [24](phase-24-docker/) | Docker 化 Capstone 1 ✨ | multi-stage build、entrypoint.sh exec、`network_mode: host` + `ipc: shareable` 兩大 DDS 雷 | — |
+| [25](phase-25-ci-cd/) | CI/CD with GitHub Actions | container build + colcon test + lint matrix + image push 到 GHCR | — |
+| [26](phase-26-dds-qos/) | DDS QoS 調校 | Reliability/Durability/Deadline、Reliable↔BestEffort 兼容方向、實測掉包 | — |
 
 > 🐍 欄位：✅ 有 rclpy 對照版（資料夾內 `python/`） ｜ — 純觀念或暫無對照
 

@@ -30,7 +30,7 @@ GitHub: https://github.com/gino07172002/ros2-learning-notes
 
 ## 進度地圖（讀完這個就知道該做什麼）
 
-### ✅ 完成的章節（20 個）
+### ✅ 完成的章節（32 個 — 2026-05-03 大幅補完）
 
 ```
 Part 1: 通訊基礎
@@ -56,33 +56,40 @@ Part 3: 系統設計
 Part 4: 機器人形體
   ✅ phase-15-urdf
   ✅ phase-16-tf2
-  ⬜ phase-17-gazebo                      (沒做：需視覺驗證)
+  ✅ phase-17-gazebo                      (headless,GUI 之後補)
   ✅ phase-18-ros2-control
   ✅ phase-19-pluginlib
-  ⬜ phase-20-multi-machine               (沒做：單機 WSL 難真實驗證)
+  ✅ phase-20-multi-machine               (Docker 模擬多機 + Discovery Server)
 
 Part 5: 領域應用
-  ⬜ Track A (Mobile): SLAM / Nav2        (沒做：視覺主導)
-  ⬜ Track B (Arm): MoveIt                (沒做：視覺主導)
-  ⬜ Capstone A / Capstone B
+  Track A (Mobile):
+    ✅ phase-20A-odometry-ekf            (robot_localization EKF,純文字驗證)
+    ✅ phase-21A-slam-toolbox            (結構驗證過,WSL GPU 限制)
+    ✅ phase-22A-nav2-basics             (8 個 lifecycle node 全 active)
+    ✅ phase-23A-nav2-bt-plugin          (4 個 gtest 全過)
+    ✅ phase-CapstoneA-mobile            (auto_navigator 整合)
+  Track B (Arm):
+    ✅ phase-20B-arm-urdf                (xacro + SRDF)
+    ✅ phase-22B-moveit-cpp              (MoveGroupInterface 4 種 plan target)
+    ⬜ phase-21B-moveit-setup            (需 Setup Assistant GUI)
+    ⬜ phase-23B-pick-and-place          (視覺主導)
+    ⬜ Capstone B                         (視覺主導)
 
 Part 6: 生產化部署
-  ⬜ phase-24-docker                      (沒做：要深入 Dockerfile 最佳實踐)
+  ✅ phase-24-docker                      (Capstone 1 docker 化)
   ✅ phase-25-ci-cd
   ✅ phase-26-dds-qos
-  ⬜ phase-27-real-hardware               (沒做：使用者沒 Pi/Jetson)
-  ⬜ Capstone Final
+  ✅ phase-Capstone-Final                 (Capstone A docker 化,1.26GB image 驗證過)
+  ⬜ phase-27-real-hardware               (沒做:使用者沒 Pi/Jetson)
 ```
 
 ### ⬜ 還沒做的章節（什麼時候該做）
 
 | 章節 | 現況 | 何時動手 |
 |------|------|---------|
-| **Phase 17 Gazebo** | 視覺主導 | 使用者主動要求，且願意處理 Gazebo 在 WSL 開不開得起來的風險 |
-| **Phase 20 多機通訊** | 單機難驗證 | 使用者有兩台機器，或願意接受 ROS_DOMAIN_ID 模擬版本 |
-| **Track A SLAM/Nav2** | 視覺主導 | 使用者親自跑 RViz，你只能寫 launch + config |
-| **Track B MoveIt** | 視覺主導 | 同上 |
-| **Phase 24 Docker** | 可寫，但建議使用者 hands-on | 使用者主動問 |
+| **Phase 21B MoveIt Setup Assistant** | 純 GUI wizard | 使用者本機跑,自動產 moveit_config(可取代 Phase 22B 手寫的 yaml) |
+| **Phase 23B Pick & Place** | 視覺主導 | 使用者本機 + Gazebo + 抓物件 demo |
+| **Capstone B 機械手臂** | 視覺主導 | 同上,等使用者要做 Track B 完整 demo |
 | **Phase 27 部署實機** | 需要硬體 | 使用者真的買 Pi/Jetson 才有意義 |
 
 ---
@@ -90,9 +97,10 @@ Part 6: 生產化部署
 ## 重要慣例（**必讀**，違反會破壞 repo 一致性）
 
 ### 1. 章節編號 ≠ 學習順序
-- Phase 14 是 Capstone 1（不是 Phase 17）
-- Phase 17 還沒做，跳號
-- 編號是「**位置標記**」，學習順序看 README/ROADMAP 的 Part 結構
+- Phase 14 是 Capstone 1(不是 Phase 17)
+- Part 5 用「**字尾 A/B 區分 Track**」:`20A/21A/22A/23A` = Track A Mobile,`20B/22B` = Track B Arm
+- Capstone 用「**字尾 -mobile / -Final**」:`phase-CapstoneA-mobile` / `phase-Capstone-Final`
+- 編號是「**位置標記**」,學習順序看 README/ROADMAP 的 Part 結構
 
 ### 2. Code 套件命名
 - 每章 `code/` 下叫 `my_cpp_pkg`（**刻意重名**，每章獨立）
@@ -340,6 +348,56 @@ CMakeLists.txt: pluginlib_export_plugin_description_file(base_pkg plugins.xml)
 ### ros2 daemon stale state
 - 大量 SIGKILL 之後 `ros2 node list` 卡住或丟 `!rclpy.ok()`
 - 解：`ros2 daemon stop ; ros2 daemon start`
+
+### Phase 17/21A/22A WSL 沒 GPU 的硬上限
+- SLAM(slam_toolbox)/AMCL/MoveIt OMPL 在 WSL2 沒 GPU 都會慢:
+  - **SLAM**: scan timestamp earlier than transform cache + queue full,/map 永遠不出來
+  - **AMCL**: 同樣 scan timestamp 問題,localization 不收斂
+  - **MoveIt**: plan 還能跑(只 OMPL CPU),但 trajectory execute 假 controller 不動
+- **教學策略**: 結構驗證(launch 起來、lifecycle active)在 WSL 可達;真實 demo 在雲端 ROSject(有 GPU)或實機
+- 不要花時間 tune yaml 試圖在 WSL 跑出真 SLAM/Nav2,會無底洞
+
+### WSL2 background process 跟 wsl 命令的 lifetime
+- `wsl -d Ubuntu -e bash -c "<launch> &"` 結束時,setsid/nohup detach 出去的 process 仍可能被 wsl session manager 回收
+- 「同步 timeout 命令」(`timeout 30 ros2 launch ...`)是最穩跑驗證的方式
+- background tool(`run_in_background=true`)更不穩,經常 SIGKILL exit 9
+- 教學 demo 設計成「自己會 timeout 結束」的 launch(用 `TimerAction` + `ExecuteProcess` 帶超時)
+
+### Phase 22A/Capstone Final base_link vs base_footprint
+- Nav2 預設 `nav2_params.yaml` 內 `robot_base_frame: base_link`,但 turtlebot3 SDF root 是 `base_footprint`
+- 不改的話 local_costmap 永遠 `Timed out waiting for transform from base_link to odom`
+- 解:`sed -i 's|robot_base_frame: base_link|robot_base_frame: base_footprint|g'`
+
+### Phase 22B MoveIt 三份 description params
+- 獨立 Node 用 `MoveGroupInterface` 必須**自己**帶上 `robot_description` / `robot_description_semantic` / `robot_description_kinematics`
+- 不會自動從 move_group 共享 — 每個 Node 有自己的 parameter namespace
+- 沒帶會炸 `Unable to parse SRDF` / `Unable to construct robot model`
+- 還要 `NodeOptions().automatically_declare_parameters_from_overrides(true)` 才讀得到 nested yaml
+
+### Phase 24 Docker DDS 雙雷
+- 雷 A:bridge network → topic discovery 過,但 echo 收不到資料(multicast 被擋)
+  - 解:`network_mode: host`
+- 雷 B:host network 還是收不到 BestEffort sensor data
+  - 解:`ipc: shareable` + `ipc: service:<另一服務>`(共享 IPC namespace,SHM transport 才打得通)
+
+### Phase 17 URDF vs SDF
+- `turtlebot3_description/urdf/turtlebot3_burger.urdf` **沒 `<gazebo>` 標籤**,spawn 後沒 sensor topic
+- 必須用 `turtlebot3_gazebo/models/turtlebot3_burger/model.sdf`(完整 ros plugin)
+- 設計:robot_state_publisher 讀 URDF(發 TF),spawn_entity 讀 SDF(進物理引擎)
+
+### Phase 17 gazebo.launch.py vs gzserver.launch.py
+- `gzserver.launch.py` 預設不載 `libgazebo_ros_factory.so` → `/spawn_entity` service 不存在
+- 用 `gazebo.launch.py` 自帶完整 plugin set + 可加 `gui:=false` headless
+
+### Phase 20A robot_localization 的 yaml 全 float
+- `process_noise_covariance` 是 225 個元素 array,YAML parser 要求**所有 element 同型別**
+- 寫 `[0.05, 0, 0, ...]` 會炸 `Sequence should be of same type, integer do not belong`
+- 全部寫 `0.0` / `0.05` 等帶小數點的 float
+
+### Phase 20A 缺 imu_link → base_link TF 的無聲失敗
+- EKF 訂 `/imu/data` 看到 `frame_id: imu_link`,要把它轉到 `base_link`(EKF base_frame)
+- 沒 TF 就**默默丟掉所有 IMU 訊息**,沒 error 沒 warning,只看到 EKF 不轉彎
+- 解:launch 加 `static_transform_publisher base_link → imu_link`(實機要設真實 offset)
 
 ---
 
