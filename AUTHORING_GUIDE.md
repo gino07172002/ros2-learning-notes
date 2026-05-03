@@ -323,6 +323,128 @@ C++ 讀者的提示用 `<details>` 折疊，視覺上不影響 Python 讀者：
 
 ---
 
+## 🆕 進階寫作模式（從 Phase 17–22B 整理）
+
+寫 Track A/B 大章節（多 package 整合 / Docker / SLAM/Nav2/MoveIt）時的新發現:
+
+### 1. 多 package launch 整合用 IncludeLaunchDescription + TimerAction
+
+```python
+gazebo = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+        os.path.join(get_package_share_directory('my_gazebo_demo'),
+                     'launch', 'headless_demo.launch.py')))
+
+# delay 讓上游穩定再啟動下游
+slam = TimerAction(period=5.0, actions=[
+    Node(package='slam_toolbox', executable='async_slam_toolbox_node',
+         parameters=[slam_yaml])])
+```
+
+兩個習慣:
+- **Capstone 章節 launch 短**:每個 phase 把細節打包好,Capstone include 起來只剩 5 行
+- **TimerAction 是必需的**:Gazebo 啟動慢,SLAM/Nav2 啟動晚一些避免 race
+
+### 2. launch 內展開 xacro 必須 ParameterValue 包
+
+```python
+from launch_ros.parameter_descriptions import ParameterValue
+
+robot_description = ParameterValue(
+    Command(['xacro ', xacro_file]),
+    value_type=str)              # 沒這個 launch 會把 URDF 當 YAML parse,炸
+```
+
+### 3. WSL 裡跑 demo 的最穩做法:`timeout NN ros2 launch ...`
+
+WSL2 的 systemd-user-session 會回收 setsid/nohup detach 的 process,**background tool 的 SIGKILL exit 9 也常見**。所以:
+
+```bash
+# ❌ 不可靠
+ros2 launch xxx.launch.py &
+sleep 30
+ros2 topic echo /foo
+
+# ✅ 同步跑完
+timeout 30 ros2 launch xxx.launch.py 2>&1 | grep -E '...'
+```
+
+寫教學 demo 設計**自己會 timeout 結束**的 launch:用 `TimerAction` + `ExecuteProcess` 帶超時。
+
+### 4. Docker DDS 雙雷的標準解法
+
+每個 docker-compose service 都加:
+
+```yaml
+network_mode: host                # 雷 1:DDS multicast 必需,bridge 收不到資料
+ipc: shareable                    # 雷 2:跨 container SHM transport,BestEffort 才能傳
+                                  # 第二個 service: ipc: service:<第一個>
+environment:
+  - ROS_DOMAIN_ID=99              # 跟 host 隔離
+```
+
+### 5. 多 description params 給獨立 Node(MoveIt 等)
+
+獨立 Node 用 `MoveGroupInterface` 等 API 必須**自己**帶 robot_description / semantic / kinematics:
+
+```python
+plan_demo = Node(
+    package='my_arm_moveit_demo', executable='plan_demo',
+    parameters=[robot_description, robot_description_semantic, kinematics])
+```
+
+C++ 端 Node 必設 NodeOptions:
+
+```cpp
+auto node = std::make_shared<rclcpp::Node>("plan_demo",
+  rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
+```
+
+不然讀不到 nested yaml 的 sub-key。
+
+### 6. YAML 裡 array 必須型別一致
+
+```yaml
+# ❌ rcl 噴 'Sequence should be of same type'
+process_noise_covariance: [0.05, 0, 0, ..., 0.06, ...]
+
+# ✅ 全寫 float
+process_noise_covariance: [0.05, 0.0, 0.0, ..., 0.06, ...]
+```
+
+### 7. WSL GPU 限制不要硬扛
+
+SLAM/Nav2/MoveIt OMPL 在 WSL2 沒 GPU 都會慢/不出結果。**教學策略**:
+- 結構驗證(launch 起來、lifecycle active、topic discovery 對)在 WSL 可達 → 寫進「驗證過」段
+- 真實 demo(SLAM 出地圖、Nav2 真的跑、MoveIt execute)→ 留給雲端 ROSject(有 GPU)或實機
+- README 內**老實寫**「WSL 結構驗證過,GPU demo 雲端跑」,不要假裝跑得起來
+
+### 8. 「驗證過」段落必須是**真實 log 摘要**
+
+不是「如果你照做應該會看到」,而是 copy/paste 自 timeout 命令的實際輸出:
+
+```
+[plan_demo] connected to group 'arm'
+[named pose 'ready']           ✅ plan OK | points= 73 | duration=7.167s
+[joint values target]          ✅ plan OK | points= 60 | duration=5.834s
+```
+
+### 9. Capstone 章節要**整合 + 加值**,不要只是 include 別的 phase
+
+Capstone A 不只 include 前面的 launch,還寫了 `auto_navigator.cpp`(Action client + initialpose pub + 三 waypoint sequence)— 這個是這章獨有的價值。
+Capstone Final 加值是 Multi-stage Dockerfile + .dockerignore 設計,把 sibling phase 串成可交付 image。
+
+### 10. 雷區條目必須是**真實踩到的**,不是預想的
+
+每個雷:
+- 開頭寫**症狀**(error message 原文,讀者可 grep)
+- 寫**原因**(為什麼會這樣)
+- 寫**解**(具體 code/yaml 改動)
+
+不要寫「可能會有以下問題」這種預測式雷區。Phase 24/Phase 21A/Phase 22A 等章雷區條目都是當下 build/run 踩到、然後修好的,所以特別有價值。
+
+---
+
 ## 🔄 修改既有章節時
 
 - **不要重寫**，用 Edit 工具做最小變更

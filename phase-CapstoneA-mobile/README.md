@@ -287,7 +287,7 @@ gzserver: bind: Address already in use
 ## 🔗 下一步
 
 - **Capstone Final** — 把這個 Capstone 用 Docker 化,push 到 GHCR,做完整生產化展示
-- **[Phase 27 部署實機]** — 把這個 launch 部署到 Pi/Jetson + 實體 turtlebot3,看現實世界跑
+- **Phase 27 部署實機**(待完成) — 把這個 launch 部署到 Pi/Jetson + 實體 turtlebot3,看現實世界跑
 - **回頭** — Track B(MoveIt)為機械手臂做類似的 Capstone B
 
 ---
