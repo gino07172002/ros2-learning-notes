@@ -1,0 +1,79 @@
+# ekf.yaml — robot_localization 的 EKF 設定
+#
+# 概念:
+#   EKF 用「狀態向量」追蹤機器人位姿。我們選 2D 模式
+#   (two_d_mode: true)讓 z / roll / pitch 鎖死,只融合 x / y / yaw
+#   跟它們的速度與加速度。
+#
+# 兩個 sensor:
+#   odom0 = /wheel/odometry (nav_msgs/Odometry)
+#   imu0  = /imu/data       (sensor_msgs/Imu)
+#
+# 每個 sensor 用一個 15 元素的 boolean 矩陣告訴 EKF:
+#   [x, y, z, roll, pitch, yaw,
+#    vx, vy, vz, vroll, vpitch, vyaw,
+#    ax, ay, az]
+#   true = 「請吃這個 sensor 的這個 state」
+#
+# 重點選擇:
+#   wheel  → 只吃 vx(線速度)。位姿 / yaw 都不吃,因為它有系統性偏差
+#   imu    → 吃 vyaw(IMU 角速度沒系統性偏差,只有 noise)
+#   兩個 sensor 都不吃 absolute pose,EKF 自己積分它們提供的速度
+#
+# 結果:輸出 /odometry/filtered 比單一 sensor 更接近真值
+
+ekf_filter_node:
+  ros__parameters:
+    frequency: 30.0                  # EKF 內部 30 Hz 跑一次 predict / update
+    sensor_timeout: 0.1
+    two_d_mode: true                 # 輪式車不會飛,鎖死 z / roll / pitch
+
+    publish_tf: true                 # 由 EKF 發 odom→base_link TF
+                                     # (記得關掉 wheel_odom 的 TF,不然兩個來源衝突)
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom                # 不接 GPS,world_frame=odom
+
+    # ─── sensor 1: wheel odometry ───
+    odom0: /wheel/odometry
+    odom0_config: [false, false, false,    # x, y, z       — 不吃 wheel 的位置
+                   false, false, false,    # roll, pitch, yaw — 不吃 wheel 的姿態
+                   true,  false, false,    # vx, vy, vz    — ✅ 只吃線速度
+                   false, false, false,    # vroll, vpitch, vyaw
+                   false, false, false]    # ax, ay, az
+    odom0_differential: false
+    odom0_relative: false
+    odom0_queue_size: 5
+
+    # ─── sensor 2: IMU ───
+    imu0: /imu/data
+    imu0_config: [false, false, false,     # x, y, z
+                  false, false, false,     # roll, pitch, yaw
+                  false, false, false,     # vx, vy, vz
+                  false, false, true,      # vroll, vpitch, vyaw — ✅ 只吃 IMU yaw rate
+                  false, false, false]     # ax, ay, az          — IMU 加速度暫時不吃
+    imu0_differential: false
+    imu0_relative: false
+    imu0_queue_size: 10
+    imu0_remove_gravitational_acceleration: false
+
+    # process noise covariance(對角,15x15):EKF 自己內部不確定性
+    # ⚠️ 注意:rcl YAML parser 要求 sequence 內所有 element 同類型
+    # 全部寫成 float(加 .0)否則會噴 "Sequence should be of same type"
+    process_noise_covariance: [
+      0.05, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.05, 0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.06, 0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.03, 0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.03, 0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.06, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.025, 0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.025, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.04, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.01, 0.0,  0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.01, 0.0,  0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.02, 0.0,  0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,
+      0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.015]
