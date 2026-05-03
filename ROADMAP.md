@@ -66,7 +66,7 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 | 10 | Launch Files 基礎（Python launch script） | 3 hr | ☁️💻 | ✅ |
 | 11 | Launch Files 進階（IncludeLaunchDescription / event_handlers / 條件啟動 / namespace） | 3 hr | ☁️💻 | ✅ |
 | 12 | 單元測試與 launch 整合測試（gtest + launch_testing） | 4 hr | ☁️💻 | ⬜ |
-| 13 | Actions（長時間任務 + Feedback + Cancel） | 3 hr | ☁️💻 | ⬜ |
+| 13 | Actions（長時間任務 + Feedback + Cancel） | 3 hr | ☁️💻 | ✅ |
 | **🎯 Capstone 1** | **整合：自訂 Action + Lifecycle + Launch + 單元測試**（GitHub-ready） | 1 day | ☁️💻 | ⬜ |
 
 > **Phase 09 合併 Composition**：原本只計畫 Executors+Lifecycle，補上業界常用的 `rclcpp_components`（多 Node 同 process），這是 Nav2/MoveIt 都用的優化。

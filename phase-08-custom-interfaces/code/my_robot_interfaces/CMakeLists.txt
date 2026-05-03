@@ -16,6 +16,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/BrakeStatus.msg"
   "srv/SetBrakeMode.srv"
   "action/Approach.action"
+  "action/Countdown.action"
   DEPENDENCIES std_msgs
   # ↑ 如果 .msg 內有引用其他套件的型別（這裡用了 std_msgs/Header），
   # 必須在這裡再宣告一次。漏寫會在 build 時報錯：

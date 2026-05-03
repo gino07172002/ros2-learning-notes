@@ -37,7 +37,7 @@
 | [10](phase-10-launch-files-basics/) | Launch Files 基礎 ✨ | 4 個漸進範例：最小、remap+param、YAML、CLI args | — |
 | [11](phase-11-launch-files-advanced/) | Launch Files 進階 ✨ | IncludeLaunchDescription、event_handler、條件啟動、namespace 多機器人 | — |
 | 12 | 測試（gtest + launch_testing） | （待完成） | — |
-| 13 | Actions | （待完成） | — |
+| [13](phase-13-actions-advanced/) | Actions 進階 ✨ | reject/abort/cancel 全套處理、SIGINT 觸發 cancel、Countdown demo | — |
 | 🎯 Capstone 1 | 整合 Action + Lifecycle + Launch + 測試（GitHub-ready） | （待完成） | — |
 
 > 🐍 欄位：✅ 有 rclpy 對照版（資料夾內 `python/`） ｜ — 純觀念或暫無對照

@@ -1,0 +1,20 @@
+# Countdown.action
+# 從 N 倒數到 0 的長任務 — Phase 13 用，示範 cancel / abort / 多 goal
+#
+# Goal: 起始數字
+# Result: 是否成功 + 實際倒數到的數字
+# Feedback: 目前還剩多少
+
+# === Goal ===
+int32 start_number     # 開始數字（例如 10 = 倒數 10 秒）
+
+---
+
+# === Result ===
+bool success
+int32 reached          # 實際結束時的數字（取消時 != 0）
+
+---
+
+# === Feedback ===
+int32 current_number   # 目前的數字
