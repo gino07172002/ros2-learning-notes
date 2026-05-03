@@ -1,0 +1,44 @@
+# slam_async.yaml — slam_toolbox online_async 模式設定
+# 來自 mapper_params_online_async.yaml,簡化 + 加註解
+#
+# online_async = 「持續吃 /scan + /odom,即時更新 /map」的模式
+# 跟 online_sync 差別:async 不等掃描處理完就接下一筆,適合即時性高的應用
+# 跟 offline 差別:offline 從 bag 重播,async 是 live
+
+slam_toolbox:
+  ros__parameters:
+
+    # ─── 必須設 use_sim_time,否則跟 Gazebo 時間不同步 ───
+    use_sim_time: true
+
+    # ─── 訂閱哪個 topic、TF frame ───
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_footprint        # turtlebot3 用 base_footprint 而非 base_link
+    scan_topic: /scan
+    use_map_saver: true
+
+    # ─── solver:slam_toolbox 內建幾種 graph optimizer ───
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+
+    # ─── async 模式:多執行緒 ───
+    mode: mapping                     # 跟 localization 對比;mapping 模式才會建圖
+    map_update_interval: 5.0          # 每 5 秒更新 occupancy grid
+
+    # ─── scan matcher 設定 ───
+    transform_publish_period: 0.02    # 50 Hz 發 map→odom
+    map_publish_period: 1.0           # 1 Hz 發 /map
+    resolution: 0.05                  # 5cm 一格
+    max_laser_range: 20.0
+    minimum_time_interval: 2.0        # 兩次 scan 至少間隔(WSL 慢,放長避免 queue full)
+    transform_timeout: 1.0           # 拉長等 TF cache 填好(WSL 慢)
+    tf_buffer_duration: 60.0         # 60s buffer,sim time 跳動可承受
+    stack_size_to_use: 40000000
+
+    # ─── loop closure ───
+    enable_interactive_mode: false
