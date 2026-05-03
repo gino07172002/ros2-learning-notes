@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>my_cpp_pkg</name>
+  <version>0.0.1</version>
+  <description>Phase 11: Launch File advanced — include, event_handler, conditional, namespace.</description>
+  <maintainer email="gino.tsai@goodlinker.io">gino</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>ros2launch</exec_depend>
+  <exec_depend>turtlesim</exec_depend>
+  <exec_depend>rqt_graph</exec_depend>
+  <exec_depend>phase08_pkg</exec_depend>
+  <exec_depend>phase10_pkg</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
