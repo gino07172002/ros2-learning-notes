@@ -1,0 +1,56 @@
+# docker-compose.yml — 一鍵跑 Capstone 1 的兩個 container
+#
+# 啟動兩個 service:
+#   controller  — Phase 14 ApproachController (LifecycleNode + Action server)
+#   lidar       — fake_lidar.py 持續發 PointCloud2,讓 controller 有資料吃
+#
+# 兩個 container 用 ROS_DOMAIN_ID 同步,走 host network 確保 DDS multicast 可達
+#
+# ⚠️ 為什麼用 network_mode: host 而不是 bridge:
+#   DDS (FastRTPS / CycloneDDS) 預設用 UDP multicast 做 discovery
+#   Docker 預設 bridge network 雖然會看到 topic 名稱(slow path 會走 unicast),
+#   但實際 data plane 在許多 host kernel + Docker 版本組合下會丟封包
+#   (你會看到 ros2 topic list 有東西、ros2 topic echo 等不到資料)
+#   最簡解:用 host network,跟 host 共用 network namespace,multicast 暢通
+#   缺點:container 之間沒 isolation,不能跑兩個監聽同 port 的 service
+#   進階解:Phase 20 會教用 FastDDS Discovery Server 打通跨機/跨 bridge
+#
+# 用法:
+#   cd d:/ros_learn/ros2-learning-notes
+#   docker compose -f phase-24-docker/code/docker-capstone/docker-compose.yml up --build
+#
+# 停止:Ctrl-C 或 docker compose ... down
+
+services:
+
+  controller:
+    build:
+      # context 設成 repo root,讓 Dockerfile 能 COPY sibling phase
+      context: ../../..
+      dockerfile: phase-24-docker/code/docker-capstone/Dockerfile
+    image: capstone1:latest
+    container_name: capstone-controller
+    network_mode: host
+    ipc: shareable                      # 讓 lidar 能 attach 到同個 IPC namespace
+    environment:
+      - ROS_DOMAIN_ID=42                # 跟 host 預設(0)隔離
+      - RCUTILS_COLORIZED_OUTPUT=1
+    # 預設 CMD 已經是 ros2 launch phase14_capstone capstone.launch.py
+    stdin_open: true
+    tty: true
+
+  lidar:
+    image: capstone1:latest             # 重用同一個 image
+    container_name: capstone-lidar
+    network_mode: host
+    ipc: service:controller             # 共用 controller 的 IPC namespace,SHM 才打得通
+    depends_on:
+      - controller
+    environment:
+      - ROS_DOMAIN_ID=42                # 必須跟 controller 一致才能互通
+    # 距離 0.4m → 觸發 controller 的「太近」邏輯
+    volumes:
+      - ./scripts:/scripts:ro
+    command: python3 /scripts/fake_lidar.py 0.4
+    stdin_open: true
+    tty: true

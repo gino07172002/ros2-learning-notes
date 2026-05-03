@@ -1,0 +1,18 @@
+# Dockerfile 的 build context 是 repo root,但我們只需要兩個 phase
+# 把其他東西排除,加快 build(context 越小傳給 daemon 越快)
+
+# 全部排除,然後白名單 unignore 需要的
+*
+
+# 解開:Phase 08 的 interfaces + Phase 14 的 capstone code + Phase 24 自己
+!phase-08-custom-interfaces/code/my_robot_interfaces/**
+!phase-14-capstone-1/code/my_cpp_pkg/**
+!phase-24-docker/code/docker-capstone/**
+
+# 排除任何 build 殘留(WSL build 過會留下這些)
+**/build/
+**/install/
+**/log/
+**/__pycache__/
+**/*.pyc
+.git/

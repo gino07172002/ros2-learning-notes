@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Cyclone DDS config — 關閉 SHM,強制走 UDPv4 loopback
+
+  為什麼:
+    Docker 多 container 共用 host network 時,PID/IPC namespace 仍是隔離的,
+    SHM(shared memory transport)在不同 container 之間打不通。
+    Best-Effort topics(如 SensorDataQoS)若 fall back 到 loopback 時遇到
+    interface 選擇問題會直接丟封包。
+
+  解法:強制只用 UDPv4 loopback,關掉 SHM。
+-->
+<CycloneDDS xmlns="https://cdds.io/config"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="https://cdds.io/config
+                                https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd">
+  <Domain Id="any">
+    <General>
+      <NetworkInterfaceAddress>lo</NetworkInterfaceAddress>
+      <AllowMulticast>true</AllowMulticast>
+    </General>
+    <SharedMemory>
+      <Enable>false</Enable>
+    </SharedMemory>
+  </Domain>
+</CycloneDDS>
