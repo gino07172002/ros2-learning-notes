@@ -1,0 +1,66 @@
+# discovery-server demo — 用 FastDDS Discovery Server 取代 multicast
+#
+# 為什麼:
+#   ROS 2 預設用 UDP multicast 做節點發現
+#   但企業網路 / 雲端 VPC / Docker bridge / WiFi (mDNS 被擋) 場景常見
+#   把 multicast 擋掉,結果是節點起來了卻看不到彼此
+#
+#   解法:Discovery Server——一個中央 broker(類似 MQTT broker)
+#   所有 client 註冊到 server,server 替它們轉發 discovery metadata
+#   實際 data plane 還是 client 之間 P2P UDP unicast
+#
+# 故意用 bridge network(不是 host),證明:
+#   bridge + multicast = ❌(沒 server 時 talker 跟 listener 看不到彼此)
+#   bridge + Discovery Server = ✅(透過 server 完成 discovery)
+#
+# 用法:
+#   先 build image:
+#     docker compose -f phase-20-multi-machine/code/domain-id-demo/docker-compose.yml build
+#   再起 discovery server demo:
+#     docker compose -f phase-20-multi-machine/code/discovery-server/docker-compose.yml up -d
+#   看 logs 驗證:
+#     docker logs -f p20-listener
+
+services:
+
+  # 中央 broker:其他 client 都註冊到這裡
+  discovery:
+    image: phase20:latest
+    container_name: p20-discovery
+    network_mode: host                  # 走 host network,client 可以用 127.0.0.1 連
+    # 關鍵:fastdds discovery 工具,server-id 0,監聽 11811
+    command: fastdds discovery -i 0 -l 127.0.0.1 -p 11811
+    stdin_open: true
+    tty: true
+
+  talker:
+    image: phase20:latest
+    container_name: p20-talker
+    network_mode: host
+    ipc: shareable
+    depends_on:
+      - discovery
+    environment:
+      - ROS_DOMAIN_ID=42
+      # 關鍵:告訴 client「不要 multicast,去問這個 server」
+      - ROS_DISCOVERY_SERVER=127.0.0.1:11811
+      # 必須是 fastrtps 才有 discovery server 支援
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    command: ros2 run demo_nodes_cpp talker
+    stdin_open: true
+    tty: true
+
+  listener:
+    image: phase20:latest
+    container_name: p20-listener
+    network_mode: host
+    ipc: service:talker
+    depends_on:
+      - discovery
+    environment:
+      - ROS_DOMAIN_ID=42
+      - ROS_DISCOVERY_SERVER=127.0.0.1:11811
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    command: ros2 run demo_nodes_cpp listener
+    stdin_open: true
+    tty: true

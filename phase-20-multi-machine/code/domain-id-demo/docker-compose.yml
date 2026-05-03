@@ -1,0 +1,56 @@
+# domain-id-demo — 用 docker 模擬「兩台機器」、設不同 ROS_DOMAIN_ID 看隔離效果
+#
+# 直接重用 Phase 24 build 出來的 capstone1:latest image
+# (省得再 build 一次,且這個 image 已經有完整 ROS 環境)
+#
+# 必須先做過 Phase 24:
+#   docker compose -f phase-24-docker/code/docker-capstone/docker-compose.yml build
+#
+# 用法:
+#   docker compose -f phase-20-multi-machine/code/domain-id-demo/docker-compose.yml up -d
+#   # 看 listener_d11 收 talker_d11 的訊息(同 domain)
+#   docker logs -f p20-listener-d11
+#   # 看 listener_d99 等不到任何訊息(domain 隔離)
+#   docker logs p20-listener-d99
+
+services:
+
+  talker-d11:
+    build:
+      context: ..                     # phase-20-multi-machine/code/
+      dockerfile: Dockerfile
+    image: phase20:latest             # 三個 service 共用同一個 image
+    container_name: p20-talker-d11
+    network_mode: host
+    ipc: shareable
+    environment:
+      - ROS_DOMAIN_ID=11
+    command: ros2 run demo_nodes_cpp talker
+    stdin_open: true
+    tty: true
+
+  listener-d11:
+    image: phase20:latest
+    container_name: p20-listener-d11
+    network_mode: host
+    ipc: service:talker-d11           # 共用 IPC 才能 SHM 互通
+    depends_on:
+      - talker-d11
+    environment:
+      - ROS_DOMAIN_ID=11              # ✅ 同 domain → 收得到
+    command: ros2 run demo_nodes_cpp listener
+    stdin_open: true
+    tty: true
+
+  listener-d99:
+    image: phase20:latest
+    container_name: p20-listener-d99
+    network_mode: host
+    ipc: service:talker-d11           # 共用 IPC,排除「IPC 不通」干擾因素
+    depends_on:
+      - talker-d11
+    environment:
+      - ROS_DOMAIN_ID=99              # ❌ 不同 domain → 完全收不到
+    command: ros2 run demo_nodes_cpp listener
+    stdin_open: true
+    tty: true
