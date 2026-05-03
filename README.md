@@ -33,7 +33,7 @@
 | Phase | 主題 | 學到什麼 | 🐍 Py |
 |-------|------|----------|------|
 | [08](phase-08-custom-interfaces/) | **Custom Interfaces**（自訂訊息）✨ | 定義 .msg / .srv / .action、interface 套件分離、rosidl 生成 C++ class、smart_brake_v2 + Action client | — |
-| 09 | Executors / Lifecycle / Composition | （待完成） | — |
+| [09](phase-09-executors-lifecycle-composition/) | Executors / Lifecycle / Composition ✨ | Single vs Multi Executor、CallbackGroup、Lifecycle 五狀態、rclcpp_components | — |
 | [10](phase-10-launch-files-basics/) | Launch Files 基礎 ✨ | 4 個漸進範例：最小、remap+param、YAML、CLI args | — |
 | [11](phase-11-launch-files-advanced/) | Launch Files 進階 ✨ | IncludeLaunchDescription、event_handler、條件啟動、namespace 多機器人 | — |
 | 12 | 測試（gtest + launch_testing） | （待完成） | — |
