@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<!--
+  arm.urdf.xacro — 6-DOF 機械手臂主檔
+  靈感來自 UR5 / Franka 但簡化:6 個 revolute joints,軸交替 z/y/y/z/y/z
+  (典型 6R serial manipulator,可達 dexterous workspace)
+
+  TF 樹:
+    world ──fixed── base_link
+                       │
+                       └─link_1 ──j1── link_2 ──j2── ... link_6 ──j6── tool0
+
+  展開:
+    xacro arm.urdf.xacro > arm.urdf
+    check_urdf arm.urdf
+-->
+<robot name="my_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find my_arm_description)/urdf/arm.macro.xacro"/>
+
+  <!-- world 是惯例的 fixed 起點(MoveIt scene 用) -->
+  <link name="world"/>
+
+  <!-- 底座(不算 DOF,fixed joint 接到 world) -->
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.1" radius="0.1"/>
+      </geometry>
+      <material name="dark_grey">
+        <color rgba="0.3 0.3 0.3 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.1" radius="0.1"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <!-- 六個 DOF:用 macro 一次寫一個 link+joint -->
+  <!--   j1: shoulder pan   (z)  -->
+  <xacro:arm_link name="link_1" parent="base_link"
+                  length="0.20" radius="0.05"
+                  axis="0 0 1" origin_xyz="0 0 0.10"
+                  lower="-3.14"  upper="3.14"/>
+
+  <!--   j2: shoulder lift  (y)  -->
+  <xacro:arm_link name="link_2" parent="link_1"
+                  length="0.30" radius="0.04"
+                  axis="0 1 0" origin_xyz="0 0 0.20"
+                  lower="-1.57"  upper="1.57"/>
+
+  <!--   j3: elbow          (y)  -->
+  <xacro:arm_link name="link_3" parent="link_2"
+                  length="0.25" radius="0.04"
+                  axis="0 1 0" origin_xyz="0 0 0.30"
+                  lower="-2.50"  upper="2.50"/>
+
+  <!--   j4: wrist roll     (z)  -->
+  <xacro:arm_link name="link_4" parent="link_3"
+                  length="0.10" radius="0.035"
+                  axis="0 0 1" origin_xyz="0 0 0.25"
+                  lower="-3.14"  upper="3.14"/>
+
+  <!--   j5: wrist pitch    (y)  -->
+  <xacro:arm_link name="link_5" parent="link_4"
+                  length="0.10" radius="0.035"
+                  axis="0 1 0" origin_xyz="0 0 0.10"
+                  lower="-1.57"  upper="1.57"/>
+
+  <!--   j6: tool roll      (z)  -->
+  <xacro:arm_link name="link_6" parent="link_5"
+                  length="0.05" radius="0.03"
+                  axis="0 0 1" origin_xyz="0 0 0.10"
+                  lower="-3.14"  upper="3.14"/>
+
+  <!-- tool0:習慣命名,工具(夾爪/吸盤)裝這裡 -->
+  <joint name="link_6_to_tool0" type="fixed">
+    <parent link="link_6"/>
+    <child link="tool0"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
+  <link name="tool0"/>
+
+</robot>

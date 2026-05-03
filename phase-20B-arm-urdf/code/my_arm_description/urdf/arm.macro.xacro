@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!--
+  arm.macro.xacro — 一支 link + 一個 joint 的 xacro 巨集
+  把「圓柱 link + 上連 joint」這組 6 次幾乎一樣的東西抽成 macro
+  避免 600 行的 URDF 變成 200 行 + 重用
+
+  參數:
+    name        — link 跟 joint 的命名前綴(例:link_1)
+    parent      — 上一個 link 名(joint 的 parent)
+    length      — 圓柱長度
+    radius      — 圓柱半徑
+    axis        — joint 旋轉軸 "0 0 1" 或 "0 1 0"
+    origin_xyz  — joint 在 parent 上的 offset
+    lower/upper — joint 角度限制(rad)
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="arm_link"
+               params="name parent length radius axis origin_xyz lower upper">
+
+    <!-- joint:把這個 link 接到 parent -->
+    <joint name="${name}_joint" type="revolute">
+      <parent link="${parent}"/>
+      <child link="${name}"/>
+      <origin xyz="${origin_xyz}" rpy="0 0 0"/>
+      <axis xyz="${axis}"/>
+      <limit lower="${lower}" upper="${upper}" effort="100" velocity="1.5"/>
+      <dynamics damping="0.1" friction="0.1"/>
+    </joint>
+
+    <!-- link:圓柱形 visual + collision + 慣量(MoveIt / Gazebo 都需要) -->
+    <link name="${name}">
+      <visual>
+        <origin xyz="0 0 ${length/2}" rpy="0 0 0"/>
+        <geometry>
+          <cylinder length="${length}" radius="${radius}"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.6 0.6 0.6 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 ${length/2}" rpy="0 0 0"/>
+        <geometry>
+          <cylinder length="${length}" radius="${radius}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 ${length/2}" rpy="0 0 0"/>
+        <mass value="1.0"/>
+        <inertia
+          ixx="${(1/12) * 1.0 * (3*radius*radius + length*length)}" ixy="0" ixz="0"
+          iyy="${(1/12) * 1.0 * (3*radius*radius + length*length)}" iyz="0"
+          izz="${(1/2)  * 1.0 * radius*radius}"/>
+      </inertial>
+    </link>
+
+  </xacro:macro>
+
+</robot>

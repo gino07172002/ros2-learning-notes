@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!--
+  arm.srdf — Semantic Robot Description Format
+  MoveIt 用這個告訴 planner:
+    1. 哪些 group 是 chain(planning 對象)
+    2. 哪些 named pose(home / ready 等)
+    3. 哪些 link pair 永遠不可能撞到(省下大量 collision check)
+
+  本檔目前未啟動 MoveIt,但寫出來代表 Track B Phase 21B 之後直接可用。
+-->
+<robot name="my_arm">
+
+  <!-- 規劃群組:整支 6-DOF chain -->
+  <group name="arm">
+    <chain base_link="base_link" tip_link="tool0"/>
+  </group>
+
+  <!-- 命名姿態 -->
+  <group_state name="home" group="arm">
+    <joint name="link_1_joint" value="0"/>
+    <joint name="link_2_joint" value="0"/>
+    <joint name="link_3_joint" value="0"/>
+    <joint name="link_4_joint" value="0"/>
+    <joint name="link_5_joint" value="0"/>
+    <joint name="link_6_joint" value="0"/>
+  </group_state>
+
+  <group_state name="ready" group="arm">
+    <joint name="link_1_joint" value="0"/>
+    <joint name="link_2_joint" value="-1.0"/>
+    <joint name="link_3_joint" value="1.0"/>
+    <joint name="link_4_joint" value="0"/>
+    <joint name="link_5_joint" value="0.5"/>
+    <joint name="link_6_joint" value="0"/>
+  </group_state>
+
+  <!-- end-effector(將來裝夾爪用) -->
+  <end_effector name="tool" parent_link="tool0" group="arm"/>
+
+  <!-- Disable collisions:相鄰 link 永遠在一起,不需檢查
+       MoveIt Setup Assistant 自動產這些。實機建議用 GUI 跑一遍輸出 -->
+  <disable_collisions link1="base_link" link2="link_1" reason="Adjacent"/>
+  <disable_collisions link1="link_1"    link2="link_2" reason="Adjacent"/>
+  <disable_collisions link1="link_2"    link2="link_3" reason="Adjacent"/>
+  <disable_collisions link1="link_3"    link2="link_4" reason="Adjacent"/>
+  <disable_collisions link1="link_4"    link2="link_5" reason="Adjacent"/>
+  <disable_collisions link1="link_5"    link2="link_6" reason="Adjacent"/>
+
+</robot>
