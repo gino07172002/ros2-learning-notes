@@ -104,5 +104,9 @@ ros2 run my_cpp_pkg <executable> --ros-args -r cmd_vel:=<實際topic>
 
 ## 🤖 給未來 AI 協作者
 
-要寫新章節、改既有章節、加新語言版本前，**先看 [`AUTHORING_GUIDE.md`](AUTHORING_GUIDE.md)**。
-裡面有資料夾結構、主/Python README 模板、程式碼風格、反模式清單與檢查表。
+接手這個 repo 的 AI session 請按順序讀：
+
+1. **[`HANDOFF.md`](HANDOFF.md)** — 完整接手指引：使用者背景、進度地圖、踩過的雷、溝通眉角、WSL 工具鏈
+2. **[`AUTHORING_GUIDE.md`](AUTHORING_GUIDE.md)** — 章節寫作模板：資料夾結構、README 骨架、程式碼風格、反模式清單
+
+讀完這兩份你就能無縫接續現有節奏、不用重做已完成的工作。
