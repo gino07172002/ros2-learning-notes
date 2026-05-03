@@ -19,9 +19,7 @@
 - [`srdf/arm.srdf`](code/my_arm_description/srdf/arm.srdf) — MoveIt 用的語意描述
 - [`launch/display.launch.py`](code/my_arm_description/launch/display.launch.py) — robot_state_publisher + joint_state_publisher
 
-**環境**:☁️💻 雙環境通用(純 CLI 驗證,不需 GUI)
-
-> RViz 看實體手臂的視覺驗證需要 GUI,留待你本機跑(這章焦點是 URDF 結構正確性,GUI 之後補)
+**環境**:☁️💻 雙環境通用(CLI 驗證 + 可選 RViz GUI)
 
 ---
 
@@ -256,18 +254,53 @@ ros2 run tf2_ros tf2_echo base_link tool0
 
 `Translation [0,0,1.10]` 對應 base_link 之上 link_1+...+link_6+tool0 的高度疊加(0.20+0.30+0.25+0.10+0.10+0.05+0.05 = 1.05 + base 0.05 = 1.10),**算對了**。
 
-### Step 5:RViz 視覺驗證(等使用者本機)
+### Step 5:RViz 視覺驗證(WSL 驗證過,有截圖)
+
+#### Step 5a:啟動 launch 帶 GUI slider
 
 ```bash
-ros2 launch my_arm_description display.launch.py
-# 開另一個 terminal
-rviz2
-# Add → RobotModel → Description Source: Topic → /robot_description
-# Add → TF
-# Fixed Frame: world
+ros2 launch my_arm_description display.launch.py gui:=true
+# (gui:=true → 啟動 joint_state_publisher_gui,可拉 6 個 joint slider 即時轉動手臂)
+# (預設或 gui:=false → joint 全 0,手臂直立)
 ```
 
-預期:看到一支 6 段圓柱手臂 + 整個 TF tree。
+#### Step 5b:另開 terminal 啟動 RViz
+
+```bash
+rviz2
+```
+
+#### Step 5c:RViz 設定(2 步驟)
+
+**1. Fixed Frame** 改 `world`(預設是 `map` → 紅色 error,看雷 7)
+**2. Add → RobotModel** → 展開設 `Description Source: Topic` + `Description Topic: /robot_description`
+
+⚠️ **如果你忘了改 Fixed Frame**,看到的是這樣(空 grid + 紅色 Error):
+
+![RViz 雷:Fixed Frame=map 找不到 frame](images/rviz-empty-fixed-frame-error.png)
+
+**設好後**:看到底座 + 直立手臂(home pose,joint 全 0):
+
+![RViz 顯示手臂 home pose](images/rviz-arm-loaded-home-pose.png)
+
+#### Step 5d:互動 — 拉 slider 即時轉手臂
+
+`gui:=true` 啟動的 `Joint State Publisher GUI` 視窗有 6 個 slider(`link_1_joint` ~ `link_6_joint`)+ `Randomize` / `Center` 兩個按鈕。
+
+拉 slider → RViz 內手臂對應關節**即時轉動**:
+
+![RViz + Joint State Publisher GUI 互動拉 slider](images/rviz-arm-with-jsp-gui.png)
+
+實測畫面:
+- `link_1_joint=1.816`(肩膀繞 z 軸轉接近 90°)
+- `link_2_joint=0.636`(肩膀往前彎)
+- `link_3_joint=0.933`(手肘彎)
+- `link_4_joint=1.476`(手腕 roll)
+- `link_5_joint=-1.095`(手腕 pitch 往下)
+- 整支手臂彎成 L 形,tool0 朝外指向
+
+按 **`Randomize`** 一鍵把 6 joint random 一次,看手臂跳到隨機 pose。
+按 **`Center`** 全部歸 0,回到直立 home pose。
 
 ---
 
@@ -330,7 +363,35 @@ ixx="${(1/12) * 1.0 * (3*radius*radius + length*length)}"
 
 **解**:**用 MoveIt Setup Assistant 一次跑 sample-based 分析,自動生成 `disable_collisions` 列表**。手寫只寫 adjacent 的,Setup Assistant 會多找出「永遠不可能撞到」的非相鄰 pair(例如 link_1 跟 link_5 在你的關節限制下永遠不會接觸)。
 
-### ⚠️ 雷 6:`world` link 的存廢
+### ⚠️ 雷 6:`joint_state_publisher` 跟 `joint_state_publisher_gui` 雙發 → 手臂在 RViz 內跳動
+
+**症狀(實測)**:RViz 內手臂在「我拉 slider 的角度」跟「全 0 home pose」之間每秒切換,看起來像**抽筋**。
+
+**原因**:**兩個 source 在搶同一個 `/joint_states` topic** —
+- `joint_state_publisher`(launch 預設啟,持續發全 0)
+- `joint_state_publisher_gui`(你後來開的,發拉動的值)
+
+兩者輪流 publish,RViz subscriber 收到誰用誰 → 跳動。
+
+**解**:本章 launch 用 `gui` arg 互斥兩者:
+```bash
+ros2 launch my_arm_description display.launch.py gui:=true   # 只起 GUI 版
+ros2 launch my_arm_description display.launch.py             # 預設只起 CLI 版
+```
+
+如果你已經誤同時跑了,直接 `pkill -9 -f 'joint_state_publisher$'`(`$` 結尾只殺 non-GUI 版)。
+
+### ⚠️ 雷 7:RViz 開啟後 Fixed Frame 預設是 `map` → 紅色 Error,看不到任何東西
+
+**症狀(實測)**:打開 RViz 看到空 grid,左上 Displays 區塊有紅 ❌ `Fixed Frame: Frame [map] does not exist`。
+
+**原因**:RViz 預設 `Fixed Frame` 是 `map`,但這支手臂沒有 SLAM/Nav2 → 沒有 `/map` frame。本章手臂的 root frame 是 `world`(URDF 內定義)。
+
+**解**:Displays → Global Options → Fixed Frame → 點下拉選 **`world`**(或直接打字)。紅錯誤秒消失。
+
+> 這個雷對「會 ROS 但第一次玩 URDF」的人特別容易踩,因為大家最常從 SLAM/Nav2 教學看 RViz,習慣 Fixed Frame=map。
+
+### ⚠️ 雷 8:`world` link 的存廢
 
 **症狀**:看別人的 URDF 有的有 `world` link 有的沒有。
 
