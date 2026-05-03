@@ -1,0 +1,10 @@
+# empty_4x4.yaml — 配 empty_4x4.pgm 的 nav2_map_server 設定
+# 對應 Phase 17 的 4×4m 圍牆 world
+
+image: empty_4x4.pgm
+mode: trinary
+resolution: 0.05            # 5cm / pixel
+origin: [-2.0, -2.0, 0.0]   # PGM 左下角對應到 world 的 (-2, -2),world 中心在 (0,0)
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
