@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>my_arm_moveit_demo</name>
+  <version>0.0.1</version>
+  <description>Phase 22B: MoveIt C++ MoveGroupInterface demo (plan + execute).</description>
+  <maintainer email="gino.tsai@goodlinker.io">gino</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>moveit_ros_planning_interface</depend>
+  <depend>moveit_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <exec_depend>my_arm_moveit_config</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
