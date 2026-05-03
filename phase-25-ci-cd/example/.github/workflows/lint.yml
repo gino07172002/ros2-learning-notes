@@ -1,0 +1,37 @@
+# .github/workflows/lint.yml
+# 程式碼風格檢查 — 比 build/test 更快，PR 階段先跑這個
+
+name: ROS 2 Lint
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  ament_lint:
+    runs-on: ubuntu-22.04
+    container:
+      image: osrf/ros:humble-desktop
+
+    strategy:
+      # fail-fast: false 讓所有 linter 跑完才回報，不會某個 fail 就停
+      fail-fast: false
+      matrix:
+        linter:
+          - ament_cpplint
+          - ament_uncrustify
+          - ament_flake8
+          - ament_xmllint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ${{ matrix.linter }}
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          # 對所有 .cpp/.py/.xml 檔跑 linter
+          ${{ matrix.linter }} examples/ || true
+          # 業界 production 改成不加 || true，讓 lint fail 卡 PR

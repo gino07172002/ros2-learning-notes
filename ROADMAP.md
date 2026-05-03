@@ -132,7 +132,7 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 | Phase | 主題 | 預計時長 | 環境 | 狀態 |
 |-------|------|---------|------|------|
 | 24 | Docker + Dev Container（含 ROS 2 image 最佳實踐） | 2 day | 💻 | ⬜ |
-| 25 | CI/CD（GitHub Actions 跑 colcon test、image build） | 1 day | 💻 | ⬜ |
+| 25 | CI/CD（GitHub Actions 跑 colcon test、image build） | 1 day | 💻 | ✅ |
 | 26 | DDS QoS 調校（Reliability、Durability、Deadline） | 2 day | 💻 | ✅ |
 | 27 | 部署到實機（Raspberry Pi / Jetson / 工控機） | 2–3 day | 💻 | ⬜ |
 | **🎯 Capstone Final** | **把 Capstone A 或 B 完整 docker 化，CI 跑測試，一鍵 `docker compose up` 重現** | 2 day | 💻 | ⬜ |

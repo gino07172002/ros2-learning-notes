@@ -1,0 +1,52 @@
+# .github/workflows/docker.yml
+# 建 Docker image 推到 GHCR (GitHub Container Registry)
+#
+# 業界用途：
+#   - merge 到 main → 自動 build image → 推 registry → 部署到實機
+#   - 每個 PR 也 build 一次測試 image 沒壞
+
+name: Docker Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']    # 例如 v1.0.0
+  pull_request:
+    branches: [main]
+
+jobs:
+  build_image:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write    # 推 GHCR 需要
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'    # PR 不推
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 業界用 metadata-action 自動產生 tag
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/my-robot
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

@@ -1,0 +1,76 @@
+# .github/workflows/ci.yml
+# GitHub Actions CI: 每次 push 或 PR 觸發
+#   1. 用 osrf/ros:humble image 建容器
+#   2. 把 phase12_pkg 複製到工作區
+#   3. colcon build + colcon test
+#   4. 失敗就 fail 整個 PR
+#
+# 業界 Nav2 / MoveIt / 任何認真的 ROS 套件都有這個
+
+name: ROS 2 CI
+
+# 觸發條件
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-22.04
+
+    # 在官方 ROS 2 Humble image 內跑
+    container:
+      image: osrf/ros:humble-desktop
+
+    steps:
+      # 1. checkout 程式碼
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 把要測的套件搬到 ROS workspace
+      - name: Setup workspace
+        shell: bash
+        run: |
+          mkdir -p /tmp/ros2_ws/src
+          # 假設要測的套件在 examples/phase12_pkg
+          cp -r examples/phase12_pkg /tmp/ros2_ws/src/
+          ls /tmp/ros2_ws/src/
+
+      # 3. 安裝相依套件（用 rosdep 自動處理 package.xml 內的 depend）
+      - name: Install dependencies
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          cd /tmp/ros2_ws
+          apt-get update
+          rosdep update
+          rosdep install --from-paths src --ignore-src -y --rosdistro humble
+
+      # 4. 編譯
+      - name: Build
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          cd /tmp/ros2_ws
+          colcon build --event-handlers console_cohesion+
+
+      # 5. 跑測試
+      - name: Test
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          cd /tmp/ros2_ws
+          colcon test --event-handlers console_cohesion+
+          # 注意：colcon test 即使有失敗也回傳 0
+          # 必須用 colcon test-result 才會以非零代碼 fail
+          colcon test-result --verbose
+
+      # 6. 上傳測試報告當 artifact（PR 失敗時可下載分析）
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: /tmp/ros2_ws/build/*/test_results/
