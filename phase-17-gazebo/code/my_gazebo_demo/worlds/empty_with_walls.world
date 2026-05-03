@@ -1,0 +1,74 @@
+<?xml version="1.0" ?>
+<!--
+  empty_with_walls.world
+  最簡 Gazebo world:平面地板 + 太陽 + 四面牆形成 4m × 4m 圍場
+  讓 turtlebot3 跑進去,光達會看到牆,適合 SLAM/Nav2 後續章節用
+-->
+<sdf version="1.6">
+  <world name="default">
+
+    <!-- 把 sim time 跑到 30% 真實時間,WSL 沒 GPU 才不會被 ros 2 callback 追不上 -->
+    <physics name="default_physics" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>0.3</real_time_factor>
+      <real_time_update_rate>300</real_time_update_rate>
+    </physics>
+
+    <include><uri>model://sun</uri></include>
+    <include><uri>model://ground_plane</uri></include>
+
+    <!-- 四面牆,4m × 4m 圍場(中心在 (0,0)) -->
+    <model name="wall_north">
+      <static>true</static>
+      <pose>0 2 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c">
+          <geometry><box><size>4 0.1 0.5</size></box></geometry>
+        </collision>
+        <visual name="v">
+          <geometry><box><size>4 0.1 0.5</size></box></geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_south">
+      <static>true</static>
+      <pose>0 -2 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c">
+          <geometry><box><size>4 0.1 0.5</size></box></geometry>
+        </collision>
+        <visual name="v">
+          <geometry><box><size>4 0.1 0.5</size></box></geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_east">
+      <static>true</static>
+      <pose>2 0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c">
+          <geometry><box><size>0.1 4 0.5</size></box></geometry>
+        </collision>
+        <visual name="v">
+          <geometry><box><size>0.1 4 0.5</size></box></geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_west">
+      <static>true</static>
+      <pose>-2 0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c">
+          <geometry><box><size>0.1 4 0.5</size></box></geometry>
+        </collision>
+        <visual name="v">
+          <geometry><box><size>0.1 4 0.5</size></box></geometry>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>
