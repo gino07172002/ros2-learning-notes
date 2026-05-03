@@ -48,7 +48,7 @@
 | [15](phase-15-urdf/) | URDF + robot_state_publisher ✨ | xacro 巨集、joint 類型、TF tree 自動生成、tf2_echo CLI 驗證 | — |
 | [16](phase-16-tf2/) | TF2 進階 ✨ | static/dynamic broadcaster、Listener + Buffer、lookupTransform、業界口訣 | — |
 | 17 | Gazebo 整合 | （待完成） | — |
-| 18 | ros2_control | （待完成） | — |
+| [18](phase-18-ros2-control/) | ros2_control ✨ | URDF 內 hardware 宣告、controller_manager + mock_components、command/state 流動 | — |
 | [19](phase-19-pluginlib/) | pluginlib ✨ | runtime 載入 C++ class、三套件分離（base/plugins/demo）、Nav2 擴充基礎 | — |
 | 20 | 多機通訊 | （待完成） | — |
 

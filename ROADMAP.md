@@ -83,7 +83,7 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 | 15 | URDF + robot_state_publisher | 1 day | ☁️💻 | ✅ |
 | 16 | TF2 座標轉換樹（含時間戳處理、buffer/listener） | 1 day | ☁️💻 | ✅ |
 | 17 | Gazebo 整合（spawn URDF, gazebo_ros plugins） | 1 day | 💻 | ⬜ |
-| 18 | ros2_control（硬體抽象層 + controller manager） | 2 day | 💻 | ⬜ |
+| 18 | ros2_control（硬體抽象層 + controller manager） | 2 day | 💻 | ✅ |
 | 19 | **pluginlib**（自訂 controller / planner / BT node） | 1 day | ☁️💻 | ✅ |
 | 20 | **多機通訊**（ROS_DOMAIN_ID, FastDDS Discovery Server） | 1 day | 💻 | ⬜ |
 

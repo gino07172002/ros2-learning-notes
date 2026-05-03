@@ -1,0 +1,31 @@
+# controllers.yaml
+# 告訴 controller_manager 要載入哪些 controller
+#
+# 注意 YAML 結構：
+#   controller_manager:        ← Node 名稱（本身就是個 ROS Node）
+#     ros__parameters:
+#       update_rate: 100       ← 控制循環頻率 100Hz
+#       <controller_name>:     ← 每個 controller 的設定
+#         type: <class>        ← 哪個 controller plugin
+
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    # === Joint State Broadcaster ===
+    # 把所有 joint 的 state 發到 /joint_states topic
+    # 業界 99% 的系統都會載這個
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    # === 簡單的速度 controller（驅動兩個輪子） ===
+    velocity_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
+# === 個別 controller 的細部參數 ===
+velocity_controller:
+  ros__parameters:
+    joints:
+      - left_wheel_joint
+      - right_wheel_joint
+    interface_name: velocity

@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!--
+  robot_with_control.urdf.xacro
+  在 Phase 15 的 diffbot 基礎上，加 <ros2_control> 區塊
+  讓 ros2_control 能找到關節介面
+
+  ros2_control 透過 hardware interface 讀寫 joint：
+    - command_interface: 主程式 → 硬體（例如送目標速度給馬達）
+    - state_interface:   硬體 → 主程式（例如讀回 encoder 位置）
+
+  本範例用 mock_components/GenericSystem — 假裝有硬體，
+  收到 command 後自己當作真的執行了，state 直接回報「跟 command 一樣」。
+  完美的學習用 hardware（不需 Gazebo、不需真機）。
+-->
+<robot name="diffbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ===== 簡化版 URDF（少一些 visual 細節） ===== -->
+  <link name="base_link">
+    <visual>
+      <geometry><box size="0.4 0.3 0.2" /></geometry>
+    </visual>
+  </link>
+
+  <link name="left_wheel">
+    <visual>
+      <geometry><cylinder radius="0.05" length="0.04" /></geometry>
+    </visual>
+  </link>
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="left_wheel" />
+    <origin xyz="0 0.17 0" rpy="-1.5708 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <link name="right_wheel">
+    <visual>
+      <geometry><cylinder radius="0.05" length="0.04" /></geometry>
+    </visual>
+  </link>
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="right_wheel" />
+    <origin xyz="0 -0.17 0" rpy="-1.5708 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <!--
+    ===== ros2_control 區塊 =====
+    告訴 ros2_control: 這台車有什麼硬體、每個 joint 提供什麼介面
+  -->
+  <ros2_control name="GenericSystem" type="system">
+    <hardware>
+      <!-- mock_components 假裝有硬體；真實會換成 your_driver/YourHardware -->
+      <plugin>mock_components/GenericSystem</plugin>
+    </hardware>
+
+    <joint name="left_wheel_joint">
+      <command_interface name="velocity">
+        <param name="min">-10</param>
+        <param name="max">10</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+
+    <joint name="right_wheel_joint">
+      <command_interface name="velocity">
+        <param name="min">-10</param>
+        <param name="max">10</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+  </ros2_control>
+
+</robot>
