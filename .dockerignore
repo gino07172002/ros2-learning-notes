@@ -1,0 +1,39 @@
+# Repo-root .dockerignore — 給 phase-Capstone-Final 與 phase-24-docker 共用
+#
+# Docker build context = repo root (workflow 內 `context: .`),
+# 所以 .dockerignore 必須放在 repo root 才會生效。
+#
+# 策略:白名單模式 — 預設拒絕,只放行 image 真的需要的 phase。
+# 沒這份檔的話會把整個 repo(含 .git、_archive、images、所有 phase build/install)
+# 全 send 進 Docker daemon,CI 慢、可能爆磁碟。
+
+# 先全部排除
+*
+
+# === Capstone Final image 需要的 phase ===
+!phase-17-gazebo/code/my_gazebo_demo/**
+!phase-21A-slam-toolbox/code/my_slam_demo/**
+!phase-22A-nav2-basics/code/my_nav2_demo/**
+!phase-23A-nav2-bt-plugin/code/my_bt_plugin/**
+!phase-CapstoneA-mobile/code/capstone_a/**
+!phase-Capstone-Final/code/docker-capstone-a/**
+
+# === Phase 24 (Capstone 1 docker) image 需要的 phase ===
+!phase-08-custom-interfaces/code/**
+!phase-13-actions-advanced/code/**
+!phase-14-capstone-1/code/**
+!phase-24-docker/code/**
+
+# === 全域排除(即使在白名單路徑下也排除)===
+**/build/
+**/install/
+**/log/
+**/__pycache__/
+**/*.pyc
+**/.colcon/
+**/.git/
+.git/
+.github/
+_archive/
+**/images/
+**/*.md

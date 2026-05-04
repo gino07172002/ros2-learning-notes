@@ -41,16 +41,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /ws
 
 # 複製所有依賴 phase 的 code
+# 注意:capstone_a/package.xml 內 <exec_depend>my_slam_demo</exec_depend>,
+# 即使 capstone_a.launch.py 沒實際 include,colcon dependency check 仍要找到該 package
+# 不帶它 → CI 在乾淨環境會 build 失敗(本機因 sibling phase 已 install 才能過)
 COPY phase-17-gazebo/code/my_gazebo_demo                    src/my_gazebo_demo
+COPY phase-21A-slam-toolbox/code/my_slam_demo               src/my_slam_demo
 COPY phase-22A-nav2-basics/code/my_nav2_demo                src/my_nav2_demo
 COPY phase-23A-nav2-bt-plugin/code/my_bt_plugin             src/my_bt_plugin
 COPY phase-CapstoneA-mobile/code/capstone_a                 src/capstone_a
 
 # colcon build 全部
+# --event-handlers console_direct+ 讓 stderr 即時送到 stdout,CI 失敗時看得到原因
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
                   colcon build --packages-select \
-                    my_gazebo_demo my_nav2_demo my_bt_plugin capstone_a \
-                    --cmake-args -DBUILD_TESTING=OFF"
+                    my_gazebo_demo my_slam_demo my_nav2_demo my_bt_plugin capstone_a \
+                    --cmake-args -DBUILD_TESTING=OFF \
+                    --event-handlers console_direct+"
 
 # -----------------------------------------------------------------------------
 # Stage 2: runtime — ros-base + Gazebo + nav2 + slam,排除 desktop tools

@@ -13,6 +13,12 @@
 # 之後實機部署:
 #   docker pull ghcr.io/gino07172002/ros2-learning-notes/capstone-final:latest
 #   docker run --network host --ipc host ...
+#
+# Node.js 20 deprecation note (2025-09 GitHub 公告):
+#   actions/checkout@v5 已支援 Node 24
+#   docker/setup-buildx@v3 / login@v3 / metadata@v5 / build-push@v6 內部仍 Node 20
+#   GitHub 會在 2026-06-02 強制 Node 24,docker/* actions 屆時應有對應更新
+#   現在升 docker/build-push 從 v5 → v6(其餘維持最新)
 
 name: Capstone Final — Docker Build & Push
 
@@ -37,7 +43,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -60,9 +66,10 @@ jobs:
             type=sha,prefix=,format=short
 
       - name: Build & push image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           # Build context = repo root,讓 Dockerfile COPY sibling phase
+          # .dockerignore 在 repo root 生效,白名單只送 image 需要的 phase
           context: .
           file: phase-Capstone-Final/code/docker-capstone-a/Dockerfile
           push: true
@@ -74,8 +81,11 @@ jobs:
           # multi-arch:同時 build amd64 (PC) + arm64 (Pi/Jetson)
           # 註解掉是因為 multi-arch build 約 30+ 分鐘,先 amd64 跑通再開
           # platforms: linux/amd64,linux/arm64
+          # 失敗時把 build context 列表 + 中間層 stderr 印出來
+          provenance: false
 
       - name: Image summary
+        if: success()
         run: |
           echo "## 🏁 Capstone Final image pushed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
