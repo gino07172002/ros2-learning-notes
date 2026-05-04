@@ -2,7 +2,19 @@
 
 從零開始學 ROS 2 Humble 的實戰筆記。每個 phase 是獨立的專案資料夾,自帶完整可編譯的 code 與說明,**可跳讀、可單獨執行**。
 
-> **🎯 急著看重點?** 看 [`PORTFOLIO.md`](PORTFOLIO.md) — 30 秒內知道這個 repo 是什麼、技術棧、3 個最強章節、5 條最有故事的雷。
+---
+
+## 👋 你是誰?從這裡開始
+
+| 你的情況 | 該看哪份 | 一句話說明 |
+|---------|---------|-----------|
+| 🆕 **沒碰過 ROS 2** | **[GETTING_STARTED.md](GETTING_STARTED.md)** | 用 MQTT/gRPC 對照解釋 ROS 2 是什麼,給你一條 7 章新手路徑(約 1 週下午時段),跑完就會寫多節點通訊系統 |
+| 🚀 **會 ROS 1 想學 ROS 2** | 仍從 [Phase 01](phase-01-cloud-env-first-publisher/) 起 | 觀念差很多,Phase 02 會說清楚為什麼 ROS 2 全部重寫;之後可跳到 Phase 09(Executor / Lifecycle / Composition — ROS 2 才有的) |
+| 💼 **招聘方 / Code reviewer** | **[PORTFOLIO.md](PORTFOLIO.md)** | 30 秒看完技術棧、3 個最強章節、6 條最有故事的雷 |
+| 🗺️ **想看完整學習地圖** | [ROADMAP.md](ROADMAP.md) | Part 1–6 結構、Track A(Mobile)/ B(Arm)分流、各章預計時長 |
+| ⚙️ **要設定環境** | [SETUP.md](SETUP.md) | TheConstructSim ☁️ vs 本機 WSL2 💻 兩種環境完整步驟 + 比較表 |
+
+> 下面是 repo 全章節地圖,**新手不用一次讀完**。先去 [GETTING_STARTED.md](GETTING_STARTED.md)。
 
 ---
 
@@ -71,34 +83,34 @@ ros2 launch my_foxglove_demo diagnostics_with_bridge.launch.py
 ### 📖 Part 1: 通訊基礎 — 讓 Node 能講話
 > 學完 Part 1 你能用現成的 ROS 訊息類型寫出 Pub/Sub/Service Node。
 
-| Phase | 主題 | 學到什麼 | 🐍 Py |
-|-------|------|----------|------|
-| [01](phase-01-cloud-env-first-publisher/) | 雲端環境 + 第一支 Publisher | 建 ROS 2 套件、用 colcon 編譯、寫 Publisher 讓車子前進 | ✅ |
-| [02](phase-02-communication-concepts/) | **ROS 2 設計哲學** | DDS / 節點發現 / 訊息序列化 / 與 MQTT/gRPC/ROS 1 對比 | — |
-| [03](phase-03-subscriber-lidar-brake/) | Subscriber + 光達避障 | 寫 Subscriber、QoS(SensorDataQoS)、解析 PointCloud2、做避障邏輯 | ✅ |
-| [04](phase-04-services-toggle/) | Service Server + 開關 | Service vs Topic、實作 SetBool 服務、雙終端機驗證 | — |
+| Phase | 主題 | 為什麼要學這章 | 學到什麼 | 🐍 Py |
+|-------|------|---------------|----------|------|
+| [01](phase-01-cloud-env-first-publisher/) | 雲端環境 + 第一支 Publisher | 「ROS 2 是什麼?」用最簡 demo 親手驗證 | 建 ROS 2 套件、用 colcon 編譯、寫 Publisher 讓車子前進 | ✅ |
+| [02](phase-02-communication-concepts/) | **ROS 2 設計哲學** | Phase 01 跑過了但「為什麼是這樣」?這章拆給你看 | DDS / 節點發現 / 訊息序列化 / 與 MQTT/gRPC/ROS 1 對比 | — |
+| [03](phase-03-subscriber-lidar-brake/) | Subscriber + 光達避障 | 只會發訊息不夠,會收訊息才能做反應式控制 | 寫 Subscriber、QoS(SensorDataQoS)、解析 PointCloud2、做避障邏輯 | ✅ |
+| [04](phase-04-services-toggle/) | Service Server + 開關 | Pub/Sub 不能一問一答,「打開避障」這種一次性指令要 Service | Service vs Topic、實作 SetBool 服務、雙終端機驗證 | — |
 
 ### 🔧 Part 2: 工具與治理 — 看清楚系統 + 微調系統
 > 學完 Part 2 你能 debug 不熟的 ROS 系統、調整 Node 行為而不改 code,且能組合既有元件做小作品。
 
-| Phase | 主題 | 學到什麼 | 🐍 Py |
-|-------|------|----------|------|
-| [05](phase-05-debug-tools/) | Debug 工具集 | rqt_graph 看通訊圖、ros2 bag 錄製/重播、rqt_plot 即時繪圖、rqt_console 集中 log | — |
-| [06](phase-06-parameters/) | Parameters(參數系統) | declare/get/on_set callback、YAML 設定檔、rqt_reconfigure GUI 即時調參 | — |
-| [🎯 07](phase-07-mini-capstone-1/) | **Mini Capstone 1**:智能煞車車(整合 Param + Service + LiDAR + turtlesim) | 寫一個 Node 同時當 5 個角色、launch file 入門 | — |
+| Phase | 主題 | 為什麼要學這章 | 學到什麼 | 🐍 Py |
+|-------|------|---------------|----------|------|
+| [05](phase-05-debug-tools/) | Debug 工具集 | ROS 系統有幾十個節點,光看 code 找不到 bug,佔開發時間 50% | rqt_graph 看通訊圖、ros2 bag 錄製/重播、rqt_plot 即時繪圖、rqt_console 集中 log | — |
+| [06](phase-06-parameters/) | Parameters(參數系統) | 「改一個閾值就重編譯」太慢,實戰中你會 100% 用 param 取代 magic number | declare/get/on_set callback、YAML 設定檔、rqt_reconfigure GUI 即時調參 | — |
+| [🎯 07](phase-07-mini-capstone-1/) | **Mini Capstone 1**:智能煞車車 | 學完 6 個機制可能組不起來;一個下午整合 Param + Service + LiDAR 做出第一個小作品 | 寫一個 Node 同時當 5 個角色、launch file 入門 | — |
 
 ### 🏗️ Part 3: 系統設計 — 自己定義協議與架構
 > **核心分水嶺**:從「使用現成 ROS 元件」進到「設計自己的 ROS 系統」。學完 Part 3 你能組起一個多節點專案。
 
-| Phase | 主題 | 學到什麼 | 🐍 Py |
-|-------|------|----------|------|
-| [08](phase-08-custom-interfaces/) | **Custom Interfaces**(自訂訊息) | 定義 .msg / .srv / .action、interface 套件分離、rosidl 生成 C++ class | — |
-| [09](phase-09-executors-lifecycle-composition/) | Executors / Lifecycle / Composition | Single vs Multi Executor、CallbackGroup、Lifecycle 五狀態、rclcpp_components | — |
-| [10](phase-10-launch-files-basics/) | Launch Files 基礎 | 4 個漸進範例:最小、remap+param、YAML、CLI args | — |
-| [11](phase-11-launch-files-advanced/) | Launch Files 進階 | IncludeLaunchDescription、event_handler、條件啟動、namespace 多機器人 | — |
-| [12](phase-12-testing/) | 測試(gtest + rclcpp) | 純邏輯單元測試 + rclcpp 整合測試、colcon test、XML 報告 | — |
-| [13](phase-13-actions-advanced/) | Actions 進階 | reject/abort/cancel 全套處理、SIGINT 觸發 cancel、Countdown demo | — |
-| [🎯 Capstone 1](phase-14-capstone-1/) | **ApproachController**:Lifecycle + Action + Custom Interfaces + Tests 整合 | 6 角色 LifecycleNode + 自動化 launch + 5 個單元測試(GitHub portfolio-ready) | — |
+| Phase | 主題 | 為什麼要學這章 | 學到什麼 | 🐍 Py |
+|-------|------|---------------|----------|------|
+| [08](phase-08-custom-interfaces/) | **Custom Interfaces**(自訂訊息) | 內建訊息(Twist/Imu)不夠用,自己的專案要自己定義訊息協議 | 定義 .msg / .srv / .action、interface 套件分離、rosidl 生成 C++ class | — |
+| [09](phase-09-executors-lifecycle-composition/) | Executors / Lifecycle / Composition | 多 callback 為什麼會卡?Node 啟動順序怎麼控?Nav2/MoveIt 都靠這層 | Single vs Multi Executor、CallbackGroup、Lifecycle 五狀態、rclcpp_components | — |
+| [10](phase-10-launch-files-basics/) | Launch Files 基礎 | 一次起 5 個 Node + 帶參數,手動 ros2 run 不可能,launch file 是標準 | 4 個漸進範例:最小、remap+param、YAML、CLI args | — |
+| [11](phase-11-launch-files-advanced/) | Launch Files 進階 | 多機器人 namespace、Node A 起完才起 B、條件啟動 — 真實專案會用到 | IncludeLaunchDescription、event_handler、條件啟動、namespace 多機器人 | — |
+| [12](phase-12-testing/) | 測試(gtest + rclcpp) | 沒測試的 ROS code 不能交付,gtest 是 ROS 2 標準,從 Part 3 養成習慣 | 純邏輯單元測試 + rclcpp 整合測試、colcon test、XML 報告 | — |
+| [13](phase-13-actions-advanced/) | Actions 進階 | 「導航 30 秒」這種長任務 Topic/Service 都不夠用,Action 才能進度 + 取消 | reject/abort/cancel 全套處理、SIGINT 觸發 cancel、Countdown demo | — |
+| [🎯 Capstone 1](phase-14-capstone-1/) | **ApproachController** | Part 3 的總整合,做一個 GitHub portfolio 等級的多角色 LifecycleNode | 6 角色 LifecycleNode + 自動化 launch + 5 個單元測試(GitHub portfolio-ready) | — |
 
 ### 🤖 Part 4: 機器人形體 — 給 Node 們一個身體
 > 描述機器人物理結構(關節、感測器位置),為 SLAM/Nav2/MoveIt 鋪路。
@@ -134,8 +146,8 @@ ros2 launch my_foxglove_demo diagnostics_with_bridge.launch.py
 | Phase | 主題 | 學到什麼 | 🐍 Py |
 |-------|------|----------|------|
 | [20B](phase-20B-arm-urdf/) | 手臂 URDF (xacro + SRDF) | xacro macro 抽 6 個 link 模板、SRDF 為 MoveIt 鋪路、ParameterValue str 雷 | — |
+| [21B](phase-21B-moveit-setup-assistant/) ⏸ | MoveIt Setup Assistant | GUI wizard 自動產 4 個 yaml + SRDF + collision matrix,業界 100% 用它(草稿,截圖待補) | — |
 | [22B](phase-22B-moveit-cpp/) | MoveIt 2 C++ API | MoveGroupInterface plan + 4 種 target、3 份 description params、IK 失敗雷 | — |
-| 21B | (待完成,需 Setup Assistant GUI) | — | — |
 | 23B | (待完成,需視覺驗證) | — | — |
 | 🎯 Capstone B | (待完成,需視覺驗證) | — | — |
 

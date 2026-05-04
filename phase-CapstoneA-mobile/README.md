@@ -144,9 +144,42 @@ return LaunchDescription([nav2, auto_nav])
 
 ---
 
-## 🚀 完整 Demo 流程(WSL 驗證過)
+## 🚀 完整 Demo 流程
 
-### Step 1:確認所有依賴 phase 已 build
+### ☁️ TheConstructSim 步驟(推薦 — Capstone 完整跑得起來)
+
+整套 Capstone A 的所有依賴(Gazebo + Nav2 + slam_toolbox + turtlebot3)雲端 ROSject 都預載,**比 WSL 順很多**。
+
+```bash
+# 1. 雲端 ROSject terminal,clone 整個 repo(一次帶齊所有 phase)
+cd ~/ros2_ws/src
+git clone https://github.com/gino07172002/ros2-learning-notes.git
+cp -r ros2-learning-notes/phase-17-gazebo/code/my_gazebo_demo .
+cp -r ros2-learning-notes/phase-22A-nav2-basics/code/my_nav2_demo .
+cp -r ros2-learning-notes/phase-23A-nav2-bt-plugin/code/my_bt_plugin .
+cp -r ros2-learning-notes/phase-CapstoneA-mobile/code/capstone_a .
+
+# 2. Build 全部
+export TURTLEBOT3_MODEL=burger
+cd ~/ros2_ws
+colcon build --packages-select my_gazebo_demo my_nav2_demo my_bt_plugin capstone_a
+source install/setup.bash
+
+# 3. 跑 Capstone A
+ros2 launch capstone_a capstone_a.launch.py
+
+# 4. 看 Tools → Gazebo + Tools → Graphical Tools (RViz)
+#    車會自動依序走 3 個 waypoint
+```
+
+**雲端預期**:車真的會在 Gazebo 內跑 → 經過 waypoint → 完成 sequence。
+**WSL 預期**:lifecycle active 但車卡住(GPU 不足,雷 4)。
+
+---
+
+### 💻 WSL 步驟(WSL 驗證過 — 結構驗證,實際導航需 GPU)
+
+#### Step 1:確認所有依賴 phase 已 build
 
 ```bash
 # 必須這些都在 ~/ros2_ws/install

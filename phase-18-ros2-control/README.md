@@ -8,7 +8,9 @@
 
 **產出**：`my_robot_bringup` 套件含 URDF + controllers.yaml + 整套 launch
 
-**環境**：💻 本機 WSL（mock_components 不需 Gazebo，純 ROS 執行）
+**環境**:☁️💻 雙環境通用 — 本章用 `mock_components`(假硬體),**不需要 Gazebo / GPU / 實機**,所以雲端 TheConstructSim 也能完整跑。
+
+> ☁️ **想用 TheConstruct 雲端跑**:任意 ROS 2 Humble ROSject 都可以。Clone repo → `cp -r phase-18-ros2-control/code/my_robot_bringup ~/ros2_ws/src/` → `colcon build` → `ros2 launch my_robot_bringup demo.launch.py`,完全相同步驟。`mock_components::GenericSystem` 不需要硬體,純 ROS 控制流就跑得起來。
 
 ---
 

@@ -25,6 +25,36 @@
 
 ---
 
+## 🗂️ Nav2 名詞速查(看這章 yaml 之前必懂)
+
+Nav2 文件裡這些名詞會密集出現,先看完這個表再讀後面就不會迷路:
+
+| 名詞 | 是什麼 | 你會在哪看到 |
+|------|--------|-------------|
+| **Costmap** | 一張「**走過會撞 / 不能走**」的地圖,每格有 0–254 分數 | 90% YAML 都在調 costmap |
+| **Global costmap** | 大範圍、靜態為主、用來規劃**長路徑** | `global_costmap:` 區段 |
+| **Local costmap** | 機器人周圍幾米的小框、即時更新、用來**避開突然出現的障礙** | `local_costmap:` 區段 |
+| **Inflation** | 障礙物外圍的「**緩衝圈**」,讓機器人不要貼著牆走 | costmap 內 `inflation_layer` |
+| **Planner** | 看 global costmap,規劃「**從這裡到目標的長路徑**」 | `planner_server:` |
+| **Controller** | 看 local costmap,負責「**目前這幾秒方向盤怎麼打**」(連續發 cmd_vel) | `controller_server:` |
+| **AMCL** | Adaptive Monte Carlo Localization — 用粒子濾波在**已知地圖**上定位 | `amcl:` |
+| **Behavior Tree(BT)** | 用 XML 編排「先嘗試 A,失敗就 B,還失敗就 recovery」這種行為流程 | `bt_navigator:` |
+| **Lifecycle node** | Phase 09 教過的那個五狀態 Node — Nav2 全部 8 個 node 都是 | `lifecycle_manager:` |
+
+### 一句話講完 Nav2 流程
+
+```
+你下 goal → BT 決定步驟 → Planner 算長路徑 → Controller 發 cmd_vel
+                              ↑                    ↑
+                         看 global costmap    看 local costmap
+                                                   ↑
+                                            AMCL 提供「我在哪」
+```
+
+**90% Nav2 工作就是調 yaml 內這幾個東西的參數**。本章會逐個帶你過。
+
+---
+
 ## 為什麼這章重要
 
 Nav2 是 ROS 2 移動機器人的**事實標準**。會用 Nav2 = 會做掃地機 / AGV / 配送車。
@@ -157,6 +187,40 @@ ros2 launch my_nav2_demo nav2_demo.launch.py
 - t=10s:Nav2 stack 啟動
 - t=10–15s:8 個 lifecycle node configure
 - t=15–20s:全部 activate
+
+### Step 2.5:☁️ TheConstructSim 步驟(推薦 — 真的能跑出導航)
+
+**雲端是這章的最佳環境**(WSL 沒 GPU,Nav2 active 但車跑不動,雷 4)。
+
+```bash
+# 1. 雲端 ROSject terminal
+cd ~/ros2_ws/src
+git clone https://github.com/gino07172002/ros2-learning-notes.git
+cp -r ros2-learning-notes/phase-22A-nav2-basics/code/my_nav2_demo .
+
+# 2. 確認 Nav2 + turtlebot3 已裝
+ros2 pkg list | grep -E 'turtlebot3|nav2'
+export TURTLEBOT3_MODEL=burger
+
+# 3. Build + 跑
+cd ~/ros2_ws
+colcon build --packages-select my_nav2_demo
+source install/setup.bash
+ros2 launch my_nav2_demo nav2_demo.launch.py
+
+# 4. 開 Tools → Graphical Tools 跳出的 RViz 內:
+#    - 點 "2D Pose Estimate" 在地圖上設機器人初始位置
+#    - 點 "Nav2 Goal" 在地圖任一點 → 車真的會規劃路徑跑過去
+```
+
+**雲端能完整驗證的事**(WSL 不能):
+- 機器人沿 global path 走
+- 動態避障
+- BT navigator 真的走完 NavigateToPose action
+
+> 💡 **找不到 Nav2 stack** → 用 TheConstruct 的 **"ROS 2 Navigation"** 課程附帶 ROSject(Nav2 預裝齊全)。
+
+---
 
 ### Step 3:驗證 Nav2 lifecycle 全部 active(WSL 驗證過)
 

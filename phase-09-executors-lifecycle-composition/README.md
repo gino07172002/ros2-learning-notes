@@ -17,6 +17,23 @@
 
 ---
 
+## 📚 閱讀路徑指南(Part 3 最重的一章,別硬塞)
+
+這章塞了三個獨立大觀念,**不要試圖一次消化完**。建議分兩三次來:
+
+| 你現在的目標 | 該讀哪段 | 預計時間 |
+|------------|---------|---------|
+| 只想跑通 **Phase 14 Capstone 1** | **只讀 Part 2 LifecycleNode**(下面)即可,Capstone 1 主要用這個 | 1 hr |
+| 想知道為什麼自己的 multi-callback Node 會卡 | 讀 Part 1 Executors + Part 2 LifecycleNode | 2 hr |
+| 想學完整章(進 Part 4 之前最佳狀態) | Part 1 + Part 2 + Part 3 全讀,中間休息 | 3–4 hr,可分兩次 |
+| 已會 ROS 1 想快速了解 ROS 2 差異 | 直接看 Part 2 LifecycleNode + Part 3 Composition(這兩個 ROS 1 沒有) | 1.5 hr |
+
+> 💡 **為什麼三個塞一章**:它們都回答同一個問題 — 「**Node 怎麼被執行**」。但三個之間是**獨立的**,先學一個用熟,卡到時再回來補另一個 OK。
+
+> ⚠️ **新手特別注意**:Part 1 的 `std::atomic` / Reentrant CallbackGroup race condition 部分,如果第一次讀看不太懂,**跳過去先讀 Part 2 LifecycleNode**,Capstone 1 不會用到 race condition。等你之後做多 callback 真的踩雷了再回來,會懂得快。
+
+---
+
 ## 為什麼三個放一起講
 
 它們都回答同一個問題：「**ROS Node 內部到底怎麼運作？**」

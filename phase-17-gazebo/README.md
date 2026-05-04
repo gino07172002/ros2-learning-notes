@@ -209,11 +209,59 @@ gzclient
 
 ---
 
-## ☁️ TheConstructSim
+## ☁️ TheConstructSim 完整步驟(推薦 — 不用裝 Gazebo)
 
-雲端 ROSject **預設就有 Gazebo GUI**,直接 `ros2 launch` 看畫面比 WSL 簡單。流程一模一樣,差異只在:
-- 雲端不需要 `gui:=false`(它有 X11)
-- 雲端 spawn 比較快(預先暖機過)
+雲端 ROSject **預設就有 Gazebo GUI**,且有正確的 OpenGL 後端,**比 WSL 順很多**。
+
+### Step 1:建立 ROSject
+
+1. 登入 [TheConstructSim](https://app.theconstructsim.com/) → **ROSjects** → **Create New ROSject**
+2. ROS Distro 選 **ROS 2 Humble**
+3. 進入 ROSject 後,**Tools** 面板下方會有 Gazebo viewer
+
+### Step 2:複製本章 code 到雲端
+
+在雲端 terminal:
+```bash
+cd ~/ros2_ws/src
+git clone https://github.com/gino07172002/ros2-learning-notes.git
+cp -r ros2-learning-notes/phase-17-gazebo/code/my_gazebo_demo .
+```
+
+### Step 3:確認 turtlebot3 已裝(雲端通常已有)
+
+```bash
+ros2 pkg list | grep turtlebot3
+# 預期看到: turtlebot3_description, turtlebot3_gazebo, turtlebot3_msgs ...
+export TURTLEBOT3_MODEL=burger
+```
+
+### Step 4:Build + 跑
+
+```bash
+cd ~/ros2_ws
+colcon build --packages-select my_gazebo_demo
+source install/setup.bash
+
+# 跟 WSL 不同:雲端不要加 gui:=false,直接看 GUI
+ros2 launch my_gazebo_demo headless_demo.launch.py
+```
+
+### Step 5:看 Gazebo viewer
+
+切到 **Tools → Gazebo** 面板,你會看到 turtlebot3 已經 spawn 在世界中。
+另開一個 terminal 試:
+```bash
+ros2 topic list | grep -E '/scan|/odom|/cmd_vel'
+ros2 topic pub /cmd_vel geometry_msgs/Twist '{linear: {x: 0.2}}' --once
+# Gazebo 內車子應該會前進
+```
+
+> 💡 **與本機差異**:
+> - 雲端不需要 `gui:=false`(它有 X11)
+> - 雲端 spawn 比較快(預先暖機過)
+> - 雲端 GPU 比 WSL 強,實際機器人移動會比較順
+> - **雲端免費版連線約 1 hr,做完馬上儲存**
 
 ---
 

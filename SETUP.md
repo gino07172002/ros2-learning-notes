@@ -192,35 +192,134 @@ ros2 run my_cpp_pkg auto_drive    # turtlebot3 預設訂閱 /cmd_vel，不用 re
 
 ---
 
-## 📋 各章建議的環境
+## 📋 各章雲端可用性對照表
 
-| Phase | 推薦環境 | 為什麼 |
-|-------|---------|--------|
-| 01–04（通訊基礎） | TheConstruct ✅ | 預載機器人省事，學觀念為主 |
-| 05（Debug 工具） | 兩者皆可 | rqt 在哪都能跑 |
-| 06–08（Param/Custom Msg/Executor） | 兩者皆可 | 純 ROS 觀念 |
-| 09（Launch） | 本機 ✅ | 自己組多節點 launch 比較有感 |
-| 10（測試） | 本機 ✅ | CI 整合需要本機 |
-| 11–13（Action/URDF/TF2） | 本機 ✅ | URDF 自訂機器人 TheConstruct 受限 |
-| 14（Gazebo 整合） | 本機 ✅ | TheConstruct 隱藏掉這層 |
-| 15（ros2_control） | 本機 ✅ | 連硬體必須本機 |
-| 16+（Track A/B 應用） | 本機 ✅ | Nav2/MoveIt 大型實驗，雲端會卡 |
-| 20–24（生產化） | 本機 ✅ | Docker、CI、實機部署都需要本機 |
+> 想用 TheConstruct 免費 ROSject 跑完課程不用花力氣裝環境的話,先看這張表知道**哪些章節雲端能跑、哪些必須本機**。
 
-**結論**：**前期 TheConstruct，中後期切到本機**。建議第 9 章前後切換，這時你 ROS 2 觀念已穩，本機環境學起來不會吃力。
+**符號**:
+- ☁️ **雲端可跑** — TheConstruct 免費 ROSject 內可完整完成,有具體指令
+- 🟡 **雲端可跑但效能限制** — 結構上能跑,但雲端 GPU/網路會影響真實體驗(常見於 SLAM/Nav2/MoveIt)
+- 🚫 **本機限定** — 雲端跑不了或意義不大(Docker、CI、多機通訊、實機)
+- 📚 **觀念章** — 純文字,不需執行環境
+
+### Part 1:通訊基礎
+
+| Phase | 主題 | 雲端? | 雲端用什麼 ROSject / 場景 |
+|-------|------|------|-------------------------|
+| 01 | 第一支 Publisher | ☁️ | 任意 ROS 2 Humble ROSject + OriginBot 場景 (`/originbot_1/cmd_vel`) |
+| 02 | ROS 2 設計哲學 | 📚 | 不需執行 |
+| 03 | Subscriber + 光達 | ☁️ | OriginBot 場景(自帶 Livox 3D 光達 `/livox/lidar`) |
+| 04 | Service 開關 | ☁️ | 同 Phase 03 OriginBot 場景 |
+
+### Part 2:工具與治理
+
+| Phase | 主題 | 雲端? | 雲端用什麼 ROSject / 場景 |
+|-------|------|------|-------------------------|
+| 05 | Debug 工具 | ☁️ | 任意 ROSject(rqt_graph、ros2 bag 在雲端網頁版都能用)|
+| 06 | Parameters | ☁️ | OriginBot 場景(YAML 載入 + rqt_reconfigure)|
+| 07 | Mini Capstone 1 | ☁️ | 任意 ROS 2 ROSject(可用 turtlesim 取代 OriginBot)|
+
+### Part 3:系統設計
+
+| Phase | 主題 | 雲端? | 雲端用什麼 ROSject / 場景 |
+|-------|------|------|-------------------------|
+| 08 | Custom Interfaces | ☁️ | 任意 ROS 2 ROSject |
+| 09 | Executors / Lifecycle / Composition | ☁️ | 任意 ROS 2 ROSject(純 code 演示)|
+| 10 | Launch Files 基礎 | ☁️ | 任意 ROS 2 ROSject |
+| 11 | Launch Files 進階 | ☁️ | 任意 ROS 2 ROSject |
+| 12 | Testing | ☁️ | 任意 ROS 2 ROSject(`colcon test`)|
+| 13 | Actions 進階 | ☁️ | 任意 ROS 2 ROSject |
+| 14 | 🎯 Capstone 1 | ☁️ | 任意 ROS 2 ROSject |
+
+### Part 4:機器人形體
+
+| Phase | 主題 | 雲端? | 雲端用什麼 ROSject / 場景 |
+|-------|------|------|-------------------------|
+| 15 | URDF | ☁️ | 任意 ROS 2 ROSject(用 RViz 看 TF tree)|
+| 16 | TF2 | ☁️ | 任意 ROS 2 ROSject |
+| 17 | Gazebo | 🟡 | TheConstruct 有 TurtleBot3 ROSject(Gazebo Classic 預載),雲端 Gazebo 比 WSL 順 |
+| 18 | ros2_control | ☁️ | 任意 ROS 2 ROSject(本章用 mock_components,**不需要實機**)|
+| 19 | pluginlib | ☁️ | 任意 ROS 2 ROSject(純 C++ plugin 機制)|
+| 20 | 多機通訊 | 🚫 | 雲端 ROSject 內部沒原生 Docker daemon,跑不了 docker compose 模擬多機 |
+
+### Part 5:領域應用
+
+| Phase | 主題 | 雲端? | 雲端用什麼 ROSject / 場景 |
+|-------|------|------|-------------------------|
+| 20A | Odometry + EKF | ☁️ | 任意 ROS 2 ROSject(純文字驗證,不需 GUI)|
+| 21A | SLAM | 🟡 | TheConstruct 的 TurtleBot3 World ROSject(雲端 GPU 可建出地圖,WSL 通常不行)|
+| 22A | Nav2 入門 | 🟡 | 同 Phase 21A 的 TurtleBot3 World ROSject |
+| 23A | Nav2 BT plugin | ☁️ | 任意 ROS 2 ROSject(純 C++ plugin 編譯 + gtest)|
+| 30 | Nav2 BT 進階 | ☁️ | 任意 ROS 2 ROSject(純 BT plugin + gtest)|
+| Capstone A | Mobile 整合 | 🟡 | TurtleBot3 World ROSject(雲端 Gazebo + Nav2 + 自訂 BT)|
+| 20B | 手臂 URDF | ☁️ | 任意 ROS 2 ROSject(RViz 看模型)|
+| 21B | MoveIt Setup Assistant | 🚫 | 純 GUI wizard,雲端 web terminal 跑不順,**強烈建議本機** |
+| 22B | MoveIt C++ | ☁️ | 任意 ROS 2 ROSject(純文字驗證,4 種 plan)|
+
+### Part 6:生產化部署
+
+| Phase | 主題 | 雲端? | 雲端用什麼 ROSject / 場景 |
+|-------|------|------|-------------------------|
+| 24 | Docker 化 | 🚫 | 雲端 ROSject 內部沒原生 Docker daemon,**必須本機** |
+| 25 | CI/CD | 🚫 | GitHub Actions 跑在 GitHub 雲,跟 TheConstruct 無關 |
+| 26 | DDS QoS | ☁️ | 任意 ROS 2 ROSject(純 ROS 2 內 QoS 行為)|
+| 32 | rosbag2 進階 | ☁️ | 任意 ROS 2 ROSject |
+| 35 | Foxglove Bridge | ☁️ | 任意 ROS 2 ROSject(雲端 expose port 給 Foxglove web app)|
+| 36 | Diagnostics + Watchdog | ☁️ | 任意 ROS 2 ROSject |
+| 37 | Lifecycle + Diagnostics | ☁️ | 任意 ROS 2 ROSject |
+| Capstone Final | Docker 化 mobile robot | 🚫 | 雲端沒 Docker,只能本機跑;但**內含的 Capstone A** 可用 TurtleBot3 ROSject 跑 |
 
 ---
 
-## 🤔 該選哪一個開始？
+## 💰 TheConstruct 免費資源怎麼用最划算
+
+> ⚠️ **注意**:TheConstruct 的免費政策可能變動,以下資訊以 2026 年初為準,實際以官網公告為主。
+
+### 免費版能用什麼
+
+| 資源 | 免費版限制 |
+|------|-----------|
+| **ROSjects(雲端工作區)** | 可建多個,但每次連線時間有限(常見 1 小時/次) |
+| **預裝環境** | ROS 2 Humble + Gazebo Classic 11 + RViz + 大部分常用套件 |
+| **預載機器人場景** | OriginBot(賽車型,3D 光達)/ TurtleBot3 / 多種其他 |
+| **網頁 Terminal / VS Code Editor / Gazebo viewer** | 都免費 |
+
+### 不適合雲端做的事(就算免費也別硬上)
+
+- ❌ **跨多個 container 跑 Docker** — 雲端 ROSject 是單一 sandbox
+- ❌ **長時間實驗(過夜跑)** — 連線會自動 timeout
+- ❌ **裝額外 apt 套件** — 免費版不能 sudo apt install(付費版才行)
+- ❌ **改 systemd / kernel 級設定** — 沙盒隔離
+- ❌ **多機 ROS_DOMAIN_ID 隔離測試** — 一個 ROSject 是一個沙盒
+
+### 建議使用節奏
+
+```
+Part 1–3(Phase 01–14)   → ☁️ 全雲端跑,免裝環境
+Part 4 觀念章(15、16、19) → ☁️ 雲端,簡單
+Part 4 形體章(17、18)    → ☁️ 雲端 Gazebo 比 WSL 順
+Part 5 SLAM/Nav2(21A、22A)→ ☁️ 雲端必選(WSL 沒 GPU)
+Part 5 MoveIt Track B    → 本機(21B)+ 雲端(22B)混用
+Part 6 Docker/CI/實機    → 💻 必須本機
+```
+
+**結論**:**前期 TheConstruct,中後期切本機,SLAM/Nav2 階段回雲端跑真 demo**。
+
+---
+
+## 🤔 該選哪一個開始?
 
 ```
 你的情境                            建議起點
 ─────────────────────────────────────────────
 完全沒摸過 ROS                       → TheConstruct
+不想花時間裝 ROS 2 / Gazebo          → TheConstruct
 裝過 Linux、會 apt                   → 本機 WSL2 直接開幹
-有 Mac/Linux 主機                    → 本機（Mac 用 Docker，Linux 直接裝）
+有 Mac/Linux 主機                    → 本機(Mac 用 Docker,Linux 直接裝)
 公司電腦不能裝東西                    → TheConstruct
-要做專題、發 GitHub repo              → 本機（git 操作方便）
+要做專題、發 GitHub repo              → 本機(git 操作方便)
 時間少、只想體驗                      → TheConstruct
-要做畢業專題、未來想找機器人工作       → 本機（業界用本機）
+要做畢業專題、未來想找機器人工作       → 本機(業界用本機)
+要學 SLAM / Nav2 但電腦沒獨顯         → TheConstruct(雲端有 GPU)
+要學 Docker / 部署 / CI               → 本機(雲端做不了)
 ```

@@ -24,6 +24,50 @@
 
 ---
 
+## 🎓 觀念速成:SLAM 在做什麼
+
+### 1. Occupancy Grid 是什麼?「**棋盤式的地圖**」
+
+把地面切成一格格(預設 5cm × 5cm),每格只有三種狀態:
+
+```
+╔═══════════════════════════════╗
+║  0   0   0  100 100  0   0   ║   100 = 障礙物(白色 → 黑色)
+║  0  -1  -1 100  ?   ?  -1   ║     0 = 自由空間(可通行)
+║  0  -1  -1  ?   ?   ?  -1   ║    -1 = 未探索(灰色)
+║  0   0   0   0   0   0   0   ║
+╚═══════════════════════════════╝
+```
+
+ROS 2 用 `nav_msgs/OccupancyGrid` 訊息表示,**Nav2 / RViz 都吃這個**。
+比起「3D 點雲」這種地圖,occupancy grid 簡單但夠用:**對 2D 移動機器人(掃地、AGV)它就是事實標準**。
+
+### 2. Localization vs Mapping vs SLAM 的差異
+
+新手最容易混的三個詞:
+
+| 模式 | 已知什麼 | 在做什麼 | 用什麼 |
+|------|---------|---------|--------|
+| **Localization**(定位) | 已有地圖 | 算「**我現在在地圖哪裡**」 | Nav2 amcl |
+| **Mapping**(建圖) | 已知位置 | 把感測器資料**畫成地圖** | 一般不單用 |
+| **SLAM**(同時定位 + 建圖) | 都不知道 | **邊走邊建地圖,同時算自己在哪** | 本章 slam_toolbox |
+
+SLAM 是「雞生蛋蛋生雞」問題 — 沒地圖怎麼定位、沒定位怎麼建圖?
+解法是:用 odometry 提供初步位置(來自 Phase 20A!) → 拿 lidar scan 比對前一刻的地圖 → 同時修正位置 + 擴充地圖。
+
+### 3. slam_toolbox 的 4 個模式
+
+| 模式 | 適合什麼 | 本章用的 |
+|------|---------|---------|
+| **Online async**(本章) | 即時跑、邊走邊建 | ✅ |
+| **Online sync** | 邊走邊建但每 scan 等處理完 | — |
+| **Localization** | 已建好地圖,只做定位(取代 amcl) | — |
+| **Lifelong** | 長期跑、地圖會持續更新(店裡擺設變了會反映) | — |
+
+本章只做 online async — 學完之後你會知道**怎麼從這裡換到其他模式**。
+
+---
+
 ## 為什麼這章重要
 
 **SLAM(Simultaneous Localization And Mapping)是移動機器人的靈魂技能**。沒地圖就沒 Nav2、沒 Nav2 就沒自動導航。
@@ -144,7 +188,39 @@ ros2 launch my_slam_demo slam_demo.launch.py
 - t=5s:slam_toolbox 啟動
 - t=15s:cmd_vel 自動發,車開始自轉
 
-### Step 3:WSL 驗證(部分驗證過)
+### Step 3a:☁️ TheConstructSim 步驟(推薦 — 雲端有 GPU,真的會建出地圖)
+
+**雲端是這章的最佳環境**(WSL 沒 GPU 建不出地圖,雷 4 詳述)。
+
+```bash
+# 1. 在雲端 ROSject terminal 內 clone repo
+cd ~/ros2_ws/src
+git clone https://github.com/gino07172002/ros2-learning-notes.git
+cp -r ros2-learning-notes/phase-21A-slam-toolbox/code/my_slam_demo .
+
+# 2. 確認 turtlebot3 + slam_toolbox 已裝
+ros2 pkg list | grep -E 'turtlebot3|slam_toolbox'
+export TURTLEBOT3_MODEL=burger
+
+# 3. Build + 跑(雲端不需要 gui:=false)
+cd ~/ros2_ws
+colcon build --packages-select my_slam_demo
+source install/setup.bash
+ros2 launch my_slam_demo slam_demo.launch.py
+
+# 4. 切到 Tools → Gazebo 看車自己轉、Tools → Graphical Tools 開 RViz 看地圖建出來
+```
+
+**雲端預期看到**(WSL 看不到):
+- `/map` topic 真的有 OccupancyGrid 資料(`ros2 topic echo /map --once` 拿得到)
+- `map → odom` TF 真的會發
+- RViz 內地圖隨著車自轉慢慢長出來
+
+> 💡 **若你的 ROSject 沒預裝 slam_toolbox**:免費版 `apt install` 受限,改建立**「ROS 2 Navigation」分類的 ROSject**(預裝 Nav2 + slam_toolbox)。
+
+---
+
+### Step 3b:💻 WSL 驗證(部分驗證過)
 
 ```bash
 # slam node 起來

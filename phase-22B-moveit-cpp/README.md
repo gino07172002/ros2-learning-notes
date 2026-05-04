@@ -33,6 +33,8 @@
 2. portfolio 級的 demo **不依賴 GUI**,CI 也可跑(實機部署常無 GUI)
 3. RViz 視覺驗證留給雲端 / 你本機之後補
 
+> 💡 **想用 GUI 自動產這 4 個 yaml + SRDF + self-collision matrix**?看 [Phase 21B MoveIt Setup Assistant](../phase-21B-moveit-setup-assistant/) — 業界做法是用 wizard 一鍵生成,本章手寫是教學用,讓你看清楚「最少需要什麼」。**真實專案先 21B 再 22B 微調**。
+
 ---
 
 ## 🏗️ 架構

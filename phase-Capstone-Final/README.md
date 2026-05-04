@@ -19,8 +19,13 @@
 - [`entrypoint.sh`](code/docker-capstone-a/entrypoint.sh) — source ROS + exec PID 1
 - [`.dockerignore`](code/docker-capstone-a/.dockerignore) — 白名單只把需要的 phase 帶進 build context
 
-**環境**:💻 本機 WSL2 + Docker Desktop / docker CE
-> ☁️ TheConstructSim:**沒原生 Docker**,但 ROSject 等價於 container,所以 Capstone Final 對應到 ROSject 直接 `ros2 launch` 就是同一件事
+**環境**:💻 **本機 WSL2 + Docker Desktop / docker CE 才能完整完成本章**(Docker 化是本章核心,雲端跑不了 docker compose)
+
+> ☁️ **想用雲端的人**:本章主軸是「**docker 化打包**」,雲端 ROSject 沒原生 Docker daemon,**沒辦法做 docker build / docker compose up 的部分**。
+>
+> 但**雲端有等價路線**:ROSject 本身就是個 container,所以你可以**跳過 docker 化步驟**,直接在雲端跑 [Capstone A](../phase-CapstoneA-mobile/) 的內容(Gazebo + Nav2 + 自訂 BT plugin + auto_navigator),**功能上完全一樣**,只是少了「打包成 docker image 帶去別的機器跑」這層。
+>
+> 只想跑通 mobile robot 整合 demo 的話,直接用 Capstone A 雲端步驟,**不需要本章**。本章是給「要把作品 docker 化部署實機 / 上 GHCR / 一鍵交付」的人。
 
 ---
 

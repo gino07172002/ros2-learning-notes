@@ -119,7 +119,7 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 | Phase | 主題 | 預計時長 | 環境 | 狀態 |
 |-------|------|---------|------|------|
 | 20B | 手臂 URDF（joint 類型、xacro、SRDF） | 2 day | ☁️💻 | ✅ |
-| 21B | MoveIt 2 入門（MoveIt Setup Assistant、RViz 操作面板） | 2 day | 💻 | ⬜ |
+| 21B | MoveIt 2 入門（Setup Assistant 自動產 4 個 yaml、demo.launch 跑 RViz） | 2 day | 💻 | ⏸ |
 | 22B | MoveIt 2 程式控制（C++ MoveGroupInterface、軌跡規劃 API） | 3 day | ☁️💻 | ✅ |
 | 23B | 進階主題（碰撞檢測、Pick & Place、視覺整合） | 3–5 day | 💻 | ⬜ |
 | **🎯 Capstone B** | **Gazebo 起 UR5/Panda 手臂 → MoveIt 規劃路徑 → 模擬抓取一個方塊，錄影驗證** | 2 day | 💻 | ⬜ |

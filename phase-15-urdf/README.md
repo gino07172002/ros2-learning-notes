@@ -12,6 +12,71 @@
 
 ---
 
+## 🌉 Part 3 → Part 4:從「邏輯機器人」到「物理機器人」
+
+Part 1–3 你學完所有**通訊機制**(Pub/Sub/Service/Action/Lifecycle)。但你的 Capstone 1 ApproachController 是個**邏輯概念** — 不知道 lidar 裝在哪、輪距多寬、attack 點是什麼方向。
+
+**Part 4 開始,Node 們有了一個身體**:
+
+```
+Phase 15 URDF        →   描述身體(joint / link / sensor 位置)
+Phase 16 TF2         →   讓身體上各部位的座標可以互相轉換
+Phase 17 Gazebo      →   把身體丟進物理引擎,讓它能撞牆能滾動
+Phase 18 ros2_control →  讓 Node 真的能驅動關節
+Phase 19 pluginlib   →   讓你能寫客製化的 controller / planner
+Phase 20 多機通訊    →   一台跑感知、另一台跑控制(實機常態)
+```
+
+**為什麼 SLAM、Nav2、MoveIt 不能直接學**:它們都假設你有 URDF — 沒身體就沒 TF tree、沒 TF tree 就沒辦法把 lidar 看到的東西定位到地圖上。
+
+---
+
+## 📋 開始之前:先修速查
+
+這章假設你已經會幾個基礎,沒概念的話花 3 分鐘看完:
+
+### XML 階層
+
+```xml
+<robot name="my_robot">           <!-- 最外層 -->
+  <link name="base">              <!-- 一個元件 -->
+    <visual>...</visual>          <!-- 子元件 -->
+  </link>
+  <joint name="left_wheel" ...>   <!-- 連接兩個 link 的關節 -->
+    <parent link="base"/>
+    <child link="wheel"/>
+  </joint>
+</robot>
+```
+
+**會 HTML 就會 XML**,差別只在 XML tag 自己定義 + 大小寫敏感。
+
+### 3D 座標 + RPY 旋轉
+
+URDF 用 `<origin xyz="x y z" rpy="roll pitch yaw"/>` 表示位置與姿態:
+
+| 軸 | 對應方向 | 旋轉角 |
+|---|---------|--------|
+| **x** | 機器人**前方** | roll(沿 x 軸轉,「翻車」)|
+| **y** | 機器人**左方** | pitch(沿 y 軸轉,「點頭」)|
+| **z** | 機器人**上方** | yaw(沿 z 軸轉,「轉彎」)|
+
+**單位**:長度 = 公尺,角度 = 弧度(`3.14` ≈ 180°)。
+
+### URDF / xacro / SDF — 三個格式的關係(預告)
+
+這章只用 URDF + xacro,但你之後會撞到 SDF。**先講清楚避免 Phase 17 卡住**:
+
+| 格式 | 誰用 | 本章用嗎 |
+|------|------|---------|
+| **URDF** | RViz / robot_state_publisher / TF tree(本章主角) | ✅ |
+| **xacro** | URDF 的「巨集系統」,用 `<macro>` 重用 link/joint(本章會用) | ✅ |
+| **SDF** | Gazebo 物理引擎自己的格式(Phase 17 才出場) | ❌ |
+
+**Gazebo 為什麼要另一套 SDF**:Gazebo 比 RViz 多了物理屬性(摩擦、阻尼、感測器 plugin),URDF 表達不了這些 → 通常用 URDF 寫,Gazebo 啟動時轉成 SDF。**Phase 17 會看到 turtlebot3 同時提供 URDF(給 robot_state_publisher)+ SDF(給 Gazebo 物理引擎),這是業界常態,不是 bug**。
+
+---
+
 ## 為什麼要 URDF
 
 到 Phase 14 為止你的「機器人」只是邏輯概念：fake_lidar 發訊息、smart_brake 收訊息。但**實際機器人有形狀有空間**：
