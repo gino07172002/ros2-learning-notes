@@ -4,7 +4,9 @@
 
 **前置**：[Phase 03](../phase-03-subscriber-lidar-brake/) — 已能跑光達避障。
 
-**產出**：[`code/my_cpp_pkg/`](code/my_cpp_pkg/) — 含 `auto_brake_service` 執行檔，同時是 Subscriber + Publisher + Service Server。
+**產出**：[`code/my_cpp_pkg/`](code/my_cpp_pkg/) — 含 `auto_brake_service` 執行檔,同時是 Subscriber + Publisher + Service Server。
+
+**環境**:☁️ TheConstructSim + 💻 本機 WSL 雙環境通用。本機需要 PointCloud2(用 `~/fake_lidar.py` 或 turtlebot3 waffle)。
 
 ---
 
@@ -19,11 +21,48 @@ Service 包含兩個角色：
 - **Server（提供者）**：接電話的人。收到 Request → 處理 → 回 Response。
 - **Client（呼叫者）**：打電話的人。送 Request → 等 Response。
 
-本章把 Phase 03 的避障改造為 Service Server，提供外部開關。
+本章把 Phase 03 的避障改造為 Service Server,提供外部開關。
 
 ---
 
-## 💻 步驟 1：撰寫帶 Service 的節點
+## 🕵️ 終端機偵探課:看 ROS 2 預設有哪些 service
+
+在自己寫 service 之前,**先看 ROS 系統原本有什麼**。任何 ROS 2 Node 啟動後都自帶內建 service,用 CLI 看一下:
+
+```bash
+# 啟動 Phase 03 的 auto_brake(任何 ROS 2 Node 都行)
+ros2 run my_cpp_pkg auto_brake &
+
+# 看這個 Node 提供哪些 service
+ros2 service list
+```
+
+預期看到:
+```
+/auto_brake_node/describe_parameters       ← 內建 5 個 parameter 相關
+/auto_brake_node/get_parameter_types
+/auto_brake_node/get_parameters
+/auto_brake_node/list_parameters
+/auto_brake_node/set_parameters
+/auto_brake_node/set_parameters_atomically
+```
+
+**重點**:
+- 每個 ROS 2 Node 啟動就**自動有 6 個 parameter service**(用 namespace `<node_name>/...`)— Phase 06 會深入用
+- 想看 service 是什麼型別 → `ros2 service type /auto_brake_node/get_parameters`
+- 想直接呼叫看看 → `ros2 service call <service> <type> "<yaml>"`
+
+```bash
+# 例:查 auto_brake_node 有哪些 parameter(目前還沒設,清單會空)
+ros2 service call /auto_brake_node/list_parameters \
+  rcl_interfaces/srv/ListParameters
+```
+
+**這章要做的事**:加一個 `/toggle_brake` service(自訂名稱),讓外部可以開關避障。學會了下面的步驟,你就會自己寫 service。
+
+---
+
+## 💻 步驟 1:撰寫帶 Service 的節點
 
 使用 ROS 2 內建的 `std_srvs/srv/SetBool`：Request 是布林、Response 是 `success`+`message`。
 
@@ -130,7 +169,7 @@ int main(int argc, char * argv[])
 
 ---
 
-## 步驟 2：CMakeLists.txt 與 package.xml
+## 📦 步驟 2：CMakeLists.txt 與 package.xml
 
 完整版見 [`code/my_cpp_pkg/CMakeLists.txt`](code/my_cpp_pkg/CMakeLists.txt) 與 [`code/my_cpp_pkg/package.xml`](code/my_cpp_pkg/package.xml)。
 
@@ -157,33 +196,27 @@ install(TARGETS
 
 ---
 
-## 🚀 步驟 3：編譯與實戰測試
+## 🚀 步驟 3:編譯與實戰測試
 
 > 兩種環境的差異只在「remap 到哪個 topic」。完整環境比較見 [SETUP.md](../SETUP.md)。
-> TheConstructSim 的 OriginBot 場景已有 `/livox/lidar`，本機 WSL2 如果沒有真 PointCloud2，需參考 [Phase 03](../phase-03-subscriber-lidar-brake/) 的做法，或使用你放在 `~/fake_lidar.py` 的假光達腳本。
 
-### 第一次準備 workspace
+### 部署 + 編譯(兩種環境通用)
 
-如果你是從這份筆記 repo 跑範例，先把本章套件放進 ROS 2 workspace。若 `~/ros2_ws/src/my_cpp_pkg` 已經存在，先跳過下面的 `cp`，改看下一段的合併提醒。
-
-```bash
-mkdir -p ~/ros2_ws/src
-
-# 在 phase-04-services-toggle 目錄執行
-cp -r code/my_cpp_pkg ~/ros2_ws/src/
-```
-
-如果 `~/ros2_ws/src/my_cpp_pkg` 已經存在，請把本章的 `src/auto_brake_service.cpp`、`CMakeLists.txt`、`package.xml` 合併進既有套件，不要盲目覆蓋自己前面章節改過的檔案。
-
-### 編譯（兩種環境通用）
+> 詳細的「workspace 從零建立」步驟見 [Phase 03 Step 6](../phase-03-subscriber-lidar-brake/)。本章只列重點:
 
 ```bash
+# 部署套件
+cp -r code/my_cpp_pkg ~/ros2_ws/src/    # ← 如果 my_cpp_pkg 已存在,改用合併:
+                                         #   只把本章的 src/auto_brake_service.cpp 加進去,
+                                         #   並更新 CMakeLists.txt + package.xml(別直接覆蓋)
+
+# 編譯
 cd ~/ros2_ws
 colcon build --packages-select my_cpp_pkg
 source install/setup.bash
 ```
 
-之後每開一個新 terminal，都要先執行 `cd ~/ros2_ws && source install/setup.bash`，否則 `ros2 run` 或 `ros2 service call` 可能找不到你的套件與型別。
+> 💡 每開新 terminal 都要先 `cd ~/ros2_ws && source install/setup.bash`,不然 `ros2 run` 找不到套件。
 
 ### ☁️ TheConstructSim：啟動 Server
 
@@ -193,58 +226,64 @@ ros2 run my_cpp_pkg auto_brake_service --ros-args \
   -r lidar_points:=/livox/lidar
 ```
 
-### 💻 本機 WSL2：準備 PointCloud2，再啟動 Server
+### 💻 本機 WSL2:準備 PointCloud2,再啟動 Server
 
-本機 TurtleBot3 預設多半是 2D LaserScan（`/scan`），不是本章需要的 PointCloud2。若你用 `~/fake_lidar.py` 製造假障礙物，流程會變成三個 terminal：
+本機 TurtleBot3 burger 預設只有 2D LaserScan(`/scan`),不是本章需要的 PointCloud2。需要靠 `~/fake_lidar.py` 製造假光達,所以本機會多開一個 terminal:
 
-**Terminal 1：發假光達**
+**Terminal 1:發假光達**
 
 ```bash
 python3 ~/fake_lidar.py 0.5
 ```
 
-**Terminal 2：啟動 Server**
+**Terminal 2:啟動 Server**
 
 ```bash
-# 如果你用 fake_lidar.py，它預設發到 /lidar_points，不需要 remap lidar_points
+# fake_lidar.py 預設發到 /lidar_points,不需要 remap lidar_points
 ros2 run my_cpp_pkg auto_brake_service
 ```
 
-如果你是用 Phase 03 的 TurtleBot3 waffle + Gazebo RealSense 做法，改用這個啟動指令：
+如果你是用 Phase 03 的 TurtleBot3 waffle + Gazebo RealSense 做法,改用這個啟動指令:
 
 ```bash
 ros2 run my_cpp_pkg auto_brake_service --ros-args \
   -r lidar_points:=/intel_realsense_r200_depth/points
 ```
 
-### Terminal 3：呼叫 Service 關閉避障（兩種環境通用）
+---
 
-先確認 service 有被註冊出來：
+### 🔧 呼叫 Service 開關避障(雲端 / 本機通用)
+
+> 這步**雲端跟本機都要做**。雲端是另開一個 terminal,本機是第 3 個 terminal。
+
+先確認 service 有被註冊出來:
 
 ```bash
 ros2 service list | grep toggle_brake
 ros2 service type /toggle_brake
 ```
 
-預期看到 `/toggle_brake`，型別是 `std_srvs/srv/SetBool`。接著在另一個 terminal 呼叫：
+預期看到 `/toggle_brake`,型別是 `std_srvs/srv/SetBool`。接著呼叫:
 
 ```bash
+# 關閉避障
 ros2 service call /toggle_brake std_srvs/srv/SetBool "{data: false}"
+
+# 重新啟動避障
+ros2 service call /toggle_brake std_srvs/srv/SetBool "{data: true}"
 ```
 
-要重新啟動避障，把 `false` 改成 `true` 再呼叫一次。
+> ⚠️ **注意**:這裡的「關閉避障」是讓本節點**停止處理光達並停止發布新的 `cmd_vel`**,不是送出一筆停車命令。如果前一筆速度命令還被下游控制器短暫保留,機器人可能不會立刻停住。真機安全邏輯通常會另外設計速度 timeout 或 emergency stop。
 
-> 注意：這裡的「關閉避障」是讓本節點停止處理光達並停止發布新的 `cmd_vel`，不是送出一筆停車命令。如果前一筆速度命令還被下游控制器短暫保留，機器人可能不會立刻停住。真機安全邏輯通常會另外設計速度 timeout 或 emergency stop。
-
-> 💡 進階：用 `rqt_service_caller`（GUI 版本）也可以呼叫，下一階段 Phase 05 會教。
+> 💡 進階:用 `rqt_service_caller`(GUI 版)也可以呼叫,Phase 05 會教。
 
 ---
 
 ## 📊 系統日誌解讀
 
-成功後會看到三個情境清楚展示 Topic（持續）vs Service（突發）：
+成功後你會看到兩段對比清楚展示 Topic(持續)vs Service(突發)。
 
-> 下面截圖使用本機 `fake_lidar.py 0.5` 示範，所以會固定看到 0.50m 障礙物。TheConstructSim 連真模擬光達時，距離數字會依場景變化。
+> 下面截圖使用本機 `fake_lidar.py 0.5` 示範,所以會固定看到 0.50m 障礙物。TheConstructSim 連真模擬光達時,距離數字會依場景變化。
 
 ### 情境 1：正常避障（System ENABLED）
 
@@ -280,9 +319,25 @@ ros2 service call /toggle_brake std_srvs/srv/SetBool "{data: false}"
 [INFO] Brake system offline. Waiting for enable command...
 ```
 
-🎯 **這就是 Service vs Topic 的對照**：
-- **Topic（光達 PointCloud2）**：持續廣播，`cloud_callback` 每秒被觸發 10 次（即使在休眠狀態）
-- **Service（toggle_brake）**：只在被呼叫的「那一瞬間」執行 `toggle_brake_callback` 一次
+---
+
+## 🎬 Service vs Topic 的對照(從 demo 看懂)
+
+跑完上面 demo,你現在能體會章首觀念表「廣播電台 vs 打電話」**具體在 callback 觸發頻率上的差異**:
+
+| 維度 | Topic(光達 PointCloud2) | Service(toggle_brake) |
+|------|------------------------|----------------------|
+| Callback 觸發頻率 | **持續**(10 Hz)— 即使休眠狀態也照常觸發 | **瞬間**(只在呼叫那一刻一次) |
+| 訂閱者數量 | 多對多(N publisher、N subscriber) | 一對一(每次呼叫一個 server) |
+| 是否阻塞 caller | Publisher 不等(async) | Client `service.call()` 等 response(sync) |
+| 適合什麼 | 連續資料流、感測器、命令 | 開關、查詢、單次計算 |
+
+**重點觀察**:
+- 即使 `is_brake_active_ = false`,`cloud_callback` **還是被光達觸發 10 Hz**(只是進去馬上 return)。Topic 訂閱永不停止,**這是 ROS 設計**
+- `toggle_brake_callback` **只在 `ros2 service call` 那一瞬間**執行一次
+- 想要「停止接收 Topic」必須**摧毀 subscription**(本章沒做),不是改 flag
+
+這個觀察是 Phase 09 學 `MultiThreadedExecutor` + `CallbackGroup` 的伏筆 — Topic 不停打,你要怎麼避免它擋住 Service。
 
 ---
 
@@ -297,5 +352,5 @@ ros2 service call /toggle_brake std_srvs/srv/SetBool "{data: false}"
 
 ## 下一步
 
-下一章開始學 **Parameters** — 讓常數（如 `0.2 m/s`、`1.0 m`）可以從外部動態調整，免重新編譯。
-- Phase 05 — Parameters（待完成）
+- [Phase 05 — Debug 工具集](../phase-05-debug-tools/):用 `rqt_graph` 視覺化看通訊圖、`ros2 bag` 錄重播、`rqt_service_caller` GUI 呼叫 service(本章你用 CLI 呼叫 `/toggle_brake`,Phase 05 教 GUI 版)
+- [Phase 06 — Parameters](../phase-06-parameters/):讓常數(`0.2 m/s`、`1.0 m`)變外部動態調整,免重新編譯
