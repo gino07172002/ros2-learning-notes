@@ -115,14 +115,14 @@ ros2 launch my_foxglove_demo diagnostics_with_bridge.launch.py
 ### 🤖 Part 4: 機器人形體 — 給 Node 們一個身體
 > 描述機器人物理結構(關節、感測器位置),為 SLAM/Nav2/MoveIt 鋪路。
 
-| Phase | 主題 | 學到什麼 | 🐍 Py |
-|-------|------|----------|------|
-| [15](phase-15-urdf/) | URDF + robot_state_publisher | xacro 巨集、joint 類型、TF tree 自動生成、tf2_echo CLI 驗證 | — |
-| [16](phase-16-tf2/) | TF2 進階 | static/dynamic broadcaster、Listener + Buffer、lookupTransform、業界口訣 | — |
-| [17](phase-17-gazebo/) | Gazebo 整合(headless) | gazebo.launch.py vs gzserver、URDF vs SDF、spawn_entity 雷、use_sim_time 必設 | — |
-| [18](phase-18-ros2-control/) | ros2_control | URDF 內 hardware 宣告、controller_manager + mock_components、command/state 流動 | — |
-| [19](phase-19-pluginlib/) | pluginlib | runtime 載入 C++ class、三套件分離(base/plugins/demo)、Nav2 擴充基礎 | — |
-| [20](phase-20-multi-machine/) | 多機通訊 | ROS_DOMAIN_ID 隔離、FastDDS Discovery Server 取代 multicast、docker compose 模擬多機 | — |
+| Phase | 主題 | 為什麼要學這章 | 學到什麼 | 🐍 Py |
+|-------|------|---------------|----------|------|
+| [15](phase-15-urdf/) | URDF + robot_state_publisher | 之前的機器人只是「邏輯概念」,URDF 才能讓系統知道光達在哪、輪距多寬 | xacro 巨集、joint 類型、TF tree 自動生成、tf2_echo CLI 驗證 | — |
+| [16](phase-16-tf2/) | TF2 進階 | 「光達看到 5 公尺前有牆」要轉成「機器人前 5 公尺」靠 TF;SLAM/Nav2 全靠這層 | static/dynamic broadcaster、Listener + Buffer、lookupTransform、業界口訣 | — |
+| [17](phase-17-gazebo/) | Gazebo 整合 | 沒實機怎麼開發?Gazebo 模擬環境讓你寫的 code 能撞牆能滾動 | gazebo.launch.py vs gzserver、URDF vs SDF、spawn_entity 雷、use_sim_time 必設 | — |
+| [18](phase-18-ros2-control/) | ros2_control | 業界 AGV/協作手臂的標準框架,讓「同一份 code 跑模擬 + 跑實機」零改動 | URDF 內 hardware 宣告、controller_manager + mock_components、command/state 流動 | — |
+| [19](phase-19-pluginlib/) | pluginlib | runtime 動態載 C++ class — Nav2 自訂 BT、MoveIt 自訂 planner 全靠它,業界職缺剛需 | runtime 載入 C++ class、三套件分離(base/plugins/demo)、Nav2 擴充基礎 | — |
+| [20](phase-20-multi-machine/) | 多機通訊 | 真機常常「筆電開 RViz、機器人跑感知」,得學 DOMAIN 隔離 + Discovery Server | ROS_DOMAIN_ID 隔離、FastDDS Discovery Server 取代 multicast、docker compose 模擬多機 | — |
 
 ### 🚀 Part 5: 領域應用 — 分流深入
 
@@ -131,45 +131,45 @@ ros2 launch my_foxglove_demo diagnostics_with_bridge.launch.py
 #### 🅰️ Track A:移動底盤(SLAM + Nav2)
 > 業界對應:掃地機器人、AGV、配送機器人、自駕車(部分)
 
-| Phase | 主題 | 學到什麼 | 🐍 Py |
-|-------|------|----------|------|
-| [20A](phase-20A-odometry-ekf/) | Odometry + robot_localization (EKF) | nav_msgs/Odometry 與 IMU covariance、EKF YAML 設定、實測 EKF 勝過 wheel-only 8 倍 | — |
-| [21A](phase-21A-slam-toolbox/) | SLAM with slam_toolbox | online async mapping、map→odom TF、WSL GPU 不足造成 queue full 雷的完整解析 | — |
-| [22A](phase-22A-nav2-basics/) | Nav2 入門 | 8 個 lifecycle node 全套、planner/controller plugin、base_footprint 雷、/initialpose 必下 | — |
-| [23A](phase-23A-nav2-bt-plugin/) | 自訂 Nav2 BT plugin | BT.cpp ConditionNode、BT_REGISTER_NODES 巨集、blackboard 共享 node、4 個 gtest 全過 | — |
-| [30](phase-30-nav2-bt-advanced/) | Nav2 BT 進階(4 種 node + 整合)| StatefulActionNode、DecoratorNode、OutputPort、6 個 gtest case、完整充電/巡邏 BT XML | — |
-| [🎯 Capstone A](phase-CapstoneA-mobile/) | **Mobile Robot 整合** | Gazebo + Nav2 + 自訂 BT plugin + Action client 自動 waypoint sequence 整合 | — |
+| Phase | 主題 | 為什麼要學這章 | 學到什麼 | 🐍 Py |
+|-------|------|---------------|----------|------|
+| [20A](phase-20A-odometry-ekf/) | Odometry + robot_localization (EKF) | SLAM/Nav2 都需要平滑準確的 `/odom`,單一 sensor 都不夠 → EKF 融合是標準 | nav_msgs/Odometry 與 IMU covariance、EKF YAML 設定、實測 EKF 勝過 wheel-only 8 倍 | — |
+| [21A](phase-21A-slam-toolbox/) | SLAM with slam_toolbox | 沒地圖就沒 Nav2、沒 Nav2 就沒自動導航;業界 90% 用 slam_toolbox | online async mapping、map→odom TF、WSL GPU 不足造成 queue full 雷的完整解析 | — |
+| [22A](phase-22A-nav2-basics/) | Nav2 入門 | Nav2 是 ROS 2 移動機器人事實標準,業界工程師 80% 工作都在跟它打交道 | 8 個 lifecycle node 全套、planner/controller plugin、base_footprint 雷、/initialpose 必下 | — |
+| [23A](phase-23A-nav2-bt-plugin/) | 自訂 Nav2 BT plugin | 客製化 Nav2 行為(自訂條件 / 自訂動作)= 從「會用 Nav2」變成「會改 Nav2」 | BT.cpp ConditionNode、BT_REGISTER_NODES 巨集、blackboard 共享 node、4 個 gtest 全過 | — |
+| [30](phase-30-nav2-bt-advanced/) | Nav2 BT 進階(4 種 node + 整合)| 真實專案要寫長任務 + decorator + 進階 BT,本章 4 種 node 完整覆蓋 | StatefulActionNode、DecoratorNode、OutputPort、6 個 gtest case、完整充電/巡邏 BT XML | — |
+| [🎯 Capstone A](phase-CapstoneA-mobile/) | **Mobile Robot 整合** | Track A 集大成 demo:Gazebo + Nav2 + 自訂 BT + 自動 waypoint sequence | Gazebo + Nav2 + 自訂 BT plugin + Action client 自動 waypoint sequence 整合 | — |
 
 #### 🅱️ Track B:機械手臂(MoveIt 2)
 > 業界對應:協作手臂(UR、TM)、工業手臂、人形機器人手部
 
-| Phase | 主題 | 學到什麼 | 🐍 Py |
-|-------|------|----------|------|
-| [20B](phase-20B-arm-urdf/) | 手臂 URDF (xacro + SRDF) | xacro macro 抽 6 個 link 模板、SRDF 為 MoveIt 鋪路、ParameterValue str 雷 | — |
-| [21B](phase-21B-moveit-setup-assistant/) ⏸ | MoveIt Setup Assistant | GUI wizard 自動產 4 個 yaml + SRDF + collision matrix,業界 100% 用它(草稿,截圖待補) | — |
-| [22B](phase-22B-moveit-cpp/) | MoveIt 2 C++ API | MoveGroupInterface plan + 4 種 target、3 份 description params、IK 失敗雷 | — |
-| 23B | (待完成,需視覺驗證) | — | — |
-| 🎯 Capstone B | (待完成,需視覺驗證) | — | — |
+| Phase | 主題 | 為什麼要學這章 | 學到什麼 | 🐍 Py |
+|-------|------|---------------|----------|------|
+| [20B](phase-20B-arm-urdf/) | 手臂 URDF (xacro + SRDF) | 跟移動底盤不同,手臂的 link 多 + 需要 SRDF 給 MoveIt 看 collision/group | xacro macro 抽 6 個 link 模板、SRDF 為 MoveIt 鋪路、ParameterValue str 雷 | — |
+| [21B](phase-21B-moveit-setup-assistant/) ⏸ | MoveIt Setup Assistant | 業界 100% 用 GUI wizard 自動產 MoveIt config,手寫 4 個 yaml 是教學用 | GUI wizard 自動產 4 個 yaml + SRDF + collision matrix(草稿,截圖待補) | — |
+| [22B](phase-22B-moveit-cpp/) | MoveIt 2 C++ API | 業界手臂 100% 用 MoveIt 規劃,寫一行 setNamedTarget 就完成軌跡規劃 | MoveGroupInterface plan + 4 種 target、3 份 description params、IK 失敗雷 | — |
+| 23B | (待完成,需視覺驗證) | — | — | — |
+| 🎯 Capstone B | (待完成,需視覺驗證) | — | — | — |
 
 ### 📦 Part 6: 生產化部署 — 上線
 > 不論做 mobile 還是 arm,要把作品交付都需要這些。
 
-| Phase | 主題 | 學到什麼 | 🐍 Py |
-|-------|------|----------|------|
-| [24](phase-24-docker/) | Docker 化 Capstone 1 | multi-stage build、entrypoint.sh exec、`network_mode: host` + `ipc: shareable` 兩大 DDS 雷 | — |
-| [25](phase-25-ci-cd/) | CI/CD with GitHub Actions | container build + colcon test + lint matrix + image push 到 GHCR | — |
-| [26](phase-26-dds-qos/) | DDS QoS 調校 | Reliability/Durability/Deadline、Reliable↔BestEffort 兼容方向、實測掉包 | — |
-| [32](phase-32-rosbag2-advanced/) | rosbag2 進階 | 選擇性錄製、MCAP backend、QoS override 重播、bag 餵回 SLAM、Python 解 bag 出 CSV | ✅ |
-| [36](phase-36-diagnostics-watchdog/) | Diagnostics + Heartbeat Watchdog | `diagnostic_updater` + `aggregator`、4 等級 status、library + main + 4 個 gtest case | — |
-| [35](phase-35-foxglove-bridge/) | Foxglove Bridge — 即時可視化 | `foxglove_bridge` 一行裝、layout JSON 版控、串 Phase 36 的儀表板 demo | — |
-| [37](phase-37-lifecycle-diagnostics/) | LifecycleNode + Diagnostics 整合 | LifecycleNode + Updater 標準骨架、5 個 gtest case、5 條 lifecycle 雷 | — |
+| Phase | 主題 | 為什麼要學這章 | 學到什麼 | 🐍 Py |
+|-------|------|---------------|----------|------|
+| [24](phase-24-docker/) | Docker 化 Capstone 1 | 「在我電腦上能跑」不是交付,Docker 才能丟到任何機器(實機 / 雲端 / GHCR) | multi-stage build、entrypoint.sh exec、`network_mode: host` + `ipc: shareable` 兩大 DDS 雷 | — |
+| [25](phase-25-ci-cd/) | CI/CD with GitHub Actions | 沒 CI 的 ROS code 不能交付,業界一定有自動 build + test + image push | container build + colcon test + lint matrix + image push 到 GHCR | — |
+| [26](phase-26-dds-qos/) | DDS QoS 調校 | 預設 QoS 不夠用,實機掉包 / sensor 跟不上時才會發現,得提前學 | Reliability/Durability/Deadline、Reliable↔BestEffort 兼容方向、實測掉包 | — |
+| [32](phase-32-rosbag2-advanced/) | rosbag2 進階 | 實機現場錄資料、回家放離線分析 / 後處理建圖 — 業界 debug 必備流程 | 選擇性錄製、MCAP backend、QoS override 重播、bag 餵回 SLAM、Python 解 bag 出 CSV | ✅ |
+| [36](phase-36-diagnostics-watchdog/) | Diagnostics + Heartbeat Watchdog | 業界 oncall paging 都靠 `/diagnostics_agg`,沒它系統爛了沒人知道 | `diagnostic_updater` + `aggregator`、4 等級 status、library + main + 4 個 gtest case | — |
+| [35](phase-35-foxglove-bridge/) | Foxglove Bridge — 即時可視化 | 2024 後新專案 90% 用 Foxglove 取代 RViz,layout 可版控比 RViz 強 | `foxglove_bridge` 一行裝、layout JSON 版控、串 Phase 36 的儀表板 demo | — |
+| [37](phase-37-lifecycle-diagnostics/) | LifecycleNode + Diagnostics 整合 | 實機部署的 production node 標準骨架 — 抄這個就能寫實機 node | LifecycleNode + Updater 標準骨架、5 個 gtest case、5 條 lifecycle 雷 | — |
 
 ### 🏁 Capstone Final — 整 repo 最終整合
 > 整 repo 的 deliverable,**任何有 Docker 的機器都能跑**
 
-| Phase | 主題 | 學到什麼 | 🐍 Py |
-|-------|------|----------|------|
-| [🎯 Capstone Final](phase-Capstone-Final/) | **Docker 化全套 Mobile Robot** | multi-stage build、host network、ipc shareable、可 push GHCR、實機部署模板 | — |
+| Phase | 主題 | 為什麼要學這章 | 學到什麼 | 🐍 Py |
+|-------|------|---------------|----------|------|
+| [🎯 Capstone Final](phase-Capstone-Final/) | **Docker 化全套 Mobile Robot** | 整 repo 終點:把 Capstone A 整套打包成 1.26GB image,`docker compose up` 一鍵交付 | multi-stage build、host network、ipc shareable、可 push GHCR、實機部署模板 | — |
 
 > 🐍 欄位:✅ 有 rclpy 對照版(資料夾內 `python/`) ｜ — 純觀念或暫無對照
 

@@ -82,14 +82,15 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 |-------|------|---------|------|------|
 | 15 | URDF + robot_state_publisher | 1 day | ☁️💻 | ✅ |
 | 16 | TF2 座標轉換樹（含時間戳處理、buffer/listener） | 1 day | ☁️💻 | ✅ |
-| 17 | Gazebo 整合（spawn URDF, gazebo_ros plugins） | 1 day | 💻 | ✅ |
-| 18 | ros2_control（硬體抽象層 + controller manager） | 2 day | 💻 | ✅ |
+| 17 | Gazebo 整合（spawn URDF, gazebo_ros plugins） | 1 day | ☁️💻 | ✅ |
+| 18 | ros2_control（硬體抽象層 + controller manager） | 2 day | ☁️💻 | ✅ |
 | 19 | **pluginlib**（自訂 controller / planner / BT node） | 1 day | ☁️💻 | ✅ |
-| 20 | **多機通訊**（ROS_DOMAIN_ID, FastDDS Discovery Server） | 1 day | 💻 | ✅ |
+| 20 | **多機通訊**（ROS_DOMAIN_ID, FastDDS Discovery Server） | 1 day | 🚫 本機 | ✅ |
 
-> **新增 Phase 18 pluginlib**：業界職缺剛需。Nav2 自訂 BT plugin、MoveIt 自訂 planner、ros2_control 自訂 controller 全靠它。
-> **Phase 19 多機通訊提前**：原本放 Part 6，但實機測試很早就會用（筆電開 RViz、機器人跑節點），提前到 Part 4 結尾。
-> **Phase 16/17/19 標 💻**：Gazebo 與多機通訊在雲端模擬器有限制，建議本機 WSL 跑。
+> **新增 Phase 19 pluginlib**：業界職缺剛需。Nav2 自訂 BT plugin、MoveIt 自訂 planner、ros2_control 自訂 controller 全靠它。
+> **Phase 20 多機通訊提前**：原本放 Part 6，但實機測試很早就會用（筆電開 RViz、機器人跑節點），提前到 Part 4 結尾。
+> **Phase 17/18 雲端可跑**：Gazebo 在雲端 ROSject 比 WSL 順;ros2_control 用 mock_components,雲端也能跑。Phase 20 因為要 docker compose 模擬多機,雲端跑不了。
+> 各章雲端可用性詳細對照見 [SETUP.md](SETUP.md#-各章雲端可用性對照表)。
 
 ---
 
@@ -105,11 +106,13 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 | Phase | 主題 | 預計時長 | 環境 | 狀態 |
 |-------|------|---------|------|------|
 | 20A | Odometry 基礎 + robot_localization (EKF 融合 IMU/odom) | 2 day | ☁️💻 | ✅ |
-| 21A | SLAM（slam_toolbox 即時建圖） | 2 day | ☁️💻 | ✅ |
-| 22A | Nav2 入門（Costmap、Planner、Controller、Behavior Tree） | 3–5 day | ☁️💻 | ✅ |
+| 21A | SLAM（slam_toolbox 即時建圖） | 2 day | ☁️ 推薦 / 💻 結構 | ✅ |
+| 22A | Nav2 入門（Costmap、Planner、Controller、Behavior Tree） | 3–5 day | ☁️ 推薦 / 💻 結構 | ✅ |
 | 23A | Nav2 進階（自訂 BT plugin、動態避障、多目標巡邏） | 3 day | ☁️💻 | ✅ |
 | 30  | Nav2 BT 進階（4 種 node 完整 plugin 集 + 整合 BT XML） | 1 day | ☁️💻 | ✅ |
-| **🎯 Capstone A** | **本機 Gazebo 起 TurtleBot3 → SLAM 建圖 → Nav2 自動導航到指定點，錄影驗證** | 2 day | ☁️💻 | ✅ |
+| **🎯 Capstone A** | **Gazebo 起 TurtleBot3 → SLAM 建圖 → Nav2 自動導航到指定點，錄影驗證** | 2 day | ☁️ 推薦 / 💻 結構 | ✅ |
+
+> **「☁️ 推薦 / 💻 結構」**:雲端有 GPU,SLAM/Nav2 真的會建出地圖、跑出導航;WSL 沒 GPU 只能驗證 lifecycle 結構正確,實際 demo 跑不順。詳見 [SETUP.md 對照表](SETUP.md#-各章雲端可用性對照表)。
 
 ### 🅱️ Track B：機械手臂（Manipulator）
 
@@ -119,10 +122,12 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 | Phase | 主題 | 預計時長 | 環境 | 狀態 |
 |-------|------|---------|------|------|
 | 20B | 手臂 URDF（joint 類型、xacro、SRDF） | 2 day | ☁️💻 | ✅ |
-| 21B | MoveIt 2 入門（Setup Assistant 自動產 4 個 yaml、demo.launch 跑 RViz） | 2 day | 💻 | ⏸ |
+| 21B | MoveIt 2 入門（Setup Assistant 自動產 4 個 yaml、demo.launch 跑 RViz） | 2 day | 🚫 本機 | ⏸ |
 | 22B | MoveIt 2 程式控制（C++ MoveGroupInterface、軌跡規劃 API） | 3 day | ☁️💻 | ✅ |
 | 23B | 進階主題（碰撞檢測、Pick & Place、視覺整合） | 3–5 day | 💻 | ⬜ |
 | **🎯 Capstone B** | **Gazebo 起 UR5/Panda 手臂 → MoveIt 規劃路徑 → 模擬抓取一個方塊，錄影驗證** | 2 day | 💻 | ⬜ |
+
+> **Phase 21B 標 🚫 本機**:Setup Assistant 是純 GUI wizard,雲端 web terminal 不順,**強烈建議本機跑**。
 
 ---
 
@@ -132,15 +137,17 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 
 | Phase | 主題 | 預計時長 | 環境 | 狀態 |
 |-------|------|---------|------|------|
-| 24 | Docker + Dev Container（含 ROS 2 image 最佳實踐） | 2 day | 💻 | ✅ |
-| 25 | CI/CD（GitHub Actions 跑 colcon test、image build） | 1 day | 💻 | ✅ |
-| 26 | DDS QoS 調校（Reliability、Durability、Deadline） | 2 day | 💻 | ✅ |
-| 27 | 部署到實機（Raspberry Pi / Jetson / 工控機） | 2–3 day | 💻 | ⬜ |
+| 24 | Docker + Dev Container（含 ROS 2 image 最佳實踐） | 2 day | 🚫 本機 | ✅ |
+| 25 | CI/CD（GitHub Actions 跑 colcon test、image build） | 1 day | 🚫 本機 | ✅ |
+| 26 | DDS QoS 調校（Reliability、Durability、Deadline） | 2 day | ☁️💻 | ✅ |
+| 27 | 部署到實機（Raspberry Pi / Jetson / 工控機） | 2–3 day | 💻 實機 | ⬜ |
 | 32 | rosbag2 進階（選擇性錄製、QoS override、bag → SLAM 離線建圖、Python 後處理） | 1 day | ☁️💻 | ✅ |
 | 36 | Diagnostics + Heartbeat Watchdog（多 topic 心跳監控、aggregator 階層、4 個 gtest） | 1 day | ☁️💻 | ✅ |
 | 35 | Foxglove Bridge（一行裝、layout JSON 版控、串 Phase 36 demo） | 0.5 day | ☁️💻 | ✅ |
 | 37 | LifecycleNode + Diagnostics 整合（每個 transition 自動發 diagnostic、5 個 gtest） | 1 day | ☁️💻 | ✅ |
-| **🎯 Capstone Final** | **把 Capstone A 或 B 完整 docker 化，CI 跑測試，一鍵 `docker compose up` 重現** | 2 day | 💻 | ✅ |
+| **🎯 Capstone Final** | **把 Capstone A 或 B 完整 docker 化，CI 跑測試，一鍵 `docker compose up` 重現** | 2 day | 🚫 本機 | ✅ |
+
+> **🚫 本機**:雲端 ROSject 沒原生 Docker daemon,Docker / CI / Capstone Final 都需要本機。Phase 26 改成 ☁️💻:純 ROS 2 內 QoS 行為,雲端能跑。
 
 ---
 
