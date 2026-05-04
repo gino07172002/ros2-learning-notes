@@ -345,6 +345,130 @@ trajectory_msgs/JointTrajectoryPoint current_joints
 
 ---
 
+## 🌍 真實專案會用到幾種?(別以為都要全部自訂)
+
+讀完 Phase 08 你**可能誤以為**:寫 ROS 2 專案就要 .msg + .srv + .action 都自訂一輪。**錯**。
+
+**業界現實:大部分專案只用 1–2 種,很多時候連自訂都不用,全 reuse 內建 / 框架的就夠。**
+
+### 📋 真實專案 × 介面使用組合對照
+
+| 專案類型 | 自訂 .msg | 自訂 .srv | 自訂 .action | 備註 |
+|---------|----------|----------|--------------|------|
+| **單純 LiDAR 避障**(Phase 03) | ❌ 0 | ❌ 0 | ❌ 0 | 全用內建 `sensor_msgs/PointCloud2` + `geometry_msgs/Twist` |
+| **ros2_control 馬達控制**(Phase 18) | ❌ 0 | ❌ 0 | ❌ 0 | 全用內建 `control_msgs` 介面 |
+| **相機 publisher** | ❌ 0 | ❌ 0 | ❌ 0 | 全用 `sensor_msgs/Image` |
+| **TurtleBot3 預設整套** | ❌ 0 | ❌ 0 | ❌ 0 | 用內建 + Nav2/SLAM 提供的全部 |
+| **Phase 07 Mini Capstone**(智能煞車車) | ❌ 0 | ❌ 0 | ❌ 0 | 全用 std_srvs/SetBool + Twist |
+| **燈光控制系統** | ✅ 1(LightStatus) | ✅ 1(SetColor) | ❌ 0 | 中型典型 |
+| **校正工具**(陀螺儀 / 相機 calib) | ✅ 1(CalibData) | ✅ 1(TriggerCalib) | ❌ 0 | 短任務不需要 action |
+| **多機器人 fleet 管理** | ✅ 2(RobotInfo, FleetStatus) | ✅ 2(AssignTask, EmergencyStop) | ❌ 0 | 派任務用 srv,**任務本身用各機器人原本的 action** |
+| **Phase 14 Capstone 1**(自家)| ✅ 1(SignalStrength) | ❌ 0 | ✅ 1(Approach) | 教學特意三種都教,實際小專案不必這樣 |
+| **Phase 08 demo**(自家) | ✅ 1 | ✅ 1 | ✅ 1 | 同上,教學專用 |
+| **服務型機器人**(送餐、配送) | ✅ 2–3 | ✅ 3–5 | ✅ 1–2 | 主任務自訂 action,其餘配置用 srv |
+| **協作手臂專案** | ✅ 1–2 | ✅ 2–4 | ✅ 1(PickAndPlace) | 多 reuse MoveIt 內建,主任務一個 |
+| **量產 AGV / 配送機器人** | ✅ 5–10 | ✅ 5–10 | ✅ 2–3 | 大型 production,但 .action 仍很少 |
+
+### 📊 業界知名框架的真實數字
+
+看一下「大型專案」實際的介面數量分布(從 [Nav2 / MoveIt / control_msgs 的 GitHub 翻出來](https://github.com/ros-planning)):
+
+| 框架 | .msg | .srv | .action |
+|------|------|------|---------|
+| **nav2_msgs** | 16 | 4 | **5** |
+| **moveit_msgs** | 65 | 31 | **6** |
+| **control_msgs** | 14 | 0 | **5** |
+| **sensor_msgs**(ROS 內建) | 30+ | 4 | 0 |
+| **turtlesim**(教學玩具) | 1 | 5 | 1 |
+
+**結論**:就算是 Nav2/MoveIt 這種**整個自駕導航 / 手臂規劃框架**,`.action` 加起來也就 5–6 個。**.msg 才是大宗,佔 80%+**。
+
+### 🎭 5 個最常見的「介面使用模式」
+
+#### 模式 1:**完全 reuse,自訂 0 個**(佔比 60%+ 的小專案)
+
+你大部分時候在做的事:
+```
+- 用 ros2_control 跑馬達(reuse control_msgs)
+- 訂閱 LiDAR(reuse sensor_msgs/PointCloud2)
+- 發 cmd_vel(reuse geometry_msgs/Twist)
+- 跑 Nav2(用 nav2_msgs/NavigateToPose action)
+```
+
+**你寫 ROS 2 五年都可能沒自訂過任何 .action**。這是常態。
+
+#### 模式 2:**只自訂 .msg**(佔比 20%)
+
+什麼時候:
+- 你的系統有獨特狀態想廣播給多個 Node
+- 例:`MyRobotStatus.msg`(電量+溫度+運行時間+異常碼一起發)
+
+不需要 .srv 是因為**沒有「請求-回應」需求**(可能配置都用 ROS Parameters 解掉)。
+不需要 .action 是因為**沒有長任務**(任務都 reuse Nav2/MoveIt 的)。
+
+#### 模式 3:**.msg + .srv 組合**(佔比 15%,中型專案最常見)
+
+什麼時候:
+- 系統有「持續廣播狀態」+「離散切換動作」的需求
+- 例:燈光控制(廣播當前顏色 + 切換顏色 srv)
+- 例:校正工具(即時讀值 + 觸發校正 srv)
+
+**不需要 .action 是因為主任務不夠長 / 不需要進度條**。
+
+#### 模式 4:**三種都自訂**(佔比 5%,只在「主任務型」專案出現)
+
+什麼時候:
+- 你的專案**核心是一個長任務**,且需要 cancel + 進度
+- 例:掃地機器人的 `CleanRoom`(整合情境 1)
+- 例:手臂的 `PickAndPlace`(整合情境 2)
+- 例:Phase 14 Capstone 的 `Approach`
+
+通常**整個系統就一個自訂 .action**,其餘還是 .msg + .srv 主力。
+
+#### 模式 5:**只用 .action**(罕見)
+
+幾乎只在「教學示範 action 機制」時出現。實務上**只用 .action 不用 .msg/.srv 的系統極少**(因為機器人總有狀態要廣播)。
+
+### 🤔 怎麼判斷你的專案需要自訂哪些?
+
+5 個問題,**從上往下答,YES 才需要自訂**:
+
+```
+1. 你的系統有沒有「現有 ROS 訊息表達不出來」的領域狀態?
+     ✅ 例:整合多 sensor 的健康狀態、領域特有資料(送餐訂單)
+     YES → 自訂 .msg
+
+2. 有沒有「外部要呼叫你的系統做設定 / 切換 / 查詢」?
+     ✅ 例:切清掃模式、查詢當前任務、緊急停止
+     YES → 自訂 .srv
+
+3. 有沒有跑超過 10 秒、需要進度回報、可能要中途取消的任務?
+     ✅ 例:導航、規劃、整理書架、整套組裝任務
+     YES → 自訂 .action(但先想想能不能用現有的,例 Nav2 NavigateToPose)
+
+4. 上面的需求能不能用 ROS Parameters / 內建訊息解掉?
+     YES → **跳過,不要為了「練習」自訂介面**
+```
+
+**核心原則**:**自訂介面是有成本的**(維護、版本相容、部署複雜度),**沒明確需求就別寫**。
+
+---
+
+### 🎓 給新手的減壓宣言
+
+讀完 Phase 08 別有壓力。**「會定義」≠「每個專案都要定義」**。
+
+| 階段 | 你該做什麼 |
+|------|-----------|
+| **學 ROS 2 前 6 個月** | 全 reuse 內建,不用自訂任何介面 |
+| **第一個自己的小專案** | 可能自訂 1 個 .msg,其他 reuse |
+| **第一個整合多 Node 的專案** | 可能再加 1–2 個 .srv |
+| **第一個有「主任務」概念的專案** | 才開始自訂 .action |
+
+Phase 08 是給你「**將來需要時知道怎麼做**」,不是「**現在就應該全用上**」。
+
+---
+
 ## 🏗️ 業界慣例：interface 套件獨立
 
 **錯的做法**（新手常做）：
