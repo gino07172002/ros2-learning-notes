@@ -156,10 +156,11 @@ WSL 開的 ros2 launch 即使 `setsid` / `nohup` detach,**wsl 命令結束時背
 
 ## 📊 實際投入
 
-- **Phase 數**:33(20 個前期 + 12 個本次補,加 1 個 Capstone Final)
-- **Code 行數**:~5500 行 C++ + ~3500 行 Python + ~24000 行 Markdown
+- **Phase 數**:35(20 個前期 + 14 個本次補,加 1 個 Capstone Final)
+- **Code 行數**:~6500 行 C++ + ~3500 行 Python + ~28000 行 Markdown
 - **驗證標準**:每章 README 內「驗證過」段都是 WSL 真跑的輸出 + 雷區條目都是實際踩過修好的
-- **gtest 測試**:Phase 12 + Capstone 1(5 個)+ Phase 23A(4 個)+ Phase 30(6 個)= 約 16 個 gtest case
+- **gtest 測試**:Phase 12 + Capstone 1(5)+ Phase 23A(4)+ Phase 30(6)+ Phase 36(4)+ Phase 37(5)= 約 25 個 gtest case
+- **進階生態 5 章**:Phase 30(BT)+ 36(Diagnostics)+ 35(Foxglove)+ 37(Lifecycle 整合)+ 32(rosbag2)— 一條 launch 串完整 production stack
 - **Docker images**:capstone1:latest(Phase 24)+ phase20:latest(Phase 20)+ capstone-final:latest(整套 1.26GB)
 
 ---

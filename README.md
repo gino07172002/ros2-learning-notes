@@ -19,6 +19,51 @@
 
 ---
 
+## 🧰 進階章節:工程化生態(Phase 30+)
+
+> 給已經會基本 ROS 2 (Phase 01–26) 的人。這 5 章把「**寫 production-ready ROS 2 系統**」的關鍵套件全部跑過一遍 — Behavior Tree、可觀測性、可視化、Lifecycle 健康監控、離線分析。每章獨立可學,但接起來就是完整的 production stack。
+
+```
+┌── 行為決策 ──┐    ┌── 可觀測性 ──┐    ┌── 可視化 ──┐
+│  Phase 30     │    │  Phase 36     │    │  Phase 35   │
+│  Nav2 BT 進階 │    │  Watchdog +   │    │  Foxglove   │
+│  4 種 BT node │    │  Diagnostics  │    │  Bridge     │
+└───────────────┘    └───────┬───────┘    └──────┬──────┘
+                             │                    │
+                             ▼                    │
+                     ┌─────────────────┐          │
+                     │  Phase 37       │          │
+                     │  Lifecycle +    │          │
+                     │  Diagnostics    │ ◄────────┘
+                     │  整合骨架        │
+                     └─────────────────┘
+                             │
+                             ▼
+                     ┌─────────────────┐
+                     │  Phase 32       │
+                     │  rosbag2 進階   │
+                     │  (錄 + 離線分析) │
+                     └─────────────────┘
+```
+
+| 章節 | 角色 | 為什麼選它 |
+|------|------|-----------|
+| [Phase 30 Nav2 BT 進階](phase-30-nav2-bt-advanced/) | **行為決策** — 4 種 BT node 完整 plugin 集 | StatefulActionNode 三態、DecoratorNode RUNNING 傳遞、OutputPort 寫 blackboard,**Nav2 客製化的核心技能**;6 個 gtest case |
+| [Phase 36 Diagnostics + Watchdog](phase-36-diagnostics-watchdog/) | **可觀測性** — 健康監控的事實標準 | `diagnostic_updater::Updater` + `aggregator`、library + main + 4 個 gtest;業界 oncall paging 都靠 `/diagnostics_agg` |
+| [Phase 35 Foxglove Bridge](phase-35-foxglove-bridge/) | **可視化** — RViz 看不到的東西全在這 | `apt install` 一行、layout JSON 版控、串 Phase 36 demo 一鍵起儀表板;**2024 後新專案 90% 用 Foxglove** |
+| [Phase 37 Lifecycle + Diagnostics 整合](phase-37-lifecycle-diagnostics/) | **production node 骨架** | LifecycleNode 每個 transition 自動發 diagnostic、`MultiThreadedExecutor` 解 service 死鎖;5 個 gtest case;**抄這個就能寫實機 node** |
+| [Phase 32 rosbag2 進階](phase-32-rosbag2-advanced/) | **離線分析 pipeline** | 選擇性錄製、MCAP backend、QoS override 重播、bag → SLAM 離線建圖、`rosbag2_py` 解 bag 出 CSV |
+
+**完整 production demo**(一條 launch 啟全部):
+
+```bash
+# Phase 36 watchdog + Phase 35 Foxglove 串起來
+ros2 launch my_foxglove_demo diagnostics_with_bridge.launch.py
+# 瀏覽器:https://app.foxglove.dev → ws://localhost:8765 → import diagnostics_layout.json
+```
+
+---
+
 ## 🗺️ 完整章節結構
 
 > 章節依「**學習層次**」分成幾個 Part。每個 Part 內各章可跳讀,但 Part 之間有遞進關係 — 下一個 Part 假設你能用前一個 Part 的東西。
@@ -105,6 +150,7 @@
 | [32](phase-32-rosbag2-advanced/) | rosbag2 進階 | 選擇性錄製、MCAP backend、QoS override 重播、bag 餵回 SLAM、Python 解 bag 出 CSV | ✅ |
 | [36](phase-36-diagnostics-watchdog/) | Diagnostics + Heartbeat Watchdog | `diagnostic_updater` + `aggregator`、4 等級 status、library + main + 4 個 gtest case | — |
 | [35](phase-35-foxglove-bridge/) | Foxglove Bridge — 即時可視化 | `foxglove_bridge` 一行裝、layout JSON 版控、串 Phase 36 的儀表板 demo | — |
+| [37](phase-37-lifecycle-diagnostics/) | LifecycleNode + Diagnostics 整合 | LifecycleNode + Updater 標準骨架、5 個 gtest case、5 條 lifecycle 雷 | — |
 
 ### 🏁 Capstone Final — 整 repo 最終整合
 > 整 repo 的 deliverable,**任何有 Docker 的機器都能跑**
