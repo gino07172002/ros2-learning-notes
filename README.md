@@ -10,6 +10,7 @@
 |---------|---------|-----------|
 | 🆕 **沒碰過 ROS 2** | **[GETTING_STARTED.md](GETTING_STARTED.md)** | 用 MQTT/gRPC 對照解釋 ROS 2 是什麼,給你一條 7 章新手路徑(約 1 週下午時段),跑完就會寫多節點通訊系統 |
 | 🚀 **會 ROS 1 想學 ROS 2** | 仍從 [Phase 01](phase-01-cloud-env-first-publisher/) 起 | 觀念差很多,Phase 02 會說清楚為什麼 ROS 2 全部重寫;之後可跳到 Phase 09(Executor / Lifecycle / Composition — ROS 2 才有的) |
+| 🏛️ **想學 library 設計觀** | **[DESIGN_NOTES.md](DESIGN_NOTES.md)** | 把 ROS 2 當成 library 設計教材讀,深挖 init/spin/shutdown / Executor / shared_ptr 約束等設計決策,提煉可帶走的設計通則 |
 | 💼 **招聘方 / Code reviewer** | **[PORTFOLIO.md](PORTFOLIO.md)** | 30 秒看完技術棧、3 個最強章節、6 條最有故事的雷 |
 | 🗺️ **想看完整學習地圖** | [ROADMAP.md](ROADMAP.md) | Part 1–6 結構、Track A(Mobile)/ B(Arm)分流、各章預計時長 |
 | ⚙️ **要設定環境** | [SETUP.md](SETUP.md) | TheConstructSim ☁️ vs 本機 WSL2 💻 兩種環境完整步驟 + 比較表 |

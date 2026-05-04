@@ -241,3 +241,4 @@ ROS 2 用 `colcon` 包裝過 CMake,**前 7 章你只會碰到 5 行 CMake**(都�
 
 > 📚 **想了解這個 repo 的全貌**(已完成 32+ 章,Capstone 都驗證過):看 [`README.md`](README.md) 或 [`PORTFOLIO.md`](PORTFOLIO.md)。
 > 🗺️ **完整學習地圖**(Track A/B 分流):看 [`ROADMAP.md`](ROADMAP.md)。
+> 🏛️ **想學「ROS 2 為什麼這樣設計」、把它當 library 設計教材讀**:跑完 Phase 02 後看 [`DESIGN_NOTES.md`](DESIGN_NOTES.md)。

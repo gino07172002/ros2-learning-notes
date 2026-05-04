@@ -446,8 +446,9 @@ CMakeLists.txt: pluginlib_export_plugin_description_file(base_pkg plugins.xml)
 | 檔案 | 用途 |
 |------|------|
 | **HANDOFF.md** | 你正在讀這個 |
-| [README.md](README.md) | repo 入口、章節表（含「你是誰」5 列分流) |
+| [README.md](README.md) | repo 入口、章節表（含「你是誰」6 列分流) |
 | [GETTING_STARTED.md](GETTING_STARTED.md) | 新手入口(MQTT 對照、7 章新手路徑、觀念地圖) |
+| [DESIGN_NOTES.md](DESIGN_NOTES.md) | 「ROS 2 為什麼這樣設計」深挖,提煉 library 設計通則(目前 1 篇 + 5 個待寫主題) |
 | [ROADMAP.md](ROADMAP.md) | 完整學習路徑、各章狀態 |
 | [SETUP.md](SETUP.md) | 雙環境設定 + 各章雲端可用性對照表(32 章逐一標 ☁️/🟡/🚫) |
 | [AUTHORING_GUIDE.md](AUTHORING_GUIDE.md) | 章節寫作模板（最重要！）|

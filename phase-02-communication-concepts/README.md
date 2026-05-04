@@ -294,6 +294,123 @@ int main(int argc, char * argv[])
 
 ---
 
+## 🏛️ 設計哲學:為什麼是 init / spin / shutdown 三段式
+
+> 這段不是「ROS 2 怎麼用」,是「ROS 2 為什麼這樣設計」。學完之後你不只會用 ROS 2,還能帶走幾條**寫 library 給別人用的設計原則**。
+> 詳見 [`DESIGN_NOTES.md`](../DESIGN_NOTES.md) 的長版 + 後續其他主題的設計筆記。
+
+```cpp
+rclcpp::init(argc, argv);                        // (1)
+rclcpp::spin(std::make_shared<AutoDriveNode>()); // (2)
+rclcpp::shutdown();                              // (3)
+```
+
+這三行藏著 4 個設計決策。每個都有對應的「**library 設計通則**」可以帶走。
+
+### 決策 A:**Process 內有一個全域 Context,不是每個 Node 各一個**
+
+`rclcpp::init` 不是初始化 Node,是初始化 **整個 process 的 ROS 2 Context**:
+- 接管 SIGINT(Ctrl+C 變優雅關閉,不是 kill -9)
+- 啟動 DDS Participant Discovery(背景 thread 跑著)
+- 解析 `--ros-args`(remap、param 都從這裡來)
+- **每個 process 只能呼叫一次**,再呼叫會炸
+
+對應的問題:**「Process 跟 ROS 2 的關係是什麼?」**
+答:同一 process 內所有 Node 共享 Context、共享 SIGINT、共享 logger、共享 clock。
+
+#### 跟你熟的東西對比
+
+| 框架 | 等價的「全域初始化」 |
+|------|-------------------|
+| Python `logging` | `logging.basicConfig()` 一次設好整個 process |
+| OpenGL | `glfwInit()` / `glutInit(&argc, argv)` |
+| Qt | `QApplication app(argc, argv)` |
+| MPI | `MPI_Init(&argc, &argv)` |
+
+ROS 2 跟 MPI、Qt 一樣是「**framework-style**」,**不是 lib-style**。Framework 拿走 main 的控制權(SIGINT、argv),lib 不會。
+
+> **🎓 設計通則 1**:**有全域狀態(thread、signal handler、command-line parsing)時,用顯式的 `init()` 不要藏在 static 初始化**。Static init 順序在跨 translation unit 時是 undefined,且使用者沒辦法插手。`rclcpp::init` 顯式一次 = 可控、可測、可在單元測試裡 mock。
+
+### 決策 B:**Node 是被動資料結構,Executor 才是執行單位**
+
+跟 gRPC / Tornado / Express 都不一樣。看下面對比就懂:
+
+```cpp
+// gRPC C++:Server 自己跑
+grpc::ServerBuilder builder;
+builder.AddListeningPort(...);
+builder.RegisterService(&service);
+auto server = builder.BuildAndStart();
+server->Wait();                     // ← Server 物件自己阻塞
+```
+
+```cpp
+// ROS 2:Node 不會自己跑
+auto node = std::make_shared<AutoDriveNode>();
+rclcpp::spin(node);                 // ← 外部 Executor 才是「跑」的動作
+```
+
+這個差異看似小,但帶來巨大的彈性:
+
+| 你想做什麼 | gRPC 寫法 | ROS 2 寫法 |
+|-----------|----------|-----------|
+| 同 process 跑 N 個服務 | N 個 Server,N 個 thread | 1 個 Executor,N 個 Node 共用 thread pool |
+| 啟動順序 | 必須先 build 完才能 start | Node 隨便建,spin 才開始跑 |
+| 換 thread model | 換 Server 實作 | 換 Executor(Single → Multi),Node 完全不動 |
+| 測試 callback | 整個 Server 起來 | 直接 `executor.spin_some()` 跑一輪退出 |
+
+ROS 2 的 Composition(Phase 09)、LifecycleNode、MultiThreadedExecutor 全都建立在「Node 是被動」這個前提上。**業界 Nav2 把 8 個 Node 塞同一個 process 共用 thread pool — 換成 gRPC 模型根本做不到**。
+
+> **🎓 設計通則 2**:**把「資料 / 邏輯」跟「執行 / 排程」拆開**。資料(Node)單純表達意圖,執行(Executor)負責怎麼跑。這樣使用者可以在不改邏輯的情況下換執行策略 — 是 ECS 遊戲引擎、React Concurrent Mode、Tokio Future 共通的設計。
+
+### 決策 C:**強制 `shared_ptr<Node>` 不是龜毛,是內建約束**
+
+下面這段**編譯不過**:
+
+```cpp
+AutoDriveNode node;          // ❌ 不能用裸物件
+rclcpp::spin(&node);         // ❌ 不能傳 raw pointer
+```
+
+只能用 `std::make_shared<AutoDriveNode>()`。為什麼?
+
+- DDS 內部對 Subscription / Publisher 持有指向 Node 的 weak reference(避免循環)
+- Timer / Service callback 內部也用 weak ptr 存 Node
+- `Node` 基底繼承 `enable_shared_from_this<Node>`,callback 內可以安全拿到自己
+
+這些都需要 Node 一定要是 `shared_ptr` 管理才合法。
+
+> **🎓 設計通則 3**:**如果你的 library 要自己管 lifecycle(callback 在 Node 死後才被觸發 = UAF),強制使用者用 smart pointer**。不要相信使用者會 manually delete 對的時機,**用編譯期約束(API 簽章)強迫他用對**。React 強制 component 是 class/function、Rust 強制 borrow checker、ROS 2 強制 shared_ptr — 都是同一個哲學。
+
+### 決策 D:**對稱包住 — init/shutdown 必須成對,RAII 包更好**
+
+新手寫法:
+
+```cpp
+rclcpp::init(argc, argv);
+rclcpp::spin(std::make_shared<AutoDriveNode>()); // node 在這活著
+rclcpp::shutdown();                              // ← 危險:node 還在,publisher 還活著時 shutdown
+return 0;                                        // ← node 在這 destruct,但 Context 已關
+```
+
+業界推薦:
+
+```cpp
+rclcpp::init(argc, argv);
+{
+    auto node = std::make_shared<AutoDriveNode>();
+    rclcpp::spin(node);
+}                                                // ← node 在這 destruct,Pub/Sub 清乾淨
+rclcpp::shutdown();                              // ← 此時所有 entity 都釋放完
+return 0;
+```
+
+這個差別會在 Phase 13 看到 — `rclcpp_action` shutdown 順序錯就 segfault。
+
+> 上面提到的 3 條「設計通則」歸納在 [`DESIGN_NOTES.md`](../DESIGN_NOTES.md),搭配其他主題(Subscription 的 SharedPtr 回傳、QoS 為什麼是 declarative profile、LifecycleNode 為什麼是 contract)一起看會更有體會。
+
+---
+
 ## 🎯 學到的關鍵概念
 
 - ROS 2 = **分散式共享發布訂閱匯流排**，沒有中央
