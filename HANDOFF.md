@@ -30,7 +30,7 @@ GitHub: https://github.com/gino07172002/ros2-learning-notes
 
 ## 進度地圖（讀完這個就知道該做什麼）
 
-### ✅ 完成的章節（32 個 — 2026-05-03 大幅補完）
+### ✅ 完成的章節（37 章 — 2026-05-04 教程化大改造)
 
 ```
 Part 1: 通訊基礎
@@ -46,7 +46,7 @@ Part 2: 工具與治理
 
 Part 3: 系統設計
   ✅ phase-08-custom-interfaces          (定義 my_robot_interfaces)
-  ✅ phase-09-executors-lifecycle-composition
+  ✅ phase-09-executors-lifecycle-composition  (加閱讀路徑指南)
   ✅ phase-10-launch-files-basics
   ✅ phase-11-launch-files-advanced
   ✅ phase-12-testing
@@ -54,40 +54,54 @@ Part 3: 系統設計
   ✅ phase-14-capstone-1                 (Capstone 1: ApproachController)
 
 Part 4: 機器人形體
-  ✅ phase-15-urdf
+  ✅ phase-15-urdf                       (加 Part 3→4 序言 + URDF/SDF/RPY 速查)
   ✅ phase-16-tf2
-  ✅ phase-17-gazebo                      (headless,GUI 之後補)
-  ✅ phase-18-ros2-control
+  ✅ phase-17-gazebo                     (headless + ☁️ 雲端 GUI 完整步驟)
+  ✅ phase-18-ros2-control               (mock_components,☁️💻 雙環境)
   ✅ phase-19-pluginlib
-  ✅ phase-20-multi-machine               (Docker 模擬多機 + Discovery Server)
+  ✅ phase-20-multi-machine              (Docker 模擬多機 + Discovery Server)
 
 Part 5: 領域應用
   Track A (Mobile):
-    ✅ phase-20A-odometry-ekf            (robot_localization EKF,純文字驗證)
-    ✅ phase-21A-slam-toolbox            (結構驗證過,WSL GPU 限制)
-    ✅ phase-22A-nav2-basics             (8 個 lifecycle node 全 active)
+    ✅ phase-20A-odometry-ekf            (加 Covariance/EKF 觀念速成)
+    ✅ phase-21A-slam-toolbox            (加 SLAM 觀念速成 + ☁️ 雲端步驟)
+    ✅ phase-22A-nav2-basics             (加 Nav2 名詞速查 + ☁️ 雲端步驟)
     ✅ phase-23A-nav2-bt-plugin          (4 個 gtest 全過)
-    ✅ phase-CapstoneA-mobile            (auto_navigator 整合)
+    ✅ phase-30-nav2-bt-advanced         (4 種 BT node 全集 + 6 gtest)
+    ✅ phase-CapstoneA-mobile            (auto_navigator 整合 + ☁️ 雲端步驟)
   Track B (Arm):
     ✅ phase-20B-arm-urdf                (xacro + SRDF)
+    ⏸ phase-21B-moveit-setup-assistant  (草稿:12 步驟+5 雷,等本機截圖實做)
     ✅ phase-22B-moveit-cpp              (MoveGroupInterface 4 種 plan target)
-    ⬜ phase-21B-moveit-setup            (需 Setup Assistant GUI)
     ⬜ phase-23B-pick-and-place          (視覺主導)
     ⬜ Capstone B                         (視覺主導)
 
 Part 6: 生產化部署
-  ✅ phase-24-docker                      (Capstone 1 docker 化)
-  ✅ phase-25-ci-cd
-  ✅ phase-26-dds-qos
-  ✅ phase-Capstone-Final                 (Capstone A docker 化,1.26GB image 驗證過)
-  ⬜ phase-27-real-hardware               (沒做:使用者沒 Pi/Jetson)
+  ✅ phase-24-docker                     (Capstone 1 docker 化)
+  ✅ phase-25-ci-cd                      (GitHub Actions matrix)
+  ✅ phase-26-dds-qos                    (☁️💻 雙環境)
+  ✅ phase-32-rosbag2-advanced           (含 Python 對照)
+  ✅ phase-35-foxglove-bridge            (Foxglove + Phase 36 demo)
+  ✅ phase-36-diagnostics-watchdog       (4 gtest)
+  ✅ phase-37-lifecycle-diagnostics      (5 gtest)
+  ✅ phase-Capstone-Final                (Capstone A docker 化,1.26GB image)
+  ⬜ phase-27-real-hardware              (沒做:使用者沒 Pi/Jetson)
 ```
 
-### ⬜ 還沒做的章節（什麼時候該做）
+### 📚 教程化文件層(2026-05-04 加)
+
+```
+✅ GETTING_STARTED.md                    新手入口:MQTT 對照、7 章新手路徑、觀念地圖
+✅ README.md                             加「你是誰」5 列分流表 + 全 32 章「為什麼學這章」欄
+✅ ROADMAP.md                            環境標記跟 SETUP 對照表同步
+✅ SETUP.md                              新增「各章雲端可用性對照表」+ 免費資源指引
+```
+
+### ⏸/⬜ 還沒做的章節(什麼時候該做)
 
 | 章節 | 現況 | 何時動手 |
 |------|------|---------|
-| **Phase 21B MoveIt Setup Assistant** | 純 GUI wizard | 使用者本機跑,自動產 moveit_config(可取代 Phase 22B 手寫的 yaml) |
+| **Phase 21B MoveIt Setup Assistant** | 草稿已完(12 步驟 + 5 雷),`images/` 留空 | 使用者本機跑 GUI 截 6 張圖補上 |
 | **Phase 23B Pick & Place** | 視覺主導 | 使用者本機 + Gazebo + 抓物件 demo |
 | **Capstone B 機械手臂** | 視覺主導 | 同上,等使用者要做 Track B 完整 demo |
 | **Phase 27 部署實機** | 需要硬體 | 使用者真的買 Pi/Jetson 才有意義 |
@@ -432,10 +446,12 @@ CMakeLists.txt: pluginlib_export_plugin_description_file(base_pkg plugins.xml)
 | 檔案 | 用途 |
 |------|------|
 | **HANDOFF.md** | 你正在讀這個 |
-| [README.md](README.md) | repo 入口、章節表 |
+| [README.md](README.md) | repo 入口、章節表（含「你是誰」5 列分流) |
+| [GETTING_STARTED.md](GETTING_STARTED.md) | 新手入口(MQTT 對照、7 章新手路徑、觀念地圖) |
 | [ROADMAP.md](ROADMAP.md) | 完整學習路徑、各章狀態 |
-| [SETUP.md](SETUP.md) | 雙環境設定（雲端 vs 本機）|
+| [SETUP.md](SETUP.md) | 雙環境設定 + 各章雲端可用性對照表(32 章逐一標 ☁️/🟡/🚫) |
 | [AUTHORING_GUIDE.md](AUTHORING_GUIDE.md) | 章節寫作模板（最重要！）|
+| [PORTFOLIO.md](PORTFOLIO.md) | 履歷友善版,給招聘方/Code reviewer |
 
 ---
 

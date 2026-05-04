@@ -427,7 +427,8 @@ ros2 launch my_arm_description display.launch.py             # 預設只起 CLI 
 
 ## 🔗 下一步
 
-- **Phase 21B MoveIt 入門**(將來)— 這個 URDF + SRDF 直接進 MoveIt Setup Assistant
+- **[Phase 21B MoveIt Setup Assistant](../phase-21B-moveit-setup-assistant/)** ⏸ — 把本章 URDF + SRDF 餵給 GUI wizard 自動產 MoveIt config(草稿,截圖待補)
+- **[Phase 22B MoveIt C++](../phase-22B-moveit-cpp/)** — 用 `MoveGroupInterface` 跑軌跡規劃(可手寫 yaml,跳過 21B 也能進)
 - **[Phase 18 ros2_control](../phase-18-ros2-control/)** — 回頭看「URDF 怎麼宣告 hardware」,把這支手臂變成可控制的
 - **[Phase 15 URDF 基礎](../phase-15-urdf/)** — 對照看單關節 mobile robot 與多 DOF arm 的 URDF 差異
 

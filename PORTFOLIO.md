@@ -2,6 +2,7 @@
 
 > 這份文件給急著看重點的人(招聘方、code reviewer、自己回頭看)。
 > 完整章節結構在 [README.md](README.md) / [ROADMAP.md](ROADMAP.md)。
+> 想用這份學 ROS 2 的新手請從 [GETTING_STARTED.md](GETTING_STARTED.md)。
 
 ---
 
