@@ -1,0 +1,5 @@
+# Placeholder — git 不追蹤空資料夾,但 CMakeLists.txt 寫了
+# install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
+# 沒這個檔 CI checkout 出來會缺 config/,colcon build 失敗
+#
+# 之後若有實際 config(例 nav2_overrides.yaml)放進來,可刪這個檔
