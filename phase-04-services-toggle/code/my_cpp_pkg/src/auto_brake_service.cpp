@@ -7,6 +7,7 @@
 // 適合「開/關」這種一問一答的簡單動作。
 #include "std_srvs/srv/set_bool.hpp"
 #include <atomic>
+#include <cmath>
 
 using std::placeholders::_1;
 using std::placeholders::_2;  // service callback 需要 (request, response) 兩個參數

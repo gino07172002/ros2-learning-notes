@@ -36,6 +36,7 @@ Service 包含兩個角色：
 #include "sensor_msgs/point_cloud2_iterator.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 #include <atomic>
+#include <cmath>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -60,7 +61,7 @@ public:
     }
 
 private:
-    // ⚠️ 用 atomic：service callback 與 sub callback 可能在不同 thread
+    // ⚠️ 用 atomic：之後切到 MultiThreadedExecutor 時，兩個 callback 可能在不同 thread
     std::atomic<bool> is_brake_active_{true};
 
     void toggle_brake_callback(
@@ -99,10 +100,12 @@ private:
 
         if (min_forward_distance > 1.0f) {
             twist_msg.linear.x = 0.2;
+            twist_msg.angular.z = 0.0;
         } else {
             twist_msg.linear.x = 0.0;
+            twist_msg.angular.z = 0.0;
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-                "Obstacle at %.2fm! BRAKING!", min_forward_distance);
+                "Obstacle detected at %.2fm! BRAKING!", min_forward_distance);
         }
         publisher_->publish(twist_msg);
     }
@@ -122,8 +125,8 @@ int main(int argc, char * argv[])
 ```
 
 > **與原筆記的差異**：
-> 1. Topic 用相對名稱（`cmd_vel`、`lidar_points`），由 remapping 對應實際頻道。
-> 2. `is_brake_active_` 改成 `std::atomic<bool>`。**為什麼**：service callback 與 sub callback 在多執行緒 Executor 下可能在不同 thread，普通 `bool` 會造成 race condition。`atomic` 是零成本的正確解。Phase 06.5 會深入這塊。
+> 1. Topic 用相對名稱（`cmd_vel`、`lidar_points`），Service 也用相對名稱（`toggle_brake`）。沒有 namespace 時，執行後會看到 `/cmd_vel`、`/lidar_points`、`/toggle_brake`。
+> 2. `is_brake_active_` 改成 `std::atomic<bool>`。**為什麼**：預設 `SingleThreadedExecutor` 通常不會 race，但之後如果切到 `MultiThreadedExecutor`，service callback 與 sub callback 可能在不同 thread，普通 `bool` 會造成 race condition。這裡先養成共享狀態用 `atomic` 或 mutex 的習慣。
 
 ---
 
@@ -139,18 +142,38 @@ find_package(std_srvs REQUIRED)
 add_executable(auto_brake_service src/auto_brake_service.cpp)
 ament_target_dependencies(auto_brake_service
   rclcpp geometry_msgs sensor_msgs std_srvs)
+
+install(TARGETS
+  auto_brake_service
+  DESTINATION lib/${PROJECT_NAME}
+)
 ```
 
 ```xml
 <depend>std_srvs</depend>
 ```
 
+> `install(TARGETS ...)` 很重要：`colcon build` 後，`ros2 run my_cpp_pkg auto_brake_service` 是從 install space 找執行檔。少這段常見症狀是 build 成功，但 `ros2 run` 找不到 executable。
+
 ---
 
-## 🚀 步驟 3：雙終端機實戰測試
+## 🚀 步驟 3：編譯與實戰測試
 
 > 兩種環境的差異只在「remap 到哪個 topic」。完整環境比較見 [SETUP.md](../SETUP.md)。
-> 本機 turtlebot3 預設無 PointCloud2，需參考 [Phase 03](../phase-03-subscriber-lidar-brake/) 的兩個做法之一。
+> TheConstructSim 的 OriginBot 場景已有 `/livox/lidar`，本機 WSL2 如果沒有真 PointCloud2，需參考 [Phase 03](../phase-03-subscriber-lidar-brake/) 的做法，或使用你放在 `~/fake_lidar.py` 的假光達腳本。
+
+### 第一次準備 workspace
+
+如果你是從這份筆記 repo 跑範例，先把本章套件放進 ROS 2 workspace。若 `~/ros2_ws/src/my_cpp_pkg` 已經存在，先跳過下面的 `cp`，改看下一段的合併提醒。
+
+```bash
+mkdir -p ~/ros2_ws/src
+
+# 在 phase-04-services-toggle 目錄執行
+cp -r code/my_cpp_pkg ~/ros2_ws/src/
+```
+
+如果 `~/ros2_ws/src/my_cpp_pkg` 已經存在，請把本章的 `src/auto_brake_service.cpp`、`CMakeLists.txt`、`package.xml` 合併進既有套件，不要盲目覆蓋自己前面章節改過的檔案。
 
 ### 編譯（兩種環境通用）
 
@@ -160,7 +183,9 @@ colcon build --packages-select my_cpp_pkg
 source install/setup.bash
 ```
 
-### ☁️ TheConstructSim — 終端機 1：啟動 Server
+之後每開一個新 terminal，都要先執行 `cd ~/ros2_ws && source install/setup.bash`，否則 `ros2 run` 或 `ros2 service call` 可能找不到你的套件與型別。
+
+### ☁️ TheConstructSim：啟動 Server
 
 ```bash
 ros2 run my_cpp_pkg auto_brake_service --ros-args \
@@ -168,21 +193,48 @@ ros2 run my_cpp_pkg auto_brake_service --ros-args \
   -r lidar_points:=/livox/lidar
 ```
 
-### 💻 本機 WSL2 — 終端機 1：啟動 Server
+### 💻 本機 WSL2：準備 PointCloud2，再啟動 Server
+
+本機 TurtleBot3 預設多半是 2D LaserScan（`/scan`），不是本章需要的 PointCloud2。若你用 `~/fake_lidar.py` 製造假障礙物，流程會變成三個 terminal：
+
+**Terminal 1：發假光達**
 
 ```bash
-# 假設你已用 Phase 03 做法 2 起好 turtlebot3 waffle + Gazebo
+python3 ~/fake_lidar.py 0.5
+```
+
+**Terminal 2：啟動 Server**
+
+```bash
+# 如果你用 fake_lidar.py，它預設發到 /lidar_points，不需要 remap lidar_points
+ros2 run my_cpp_pkg auto_brake_service
+```
+
+如果你是用 Phase 03 的 TurtleBot3 waffle + Gazebo RealSense 做法，改用這個啟動指令：
+
+```bash
 ros2 run my_cpp_pkg auto_brake_service --ros-args \
   -r lidar_points:=/intel_realsense_r200_depth/points
 ```
 
-### 終端機 2：呼叫 Service 關閉避障（兩種環境通用）
+### Terminal 3：呼叫 Service 關閉避障（兩種環境通用）
+
+先確認 service 有被註冊出來：
+
+```bash
+ros2 service list | grep toggle_brake
+ros2 service type /toggle_brake
+```
+
+預期看到 `/toggle_brake`，型別是 `std_srvs/srv/SetBool`。接著在另一個 terminal 呼叫：
 
 ```bash
 ros2 service call /toggle_brake std_srvs/srv/SetBool "{data: false}"
 ```
 
 要重新啟動避障，把 `false` 改成 `true` 再呼叫一次。
+
+> 注意：這裡的「關閉避障」是讓本節點停止處理光達並停止發布新的 `cmd_vel`，不是送出一筆停車命令。如果前一筆速度命令還被下游控制器短暫保留，機器人可能不會立刻停住。真機安全邏輯通常會另外設計速度 timeout 或 emergency stop。
 
 > 💡 進階：用 `rqt_service_caller`（GUI 版本）也可以呼叫，下一階段 Phase 05 會教。
 
@@ -191,6 +243,8 @@ ros2 service call /toggle_brake std_srvs/srv/SetBool "{data: false}"
 ## 📊 系統日誌解讀
 
 成功後會看到三個情境清楚展示 Topic（持續）vs Service（突發）：
+
+> 下面截圖使用本機 `fake_lidar.py 0.5` 示範，所以會固定看到 0.50m 障礙物。TheConstructSim 連真模擬光達時，距離數字會依場景變化。
 
 ### 情境 1：正常避障（System ENABLED）
 
