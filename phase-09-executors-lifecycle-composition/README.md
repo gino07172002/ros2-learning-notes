@@ -17,6 +17,18 @@
 
 ---
 
+## 📑 本章地圖
+
+- [📚 閱讀路徑指南](#-閱讀路徑指南part-3-最重的一章別硬塞) — **新手先讀** 怎麼分次消化
+- [為什麼三個放一起講](#為什麼三個放一起講)
+- [Part 1: Executors — Callback 排程](#part-1-executors--callback-排程) — `rclcpp::spin` 內部、SingleThreaded vs Multi、CallbackGroup
+- [Part 2: LifecycleNode — 受控的啟動/停止](#part-2-lifecyclenode--受控的啟動停止) — 五狀態機、Nav2/MoveIt 全靠它
+- [Part 3: Composition — 多 Node 同 process](#part-3-composition--多-node-同-process) — `rclcpp_components` zero-copy
+- [Demo 流程](#-demo-流程)
+- [常見雷](#-常見雷)
+
+---
+
 ## 📚 閱讀路徑指南(Part 3 最重的一章,別硬塞)
 
 這章塞了三個獨立大觀念,**不要試圖一次消化完**。建議分兩三次來:

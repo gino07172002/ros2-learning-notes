@@ -3,6 +3,8 @@
 > 這份文件給急著看重點的人(招聘方、code reviewer、自己回頭看)。
 > 完整章節結構在 [README.md](README.md) / [ROADMAP.md](ROADMAP.md)。
 > 想用這份學 ROS 2 的新手請從 [GETTING_STARTED.md](GETTING_STARTED.md)。
+> 想看「ROS 2 為什麼這樣設計、能帶走哪些 library 設計通則」見 [DESIGN_NOTES.md](DESIGN_NOTES.md)。
+> .msg/.srv/.action 選型指南見 [INTERFACE_SELECTION.md](INTERFACE_SELECTION.md)。
 
 ---
 

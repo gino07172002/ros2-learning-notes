@@ -92,9 +92,21 @@ Part 6: 生產化部署
 
 ```
 ✅ GETTING_STARTED.md                    新手入口:MQTT 對照、7 章新手路徑、觀念地圖
-✅ README.md                             加「你是誰」5 列分流表 + 全 32 章「為什麼學這章」欄
+✅ README.md                             加「你是誰」6 列分流表 + 全 32 章「為什麼學這章」欄
 ✅ ROADMAP.md                            環境標記跟 SETUP 對照表同步
 ✅ SETUP.md                              新增「各章雲端可用性對照表」+ 免費資源指引
+✅ DESIGN_NOTES.md                       「ROS 2 為什麼這樣設計」深挖,1 篇完成 + 5 placeholder
+✅ INTERFACE_SELECTION.md                .msg/.srv/.action 選型指南(2 整合情境 + 業界比例)
+                                         從 Phase 08 抽出來,獨立可被其他章引用
+```
+
+### ✏️ 改善過的章節
+
+```
+phase-08-custom-interfaces  瘦身 967→541 行,選型邏輯抽到 INTERFACE_SELECTION.md
+                            加 TOC、三檔案對照表加用途/時機/例子欄
+phase-09-executors-lifecycle-composition  加 TOC + 閱讀路徑指南
+phase-02-communication-concepts  加「init/spin/shutdown 設計哲學」段(對應 DESIGN_NOTES)
 ```
 
 ### ⏸/⬜ 還沒做的章節(什麼時候該做)
@@ -449,6 +461,7 @@ CMakeLists.txt: pluginlib_export_plugin_description_file(base_pkg plugins.xml)
 | [README.md](README.md) | repo 入口、章節表（含「你是誰」6 列分流) |
 | [GETTING_STARTED.md](GETTING_STARTED.md) | 新手入口(MQTT 對照、7 章新手路徑、觀念地圖) |
 | [DESIGN_NOTES.md](DESIGN_NOTES.md) | 「ROS 2 為什麼這樣設計」深挖,提煉 library 設計通則(目前 1 篇 + 5 個待寫主題) |
+| [INTERFACE_SELECTION.md](INTERFACE_SELECTION.md) | .msg/.srv/.action 選型指南(2 整合情境 + 業界比例 + 4 問題決策樹) |
 | [ROADMAP.md](ROADMAP.md) | 完整學習路徑、各章狀態 |
 | [SETUP.md](SETUP.md) | 雙環境設定 + 各章雲端可用性對照表(32 章逐一標 ☁️/🟡/🚫) |
 | [AUTHORING_GUIDE.md](AUTHORING_GUIDE.md) | 章節寫作模板（最重要！）|
