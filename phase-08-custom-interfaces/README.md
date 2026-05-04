@@ -42,6 +42,198 @@ Phase 08 開始，**你是設計者**：
 
 ---
 
+## 🎬 三個檔案到底什麼情境用?(具體例子)
+
+光看結構不夠,看實際情境才會懂。下面是同一台機器人會碰到的 **9 個真實任務**,各自該用 .msg / .srv / .action 中哪個 + 為什麼。
+
+### 📡 .msg — 「**持續廣播 / 連續資料流**」
+
+**特徵**:
+- 高頻發送(10–100 Hz)
+- 沒有「結束」概念,Node 開著就一直發
+- 訂閱者**沒收到也不能怎樣**(下一筆會到)
+- 比喻:**廣播電台、感測器讀值**
+
+#### 例子 1:電池電量 `BatteryStatus.msg`
+
+```
+std_msgs/Header header
+float32 voltage              # 24.5 V
+float32 percentage           # 0.0–1.0
+float32 current_amps         # 放電 -2.3 / 充電 +1.5
+uint8 charging_state         # 0=放電 1=充電 2=滿電
+```
+
+**為什麼是 .msg**:電池狀態是**持續變化的狀態**,不是請求。多個 Node 都想知道(UI 顯示、Nav2 決定要不要回去充電、安全 Node 監控過熱),Topic 一對多剛好。**1 Hz 發一筆,訂閱者各取所需**。
+
+#### 例子 2:人臉偵測結果 `FaceDetections.msg`
+
+```
+std_msgs/Header header
+my_msgs/BoundingBox[] faces   # 陣列:這一幀偵測到 N 張臉
+float32 inference_time_ms
+```
+
+**為什麼是 .msg**:相機每秒 30 幀,每幀都要發,**沒有「呼叫」的概念**。下游可以是顯示、可以是追蹤,各自處理各自的。
+
+#### 例子 3:機器人速度命令 `cmd_vel`(內建的 `geometry_msgs/Twist`)
+
+**為什麼是 .msg**:控制器持續發,馬達持續吃。**漏一筆沒事下一筆會到**。如果改用 .srv「請馬達幫我設速度」就會卡住整個控制迴圈。
+
+---
+
+### ☎️ .srv — 「**單次請求 + 立刻回**」
+
+**特徵**:
+- 一問一答,**caller 阻塞等回應**
+- 動作**很快完成**(< 1 秒)
+- 通常**改變狀態**或**查詢資料**
+- 比喻:**HTTP API、打電話、按開關**
+
+#### 例子 4:啟用/停用避障 `EnableObstacleAvoidance.srv`
+
+```
+# Request
+bool enable
+string reason         # "manual override" 之類
+---
+# Response
+bool success
+string message
+```
+
+**為什麼是 .srv**:這是**離散事件** — 你按下「停用避障」按鈕,期待立刻有回應「OK 已停用」。**caller 想知道有沒有成功**(用 .msg 廣播 `enable: false` 沒人會跟你 confirm)。
+
+#### 例子 5:查詢當前地圖名稱 `GetCurrentMap.srv`
+
+```
+# Request
+(空 — 沒有參數)
+---
+# Response
+string map_name           # "office_floor_3"
+string map_path           # "/maps/office_floor_3.yaml"
+geometry_msgs/Point2D origin
+```
+
+**為什麼是 .srv**:**查詢動作**。我問 → server 回。一次性,不是持續的。如果用 .msg 就要 server 一直廣播當前地圖名稱,浪費頻寬。
+
+#### 例子 6:校正陀螺儀 `CalibrateGyro.srv`
+
+```
+# Request
+float32 duration_seconds   # 校正時間
+---
+# Response
+bool success
+float32 measured_bias_x
+float32 measured_bias_y
+float32 measured_bias_z
+```
+
+**為什麼是 .srv**:**短時間任務 + caller 想要知道結果**。耗時約 2 秒(可接受同步等待),caller 拿到 bias 數值後決定下一步。如果改用 .action 就過度設計(校正過程不需要進度回報,2 秒等就等)。
+
+---
+
+### 🎯 .action — 「**長任務 + 進度回報 + 可取消**」
+
+**特徵**:
+- 動作**耗時很久**(幾秒到幾分鐘)
+- caller 想知道**進度**(走到 30% 了)
+- 中途可能要**取消**(使用者按停止鈕)
+- 可能**失敗**(前方擋住、目標不可達)
+- 比喻:**叫外送、下載大檔案、長時間任務**
+
+#### 例子 7:導航到指定點 `NavigateToPose.action`(Nav2 內建)
+
+```
+# Goal: client 開始時送
+geometry_msgs/PoseStamped pose      # 目標座標
+string behavior_tree                # 用哪個 BT
+---
+# Result: 任務結束時送(SUCCESS / ABORTED / CANCELED)
+std_msgs/Empty result
+---
+# Feedback: 持續送進度
+geometry_msgs/PoseStamped current_pose
+builtin_interfaces/Duration navigation_time
+int16 number_of_recoveries
+float32 distance_remaining          # 還剩多遠
+```
+
+**為什麼是 .action**:
+- 導航**可能要 30 秒**,client 不能阻塞等
+- caller 想看「**走多遠了**」(進度條 UI)
+- 使用者可能說「停下來別走了」(cancel)
+- 可能**失敗**(被擋住路 → ABORTED)
+- 上面這些**全是 .msg / .srv 做不到的**
+
+#### 例子 8:機械手臂規劃並執行軌跡 `ExecuteTrajectory.action`
+
+```
+# Goal
+trajectory_msgs/JointTrajectory trajectory
+---
+# Result
+bool success
+string error_string
+---
+# Feedback
+int32 current_waypoint_index        # 目前走到第幾個點
+float32 progress                    # 0.0–1.0
+```
+
+**為什麼是 .action**:手臂執行軌跡可能 5–30 秒,**進度條 + 中途可取消**(碰撞偵測觸發)。MoveIt 的 `MoveGroupInterface.execute()` 內部就是 .action。
+
+#### 例子 9:充電到指定電量 `ChargeToTarget.action`
+
+```
+# Goal
+float32 target_percentage           # 0.8 = 充到 80%
+float32 timeout_minutes
+---
+# Result
+bool reached_target
+float32 final_percentage
+---
+# Feedback
+float32 current_percentage
+float32 estimated_minutes_remaining
+```
+
+**為什麼是 .action**:可能充 30 分鐘,使用者想看「還要多久」、隨時可中止。
+
+---
+
+### 🔍 怎麼快速判斷該用哪個?**3 個問題決策樹**
+
+```
+問題 1:這個訊息會「持續一直發」嗎?
+   YES → 📡 .msg(感測器、狀態、控制命令)
+   NO  → 繼續問題 2
+
+問題 2:動作會跑超過 1 秒、或想看進度嗎?
+   YES → 🎯 .action(導航、規劃、長任務)
+   NO  → 繼續問題 3
+
+問題 3:這是「打開/關閉/查詢」這種一次性動作嗎?
+   YES → ☎️ .srv(開關、校正、查詢)
+```
+
+### 📊 同一個任務用錯類型會怎樣?
+
+| 任務 | 錯誤選擇 | 後果 |
+|------|---------|------|
+| 廣播電池電量 | 用 .srv | 每個訂閱者都要主動 poll,server 被打爆 |
+| 啟用避障 | 用 .msg | caller 不知道 server 有沒有收到、有沒有成功 |
+| 導航到指定點 | 用 .srv | caller 阻塞 30 秒,UI 完全凍結;不能 cancel |
+| 導航到指定點 | 用 .msg | 沒有「結束」事件,caller 不知道到了沒 |
+| 查詢當前地圖名稱 | 用 .action | 過度設計,3 行 code 變 30 行 |
+
+**核心原則**:**選最簡單夠用的那個**。能用 .msg 不用 .srv,能用 .srv 不用 .action。
+
+---
+
 ## 🏗️ 業界慣例：interface 套件獨立
 
 **錯的做法**（新手常做）：
