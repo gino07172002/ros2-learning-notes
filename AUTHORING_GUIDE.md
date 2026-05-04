@@ -453,6 +453,30 @@ Capstone Final 加值是 Multi-stage Dockerfile + .dockerignore 設計,把 sibli
 
 ---
 
+## 🏷️ 驗證狀態徽章(統一格式)
+
+每章 README **最後一行**加一行 `> **驗證狀態**:...`,讓讀者一眼知道這章可信度。
+
+| 徽章 | 意義 | 用在 |
+|------|------|------|
+| ✅ **WSL 完整驗證** | colcon build + colcon test / launch 全跑過,有真實輸出 | Phase 12, 23A, Capstone Final |
+| 🟡 **WSL 部分驗證** | 編譯 + 部分功能跑過,但有環節靠手測或視覺(等截圖) | Phase 17, 21A, 22A |
+| ⏸ **未在 WSL 驗證** | 僅靜態檢查 + 套用既有同模式章節結構,等 WSL/HW 介入 | Phase 30, 32(視 WSL 狀態) |
+| 📚 **純觀念章** | 沒 code 要編,純文字 + 圖 | Phase 02, 26 |
+
+格式範例:
+```markdown
+---
+
+> **驗證狀態**:✅ WSL 完整驗證 — colcon build + 6 個 gtest case 全過。
+
+> **驗證狀態**:⏸ 純文字 + script,WSL 待驗證。Script / launch 結構照 Phase XX 同模式。
+```
+
+不要編造「驗證過」 — 沒跑就標 ⏸,等真的驗證再升級。寫此 repo 的核心信用就在這。
+
+---
+
 ## 🆕 加新章節時的檢查清單
 
 寫完一章按這個順序檢查：
@@ -466,7 +490,8 @@ Capstone Final 加值是 Multi-stage Dockerfile + .dockerignore 設計,把 sibli
 7. [ ] 主 README 末尾加 `<sub>🐍 ...</sub>` 引導（如果有 Python 版）
 8. [ ] 更新頂層 `README.md` 的章節表（含 🐍 Py 欄位）
 9. [ ] 更新 `ROADMAP.md` 的狀態（⬜ → ✅）
-10. [ ] 提交前自己讀一遍：能不能跳過前面所有章節，直接從這章開始學？
+10. [ ] README 末尾加「驗證狀態」徽章（✅/🟡/⏸/📚 4 選 1，不要編造）
+11. [ ] 提交前自己讀一遍：能不能跳過前面所有章節，直接從這章開始學？
 
 ---
 

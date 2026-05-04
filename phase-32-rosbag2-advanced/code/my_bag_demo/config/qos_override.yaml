@@ -1,0 +1,39 @@
+# qos_override.yaml — Phase 32
+#
+# 給 ros2 bag play --qos-profile-overrides-path 用的。
+# 重播時強制把 publisher QoS 設成跟 SLAM/Nav2 subscriber 相容的 profile。
+#
+# 沒設這檔的話,bag 內存的 QoS 直接被搬出來重建 publisher,
+# 如果跟 subscriber 不匹配 — DDS 不會 warn,就是無聲沒訊息。
+#
+# 經驗值:sensor data 全 best_effort + volatile,tf/static 用 reliable。
+
+/scan:
+  reliability: best_effort
+  durability: volatile
+  history: keep_last
+  depth: 10
+
+/imu:
+  reliability: best_effort
+  durability: volatile
+  history: keep_last
+  depth: 50
+
+/odom:
+  reliability: reliable
+  durability: volatile
+  history: keep_last
+  depth: 100
+
+/tf:
+  reliability: reliable
+  durability: volatile
+  history: keep_last
+  depth: 100
+
+# tf_static 必須是 transient_local,否則晚 join 的 subscriber 拿不到
+/tf_static:
+  reliability: reliable
+  durability: transient_local
+  history: keep_all

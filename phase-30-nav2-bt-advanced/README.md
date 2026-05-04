@@ -367,3 +367,7 @@ phase-30-nav2-bt-advanced/
 │           └── test_advanced_nodes.cpp             ← 6 個 gtest case
 └── images/                                         ← (之後補:Groot 視覺化截圖)
 ```
+
+---
+
+> **驗證狀態**:⏸ 未在 WSL 驗證 — 寫作當下 WSL 系統卡住,結構照 Phase 23A 同模式。WSL 恢復後跑 colcon build + colcon test,通過後升級成 ✅ 並補實際 gtest 輸出。

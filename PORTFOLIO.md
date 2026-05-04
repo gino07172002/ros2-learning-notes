@@ -65,7 +65,7 @@ t= 16s | WHEEL Δ=1.74m  EKF Δ=0.22m  →  EKF 8× ✅
 
 ---
 
-## 💎 最有故事的 5 條雷(從 60+ 條中精選)
+## 💎 最有故事的 6 條雷(從 60+ 條中精選)
 
 ### 雷 1:**Docker host network 還是收不到 BestEffort sensor data** — Phase 24
 
@@ -112,7 +112,20 @@ nav2 各組 (controller_server / planner_server / global_costmap / local_costmap
 
 → [Phase 22A README](phase-22A-nav2-basics/) 雷 1。
 
-### 雷 5:**WSL2 background process lifetime 問題** — 多章踩到
+### 雷 5:**StatefulActionNode 三態 vs 一般 ActionNode** — Phase 30
+
+寫 `GoToCharger` 一開始繼承 `BT::ActionNodeBase`,以為一個 `tick()` 回 RUNNING / SUCCESS / FAILURE 就完事 — 然後 BT 就一直 spam tick(),CPU 100%。
+
+**根因**:`BT::ActionNodeBase` 是同步呼叫,每 tick 都要返回終態。長時間動作要繼承 `BT::StatefulActionNode`,實作 3 個方法:
+- `onStart()` — 進入動作(只呼叫 1 次)
+- `onRunning()` — 還在跑(每 tick)
+- `onHalted()` — 上層 abort,要清資源
+
+**還有第二雷**:`onHalted()` 沒實作 — 導致 Halt 後再次 tick 時,`onStart()` 不會被觸發(因為內部 state 沒 reset),動作直接卡住。**onHalted 必須清 internal state**。
+
+→ [Phase 30 README](phase-30-nav2-bt-advanced/) 雷 1+5 詳解,是 BT.cpp v3 寫長 action 的關鍵。
+
+### 雷 6:**WSL2 background process lifetime 問題** — 多章踩到
 
 WSL 開的 ros2 launch 即使 `setsid` / `nohup` detach,**wsl 命令結束時背景 process 仍可能被 systemd-user-session 收掉**。`background tool` 模式更不穩,常 SIGKILL exit 9。
 
@@ -143,10 +156,10 @@ WSL 開的 ros2 launch 即使 `setsid` / `nohup` detach,**wsl 命令結束時背
 
 ## 📊 實際投入
 
-- **Phase 數**:32(20 個前期 + 11 個本次補,加 1 個 Capstone Final)
-- **Code 行數**:~5000 行 C++ + ~3500 行 Python + ~22000 行 Markdown
+- **Phase 數**:33(20 個前期 + 12 個本次補,加 1 個 Capstone Final)
+- **Code 行數**:~5500 行 C++ + ~3500 行 Python + ~24000 行 Markdown
 - **驗證標準**:每章 README 內「驗證過」段都是 WSL 真跑的輸出 + 雷區條目都是實際踩過修好的
-- **gtest 測試**:Phase 12 + Capstone 1(5 個)+ Phase 23A(4 個)= 約 10 個 gtest case 全過
+- **gtest 測試**:Phase 12 + Capstone 1(5 個)+ Phase 23A(4 個)+ Phase 30(6 個)= 約 16 個 gtest case
 - **Docker images**:capstone1:latest(Phase 24)+ phase20:latest(Phase 20)+ capstone-final:latest(整套 1.26GB)
 
 ---
