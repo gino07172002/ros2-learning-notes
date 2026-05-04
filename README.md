@@ -11,6 +11,7 @@
 | 🆕 **沒碰過 ROS 2** | **[GETTING_STARTED.md](GETTING_STARTED.md)** | 用 MQTT/gRPC 對照解釋 ROS 2 是什麼,給你一條 7 章新手路徑(約 1 週下午時段),跑完就會寫多節點通訊系統 |
 | 🚀 **會 ROS 1 想學 ROS 2** | 仍從 [Phase 01](phase-01-cloud-env-first-publisher/) 起 | 觀念差很多,Phase 02 會說清楚為什麼 ROS 2 全部重寫;之後可跳到 Phase 09(Executor / Lifecycle / Composition — ROS 2 才有的) |
 | 🏛️ **想學 library 設計觀** | **[DESIGN_NOTES.md](DESIGN_NOTES.md)** | 把 ROS 2 當成 library 設計教材讀,深挖 init/spin/shutdown / Executor / shared_ptr 約束等設計決策,提煉可帶走的設計通則 |
+| 🚀 **想做進階機器人**(無人機 / 視覺 / 四足 / 多機) | **[advanced/](advanced/)** | 主線之外的 4 條橫切支線:🚁 drone-px4 / 👁️ perception / 🐕 quadruped / 🤖 multi-robot,做完 Part 4 即可選讀 |
 | 💼 **招聘方 / Code reviewer** | **[PORTFOLIO.md](PORTFOLIO.md)** | 30 秒看完技術棧、3 個最強章節、6 條最有故事的雷 |
 | 🗺️ **想看完整學習地圖** | [ROADMAP.md](ROADMAP.md) | Part 1–6 結構、Track A(Mobile)/ B(Arm)分流、各章預計時長 |
 | ⚙️ **要設定環境** | [SETUP.md](SETUP.md) | TheConstructSim ☁️ vs 本機 WSL2 💻 兩種環境完整步驟 + 比較表 |
@@ -175,6 +176,21 @@ ros2 launch my_foxglove_demo diagnostics_with_bridge.launch.py
 > 🐍 欄位:✅ 有 rclpy 對照版(資料夾內 `python/`) ｜ — 純觀念或暫無對照
 
 完整學習路徑與 Track 選擇建議見 [ROADMAP.md](ROADMAP.md)。
+
+---
+
+## 🚀 進階支線(advanced/) — 業界特定機器人類別
+
+主線完成 Part 1–4 後可選讀,4 條**橫切式**進階支線。詳見 [advanced/README.md](advanced/)。
+
+| 支線 | 領域 | 業界對應 | 預計章數 | 狀態 |
+|------|------|---------|---------|------|
+| [🚁 drone-px4/](advanced/drone-px4/) | 無人機(PX4 + ROS 2) | DJI / Skydio / 農業 / 物流無人機 | 4 章 + Capstone | ⬜ 骨架 |
+| [👁️ perception/](advanced/perception/) | 視覺感知(相機 / AprilTag / YOLO / PCL) | 所有現代機器人公司必備 | 4 章 | ⬜ 骨架 |
+| [🐕 quadruped/](advanced/quadruped/) | 四足(CHAMP 通用模擬) | Boston Dynamics Spot / Unitree Go | 3 章 | ⬜ 骨架 |
+| [🤖 multi-robot/](advanced/multi-robot/) | 多機協作 | Amazon 倉儲 / AGV fleet / 群飛無人機 | 2 章 | ⬜ 骨架 |
+
+> 各支線目前只有 README 骨架(寫了「**預計教什麼、前置、套件清單、預期會踩的雷**」),實際章節等使用者選定方向後逐條填。
 
 ---
 

@@ -118,6 +118,21 @@ phase-02-communication-concepts  加「init/spin/shutdown 設計哲學」段(對
 | **Capstone B 機械手臂** | 視覺主導 | 同上,等使用者要做 Track B 完整 demo |
 | **Phase 27 部署實機** | 需要硬體 | 使用者真的買 Pi/Jetson 才有意義 |
 
+### 🚀 進階支線骨架(advanced/,2026-05-05 加)
+
+```
+advanced/
+├── README.md                       4 條支線總覽
+├── drone-px4/                      🚁 無人機 PX4 SITL,4 章 + Capstone(骨架)
+├── perception/                     👁️ 視覺(cv_bridge/AprilTag/YOLO/PCL),4 章(骨架)
+├── quadruped/                      🐕 四足 CHAMP 通用模擬,3 章(骨架)
+└── multi-robot/                    🤖 多機 namespace + fleet,2 章(骨架)
+```
+
+**設計**:橫切式支線,主線 Part 4 完成後可選讀任一條。命名用本地 `01-` `02-`,不繼續加 `phase-XX`。每條 README 有「預計教什麼 / 前置 / 套件清單 / 預期會踩的雷 / 學習資源」。
+
+**還沒寫的事**:每條支線下的實際章節(等 gino 選定方向後逐條填)。
+
 ---
 
 ## 重要慣例（**必讀**，違反會破壞 repo 一致性）

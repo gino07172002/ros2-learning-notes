@@ -151,6 +151,21 @@ Part 3: 系統設計  ──┘     URDF, TF2, ros2_control │
 
 ---
 
+## 🚀 進階支線(advanced/)
+
+主線 Part 1–6 之外的橫切式進階主題,**做完 Part 4 後可選讀任何一條**。詳見 [advanced/README.md](advanced/)。
+
+| 支線 | 領域 | 預計章數 | 狀態 |
+|------|------|---------|------|
+| [🚁 drone-px4](advanced/drone-px4/) | 無人機(PX4 SITL + ROS 2) | 4 + Capstone | ⬜ 骨架 |
+| [👁️ perception](advanced/perception/) | 視覺(cv_bridge / AprilTag / YOLO / PCL) | 4 | ⬜ 骨架 |
+| [🐕 quadruped](advanced/quadruped/) | 四足(CHAMP 通用模擬) | 3 | ⬜ 骨架 |
+| [🤖 multi-robot](advanced/multi-robot/) | 多機協作(namespace + fleet) | 2 | ⬜ 骨架 |
+
+進階支線跟主線命名差異:本地用 `01-` `02-` 編號,不繼續加 `phase-XX`。
+
+---
+
 ## 兩個 Track 的選擇建議
 
 | 你想做的事 | 建議 Track |
