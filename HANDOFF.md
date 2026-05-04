@@ -118,20 +118,32 @@ phase-02-communication-concepts  加「init/spin/shutdown 設計哲學」段(對
 | **Capstone B 機械手臂** | 視覺主導 | 同上,等使用者要做 Track B 完整 demo |
 | **Phase 27 部署實機** | 需要硬體 | 使用者真的買 Pi/Jetson 才有意義 |
 
-### 🚀 進階支線骨架(advanced/,2026-05-05 加)
+### 🚀 進階支線(advanced/,2026-05-05 加 + 補草稿)
 
 ```
 advanced/
 ├── README.md                       4 條支線總覽
-├── drone-px4/                      🚁 無人機 PX4 SITL,4 章 + Capstone(骨架)
-├── perception/                     👁️ 視覺(cv_bridge/AprilTag/YOLO/PCL),4 章(骨架)
-├── quadruped/                      🐕 四足 CHAMP 通用模擬,3 章(骨架)
-└── multi-robot/                    🤖 多機 namespace + fleet,2 章(骨架)
+├── drone-px4/                      🚁 無人機 PX4 SITL ⬜ 骨架(0 / 4 + Capstone)
+├── perception/                     👁️ 視覺,🟡 3 / 4 草稿:
+│   ├── 01-camera-cv-bridge/        ⏸ README + code(EdgeDetector)寫好
+│   ├── 02-apriltag-localization/   ⏸ README + 簡化 localizer code
+│   ├── 03-yolo-ros2/               ⬜ 未開始(GPU 環境較重)
+│   └── 04-pcl-pointcloud/          ⏸ README + ClusterExtractor code
+├── quadruped/                      🐕 四足 ⬜ 骨架(champ ROS 2 分支不穩,等本機驗證)
+└── multi-robot/                    🤖 多機,🟡 1 / 2 草稿:
+    ├── 01-namespace-spawn/         ⏸ README + spawn_three.launch.py
+    └── 02-fleet-coordination/      ⬜ 未開始(等 01 驗證)
 ```
 
-**設計**:橫切式支線,主線 Part 4 完成後可選讀任一條。命名用本地 `01-` `02-`,不繼續加 `phase-XX`。每條 README 有「預計教什麼 / 前置 / 套件清單 / 預期會踩的雷 / 學習資源」。
+**設計**:橫切式支線,主線 Part 4 完成後可選讀任一條。命名用本地 `01-` `02-`,不繼續加 `phase-XX`。
 
-**還沒寫的事**:每條支線下的實際章節(等 gino 選定方向後逐條填)。
+**目前 4 條 ⏸ 草稿**(共寫了 ~1500 行 README + 約 300 行 code):
+- 文字結構完整(README、code 骨架、CMake、package.xml、雷區 5–6 條)
+- 但**沒實機 / 雲端跑過驗證** — 雷區從業界經驗整理,實際跑可能會踩到沒寫的雷
+- 等 gino 跑過後升 ✅,或修細節再升 ✅
+
+**還沒寫的事**:drone-px4 全 4 章、quadruped 全 3 章、perception/03 YOLO、multi-robot/02 fleet。
+**選做順序建議**:gino 想做哪個就先做哪個;perception/01 + multi-robot/01 風險最低,可以先跑驗證升 ✅。
 
 ---
 

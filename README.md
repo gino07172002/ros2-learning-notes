@@ -183,14 +183,15 @@ ros2 launch my_foxglove_demo diagnostics_with_bridge.launch.py
 
 主線完成 Part 1–4 後可選讀,4 條**橫切式**進階支線。詳見 [advanced/README.md](advanced/)。
 
-| 支線 | 領域 | 業界對應 | 預計章數 | 狀態 |
-|------|------|---------|---------|------|
-| [🚁 drone-px4/](advanced/drone-px4/) | 無人機(PX4 + ROS 2) | DJI / Skydio / 農業 / 物流無人機 | 4 章 + Capstone | ⬜ 骨架 |
-| [👁️ perception/](advanced/perception/) | 視覺感知(相機 / AprilTag / YOLO / PCL) | 所有現代機器人公司必備 | 4 章 | ⬜ 骨架 |
-| [🐕 quadruped/](advanced/quadruped/) | 四足(CHAMP 通用模擬) | Boston Dynamics Spot / Unitree Go | 3 章 | ⬜ 骨架 |
-| [🤖 multi-robot/](advanced/multi-robot/) | 多機協作 | Amazon 倉儲 / AGV fleet / 群飛無人機 | 2 章 | ⬜ 骨架 |
+| 支線 | 領域 | 業界對應 | 進度 |
+|------|------|---------|------|
+| [🚁 drone-px4/](advanced/drone-px4/) | 無人機(PX4 + ROS 2) | DJI / Skydio / 農業 / 物流無人機 | ⬜ 骨架(0 / 4 + Capstone) |
+| [👁️ perception/](advanced/perception/) | 視覺感知(相機 / AprilTag / YOLO / PCL) | 所有現代機器人公司必備 | 🟡 **3 / 4 文字草稿** |
+| [🐕 quadruped/](advanced/quadruped/) | 四足(CHAMP 通用模擬) | Boston Dynamics Spot / Unitree Go | ⬜ 骨架(0 / 3) |
+| [🤖 multi-robot/](advanced/multi-robot/) | 多機協作 | Amazon 倉儲 / AGV fleet / 群飛無人機 | 🟡 **1 / 2 文字草稿** |
 
-> 各支線目前只有 README 骨架(寫了「**預計教什麼、前置、套件清單、預期會踩的雷**」),實際章節等使用者選定方向後逐條填。
+> **「文字草稿(⏸)」**:README + code 骨架已寫,但沒實機 / 雲端跑過驗證,等實際跑過後升 ✅。
+> 詳情看 [advanced/README.md](advanced/) 內各支線的進度說明。
 
 ---
 

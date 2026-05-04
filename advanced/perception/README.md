@@ -2,7 +2,7 @@
 
 > 從 Phase 03 訂 LiDAR 擴到「**訂相機 → 偵測物件 → 處理 3D 點雲**」的 production-ready 視覺管線。
 
-**狀態**:⬜ 骨架(等使用者開始實做)
+**狀態**:🟡 進行中 — 01 / 02 / 04 已寫文字草稿(⏸,等實際驗證);03 留 placeholder
 
 ---
 
@@ -28,16 +28,18 @@
 
 ---
 
-## 📋 預計章節結構
+## 📋 章節結構與進度
 
 ```
 perception/
 ├── README.md                       ← 你正在讀
-├── 01-camera-cv-bridge/            ← Image 訊息 + cv_bridge + OpenCV 處理
-├── 02-apriltag-localization/       ← AprilTag 偵測 + TF 機器人定位
-├── 03-yolo-ros2/                   ← YOLO 整合,發 DetectedObjects msg
-└── 04-pcl-pointcloud/              ← PCL 處理 3D 點雲(濾波 / 分割 / 地面去除)
+├── 01-camera-cv-bridge/            ⏸ 文字草稿(2026-05-05)
+├── 02-apriltag-localization/       ⏸ 文字草稿(2026-05-05)
+├── 03-yolo-ros2/                   ⬜ 未開始(GPU 環境較吃資源,待 gino 本機跑)
+└── 04-pcl-pointcloud/              ⏸ 文字草稿(2026-05-05)
 ```
+
+> **「⏸ 文字草稿」**:README + code 骨架已寫,但**沒在實機 / 雲端跑過驗證**。實做時可能需要修細節。雷區清單從業界經驗整理,實際跑可能會踩到沒寫的雷。
 
 ---
 
