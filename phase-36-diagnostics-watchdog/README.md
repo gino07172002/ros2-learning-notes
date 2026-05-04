@@ -292,7 +292,7 @@ colcon test-result --test-result-base build/my_diag_demo --verbose
 - [Phase 09 Lifecycle](../phase-09-executors-lifecycle-composition/) — Lifecycle node 通常每個 transition 都發 diagnostic
 - [Phase 12 Testing](../phase-12-testing/) — fixture-based gtest 模式
 - [Phase 23A BT plugin](../phase-23A-nav2-bt-plugin/) — library + gtest + plugin registration 同模式
-- [Phase 35 Foxglove Bridge](../phase-35-foxglove-bridge/)(待寫) — Foxglove 看 `/diagnostics_agg` 樹狀圖
+- [Phase 35 Foxglove Bridge](../phase-35-foxglove-bridge/) — Foxglove Studio 看 `/diagnostics_agg` 階層樹,本章 demo 直接接它
 
 ---
 

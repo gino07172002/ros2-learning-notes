@@ -265,7 +265,7 @@ python3 ~/ros2_ws/src/my_bag_demo/scripts/parse_odom_csv.py my_slam_bag /odom > 
 
 - [Phase 21A SLAM](../phase-21A-slam-toolbox/) — 這章的 slam_from_bag 直接接過去
 - [Phase 26 DDS QoS](../phase-26-dds-qos/) — QoS override 的觀念
-- [Phase 35 Foxglove Bridge](../phase-35-foxglove-bridge/)(待寫) — MCAP 跟 Foxglove 整合
+- [Phase 35 Foxglove Bridge](../phase-35-foxglove-bridge/) — MCAP bag 拖到 Foxglove Studio 直接離線播
 
 ---
 

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>my_foxglove_demo</name>
+  <version>0.1.0</version>
+  <description>Phase 35: Foxglove Bridge — 即時可視化 ROS 2 系統(WebSocket)</description>
+  <maintainer email="gino.tsai@goodlinker.io">gino</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>foxglove_bridge</exec_depend>
+  <exec_depend>my_diag_demo</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

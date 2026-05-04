@@ -104,6 +104,7 @@
 | [26](phase-26-dds-qos/) | DDS QoS 調校 | Reliability/Durability/Deadline、Reliable↔BestEffort 兼容方向、實測掉包 | — |
 | [32](phase-32-rosbag2-advanced/) | rosbag2 進階 | 選擇性錄製、MCAP backend、QoS override 重播、bag 餵回 SLAM、Python 解 bag 出 CSV | ✅ |
 | [36](phase-36-diagnostics-watchdog/) | Diagnostics + Heartbeat Watchdog | `diagnostic_updater` + `aggregator`、4 等級 status、library + main + 4 個 gtest case | — |
+| [35](phase-35-foxglove-bridge/) | Foxglove Bridge — 即時可視化 | `foxglove_bridge` 一行裝、layout JSON 版控、串 Phase 36 的儀表板 demo | — |
 
 ### 🏁 Capstone Final — 整 repo 最終整合
 > 整 repo 的 deliverable,**任何有 Docker 的機器都能跑**

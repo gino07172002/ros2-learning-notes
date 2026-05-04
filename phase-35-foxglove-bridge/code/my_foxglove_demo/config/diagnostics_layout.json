@@ -1,0 +1,50 @@
+{
+  "_comment": "Phase 35 — Foxglove layout 預設儀表板 (import via Foxglove Studio)",
+  "_usage": [
+    "1. Foxglove Studio 連好 ws://<host>:8765",
+    "2. Layout 選單 → Import from file → 選這個 .json",
+    "3. 看到 4 panel:Diagnostics tree / Topic Graph / /diagnostics_agg raw / Log"
+  ],
+  "configById": {
+    "DiagnosticSummary!a": {
+      "topicToRender": "/diagnostics_agg",
+      "minLevel": 0,
+      "pinnedIds": [],
+      "hardwareIdFilter": "",
+      "sortByLevel": true
+    },
+    "Topic Graph!b": {
+      "lrOrientation": false
+    },
+    "RawMessages!c": {
+      "topicPath": "/diagnostics_agg",
+      "diffEnabled": false
+    },
+    "LogPanel!d": {
+      "searchTerms": [],
+      "minLogLevel": 1,
+      "nameFilter": {}
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": {
+    "first": {
+      "first": "DiagnosticSummary!a",
+      "second": "Topic Graph!b",
+      "direction": "row",
+      "splitPercentage": 50
+    },
+    "second": {
+      "first": "RawMessages!c",
+      "second": "LogPanel!d",
+      "direction": "row",
+      "splitPercentage": 60
+    },
+    "direction": "column",
+    "splitPercentage": 55
+  }
+}
