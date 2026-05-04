@@ -1,0 +1,27 @@
+# aggregator.yaml — Phase 36
+#
+# diagnostic_aggregator 把零散的 /diagnostics 訊息按 group 聚合,
+# 變成 /diagnostics_agg(階層式),Foxglove / rqt_robot_monitor 看起來會分群。
+#
+# Group 設計:
+#   Sensors  — 所有 sensor 的 watchdog
+#   Drive    — 馬達 / 控制 watchdog
+#   System   — 主控 / heartbeat / 整體
+
+analyzers:
+  sensors:
+    type: diagnostic_aggregator/AnalyzerGroup
+    path: Sensors
+    analyzers:
+      heartbeats:
+        type: diagnostic_aggregator/GenericAnalyzer
+        path: Heartbeats
+        contains:
+          - 'Heartbeats'
+        timeout: 5.0
+  system:
+    type: diagnostic_aggregator/GenericAnalyzer
+    path: System
+    contains:
+      - 'watchdog_demo'
+    timeout: 5.0
