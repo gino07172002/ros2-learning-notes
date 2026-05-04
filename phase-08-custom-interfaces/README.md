@@ -42,174 +42,286 @@ Phase 08 開始，**你是設計者**：
 
 ---
 
-## 🎬 三個檔案到底什麼情境用?(具體例子)
+## 🎬 三個檔案怎麼搭配?兩個真實系統情境
 
-光看結構不夠,看實際情境才會懂。下面是同一台機器人會碰到的 **9 個真實任務**,各自該用 .msg / .srv / .action 中哪個 + 為什麼。
+光看結構不夠,**看一個系統內三種檔案怎麼協作**才會懂。下面兩個情境各展示一台真實機器人怎麼用 `.msg` + `.srv` + `.action` 拼成完整系統。
 
-### 📡 .msg — 「**持續廣播 / 連續資料流**」
+---
 
-**特徵**:
-- 高頻發送(10–100 Hz)
-- 沒有「結束」概念,Node 開著就一直發
-- 訂閱者**沒收到也不能怎樣**(下一筆會到)
-- 比喻:**廣播電台、感測器讀值**
+### 🧹 情境 1:掃地機器人(Mobile)
 
-#### 例子 1:電池電量 `BatteryStatus.msg`
+**任務**:使用者按 app 上的「**清掃客廳**」,機器人從充電座出發、避障、清掃 30 分鐘、回充電座。
+
+#### 系統內 4 個 Node
 
 ```
+┌─────────────────┐  cleaning_mode srv   ┌──────────────────┐
+│   App Backend   │ ──────────────────▶  │ Cleaning Manager │
+│  (使用者介面)    │  CleanRoom action    │   (主控 Node)    │
+└─────────────────┘ ◀──────────────────  └──────────────────┘
+       ▲                                          │
+       │ battery_status, cleaning_progress msg    │ cmd_vel
+       │ (持續廣播,UI 更新)                       ▼
+       │                                  ┌──────────────────┐
+       │                                  │   Motor Driver   │
+       └──────────────────────────────────│   + Sensors      │
+                                          └──────────────────┘
+```
+
+#### 三個檔案各扮演什麼角色
+
+##### 📡 `.msg` — 持續廣播狀態(讓 UI、紀錄、其他 Node 都看得到)
+
+`BatteryStatus.msg` — 1 Hz 持續發
+```
 std_msgs/Header header
-float32 voltage              # 24.5 V
-float32 percentage           # 0.0–1.0
-float32 current_amps         # 放電 -2.3 / 充電 +1.5
+float32 voltage              # 24.5
+float32 percentage           # 0.0–1.0,UI 用來畫電池圖示
 uint8 charging_state         # 0=放電 1=充電 2=滿電
+float32 estimated_minutes    # 預估還能跑多久
 ```
 
-**為什麼是 .msg**:電池狀態是**持續變化的狀態**,不是請求。多個 Node 都想知道(UI 顯示、Nav2 決定要不要回去充電、安全 Node 監控過熱),Topic 一對多剛好。**1 Hz 發一筆,訂閱者各取所需**。
-
-#### 例子 2:人臉偵測結果 `FaceDetections.msg`
-
+`CleaningProgress.msg` — 2 Hz 持續發
 ```
 std_msgs/Header header
-my_msgs/BoundingBox[] faces   # 陣列:這一幀偵測到 N 張臉
-float32 inference_time_ms
+float32 area_cleaned_m2      # 已清掃面積
+float32 area_total_m2        # 房間總面積
+float32 percent_complete     # 0.0–1.0
+geometry_msgs/Point2D current_position
+uint32 dirt_collected_grams
 ```
 
-**為什麼是 .msg**:相機每秒 30 幀,每幀都要發,**沒有「呼叫」的概念**。下游可以是顯示、可以是追蹤,各自處理各自的。
+**為什麼這兩個是 .msg**:
+- 多個訂閱者(App UI、log 系統、Nav2 用電量決定要不要先回充)各自取用
+- 高頻、持續、漏一筆下一筆會到
+- 改用 .srv 會讓**每個訂閱者都要主動 poll**,server 被打爆
 
-#### 例子 3:機器人速度命令 `cmd_vel`(內建的 `geometry_msgs/Twist`)
+##### ☎️ `.srv` — 切換模式(瞬間決策、要立刻得到 confirm)
 
-**為什麼是 .msg**:控制器持續發,馬達持續吃。**漏一筆沒事下一筆會到**。如果改用 .srv「請馬達幫我設速度」就會卡住整個控制迴圈。
-
----
-
-### ☎️ .srv — 「**單次請求 + 立刻回**」
-
-**特徵**:
-- 一問一答,**caller 阻塞等回應**
-- 動作**很快完成**(< 1 秒)
-- 通常**改變狀態**或**查詢資料**
-- 比喻:**HTTP API、打電話、按開關**
-
-#### 例子 4:啟用/停用避障 `EnableObstacleAvoidance.srv`
-
+`SetCleaningMode.srv`
 ```
 # Request
-bool enable
-string reason         # "manual override" 之類
+uint8 STANDARD=0
+uint8 EDGE_ONLY=1            # 沿邊清
+uint8 SPOT=2                 # 重點清
+uint8 mode
+float32 suction_power        # 0.0–1.0
 ---
 # Response
 bool success
-string message
+uint8 previous_mode          # 從哪個模式切過來
+string message               # "OK" or "Battery too low for SPOT mode"
 ```
 
-**為什麼是 .srv**:這是**離散事件** — 你按下「停用避障」按鈕,期待立刻有回應「OK 已停用」。**caller 想知道有沒有成功**(用 .msg 廣播 `enable: false` 沒人會跟你 confirm)。
+**為什麼這個是 .srv**:
+- App 按「切到沿邊清」是**瞬間動作**,使用者按下後**立刻**期待回應
+- caller(App)想知道「**有沒有成功** + 為什麼」(電量太低 server 會拒絕)
+- 動作 < 0.1 秒完成,不需要進度
 
-#### 例子 5:查詢當前地圖名稱 `GetCurrentMap.srv`
+##### 🎯 `.action` — 主任務(30 分鐘長任務 + 進度 + 可取消)
 
+`CleanRoom.action`
 ```
-# Request
-(空 — 沒有參數)
+# Goal:App 送過來
+string room_name             # "living_room" / "bedroom"
+uint32 timeout_minutes       # 最久跑多久
+bool return_to_dock          # 完成後是否回充電座
 ---
-# Response
-string map_name           # "office_floor_3"
-string map_path           # "/maps/office_floor_3.yaml"
-geometry_msgs/Point2D origin
-```
-
-**為什麼是 .srv**:**查詢動作**。我問 → server 回。一次性,不是持續的。如果用 .msg 就要 server 一直廣播當前地圖名稱,浪費頻寬。
-
-#### 例子 6:校正陀螺儀 `CalibrateGyro.srv`
-
-```
-# Request
-float32 duration_seconds   # 校正時間
----
-# Response
+# Result:任務結束時 server 送(SUCCESS / ABORTED / CANCELED)
 bool success
-float32 measured_bias_x
-float32 measured_bias_y
-float32 measured_bias_z
-```
-
-**為什麼是 .srv**:**短時間任務 + caller 想要知道結果**。耗時約 2 秒(可接受同步等待),caller 拿到 bias 數值後決定下一步。如果改用 .action 就過度設計(校正過程不需要進度回報,2 秒等就等)。
-
+float32 area_cleaned_m2
+float32 elapsed_minutes
+uint32 dirt_collected_grams
+string termination_reason    # "completed" / "battery_low" / "user_cancel" / "stuck"
 ---
-
-### 🎯 .action — 「**長任務 + 進度回報 + 可取消**」
-
-**特徵**:
-- 動作**耗時很久**(幾秒到幾分鐘)
-- caller 想知道**進度**(走到 30% 了)
-- 中途可能要**取消**(使用者按停止鈕)
-- 可能**失敗**(前方擋住、目標不可達)
-- 比喻:**叫外送、下載大檔案、長時間任務**
-
-#### 例子 7:導航到指定點 `NavigateToPose.action`(Nav2 內建)
-
-```
-# Goal: client 開始時送
-geometry_msgs/PoseStamped pose      # 目標座標
-string behavior_tree                # 用哪個 BT
----
-# Result: 任務結束時送(SUCCESS / ABORTED / CANCELED)
-std_msgs/Empty result
----
-# Feedback: 持續送進度
-geometry_msgs/PoseStamped current_pose
-builtin_interfaces/Duration navigation_time
-int16 number_of_recoveries
-float32 distance_remaining          # 還剩多遠
-```
-
-**為什麼是 .action**:
-- 導航**可能要 30 秒**,client 不能阻塞等
-- caller 想看「**走多遠了**」(進度條 UI)
-- 使用者可能說「停下來別走了」(cancel)
-- 可能**失敗**(被擋住路 → ABORTED)
-- 上面這些**全是 .msg / .srv 做不到的**
-
-#### 例子 8:機械手臂規劃並執行軌跡 `ExecuteTrajectory.action`
-
-```
-# Goal
-trajectory_msgs/JointTrajectory trajectory
----
-# Result
-bool success
-string error_string
----
-# Feedback
-int32 current_waypoint_index        # 目前走到第幾個點
-float32 progress                    # 0.0–1.0
-```
-
-**為什麼是 .action**:手臂執行軌跡可能 5–30 秒,**進度條 + 中途可取消**(碰撞偵測觸發)。MoveIt 的 `MoveGroupInterface.execute()` 內部就是 .action。
-
-#### 例子 9:充電到指定電量 `ChargeToTarget.action`
-
-```
-# Goal
-float32 target_percentage           # 0.8 = 充到 80%
-float32 timeout_minutes
----
-# Result
-bool reached_target
-float32 final_percentage
----
-# Feedback
-float32 current_percentage
+# Feedback:每 2 秒送一次給 App 更新 UI
+float32 percent_complete
 float32 estimated_minutes_remaining
+geometry_msgs/Point2D current_position
+string current_phase         # "navigating_to_room" / "cleaning" / "returning_to_dock"
 ```
 
-**為什麼是 .action**:可能充 30 分鐘,使用者想看「還要多久」、隨時可中止。
+**為什麼這個是 .action**:
+- 任務跑 30 分鐘,App 不能阻塞等
+- 使用者要看「**還剩多久 + 已清多少**」進度
+- 隨時可能按「停止」(CANCEL)
+- 可能失敗(電量不足、卡住、找不到充電座 → ABORTED)
+- 上面**全是 .msg / .srv 做不到的**
+
+#### 三個檔案怎麼一起運作
+
+```
+時間 →
+  t=0   App 呼叫 SetCleaningMode srv (mode=STANDARD)         ☎️ .srv
+        ← Response: success=true, previous_mode=EDGE_ONLY
+
+  t=1   App 送 CleanRoom goal (room="living_room")           🎯 .action goal
+        ← Server accept, 開始任務
+
+  t=1+  Manager 持續發 BatteryStatus 1Hz / Progress 2Hz       📡 .msg
+        UI 持續更新電量、清掃面積
+
+  t=2   Action feedback: percent=3%, remaining=28min          🎯 .action feedback
+  t=4   Action feedback: percent=7%, remaining=27min          🎯 .action feedback
+  ...
+  t=30  Action result: success=true, area=42.3m², dirt=15g    🎯 .action result
+```
+
+**重點**:**.msg、.srv、.action 是同時運作的**,不是「先用 .msg 再用 .srv 再用 .action」。它們各自有自己的工作,**互不阻塞**。
 
 ---
 
-### 🔍 怎麼快速判斷該用哪個?**3 個問題決策樹**
+### 🦾 情境 2:協作手臂取放方塊(Manipulation)
+
+**任務**:相機看到桌上有方塊,手臂伸過去抓起來、放到輸送帶上。
+
+#### 系統內 4 個 Node
+
+```
+┌──────────────┐  detected_objects msg   ┌─────────────────┐
+│   Camera     │ ──────────────────────▶ │   Task Planner  │
+│   (YOLO)     │                          │   (主控 Node)   │
+└──────────────┘                          └─────────────────┘
+       ▲                                           │ │
+       │                                           │ │
+       │ 多個訂閱者(顯示、log、Planner)             │ │
+       │                                           │ │
+       │  joint_states msg ◀──────────┐            │ │
+       │                              │            │ │
+       │                       ┌──────┴────────┐   │ │
+       └───────────────────────│  Robot Arm    │   │ │
+                               │  Controller   │◀──┘ │
+                       open/close srv │       │      │
+                       ◀──────────────┤       │      │
+                                      │       │      │
+                                      └───────┴──────┘
+                                       PickAndPlace action
+```
+
+#### 三個檔案各扮演什麼角色
+
+##### 📡 `.msg` — 感知資料 + 狀態(高頻持續發)
+
+`DetectedObjects.msg` — 相機 30 Hz 發
+```
+std_msgs/Header header
+my_msgs/DetectedObject[] objects    # 陣列:這一幀偵測到 N 個物件
+
+# DetectedObject 內含:
+#   string class_name        "cube" / "ball" / "bottle"
+#   geometry_msgs/Point pose
+#   float32 confidence
+```
+
+`JointStates.msg`(內建 `sensor_msgs/JointState`)— 手臂控制器 100 Hz 發
+
+**為什麼這些是 .msg**:
+- 相機每秒 30 幀,每幀都要發,**沒有「呼叫」的概念**
+- 多個訂閱者各自處理(顯示 / log / planner 決策)
+- 漏幀沒事,下一幀會到
+
+##### ☎️ `.srv` — 夾爪瞬間動作(< 1 秒,要 confirm)
+
+`SetGripper.srv`
+```
+# Request
+float32 width_mm           # 0=完全閉合, 80=完全張開
+float32 force_n            # 抓握力,5N=輕抓陶瓷, 30N=抓重物
+---
+# Response
+bool success
+float32 actual_width_mm    # 實際抓到的寬度(物件大小回報)
+bool object_detected       # 抓到東西沒(夾爪壓力感測判斷)
+```
+
+**為什麼這個是 .srv**:
+- 「打開夾爪」是**瞬間動作**(0.5 秒完成)
+- Planner 想立刻知道**抓到沒** → response 內 `object_detected` 直接回
+- 改用 .msg 廣播「請打開夾爪」沒人會跟你 confirm
+
+##### 🎯 `.action` — 主任務(規劃 + 移動 + 抓取整套)
+
+`PickAndPlace.action`
+```
+# Goal
+geometry_msgs/Pose pick_pose          # 從哪抓
+geometry_msgs/Pose place_pose         # 放到哪
+float32 approach_height_m             # 抓之前先在物件上方停的高度
+float32 grasp_width_mm                # 預期物件寬度
+---
+# Result
+bool success
+string failure_reason                 # "ik_failed" / "collision" / "no_object" / ""
+geometry_msgs/Pose final_pose
+---
+# Feedback
+string current_phase                  # "planning" / "approaching" / "grasping" /
+                                      # "lifting" / "moving" / "placing" / "retreating"
+float32 phase_progress                # 0.0–1.0
+trajectory_msgs/JointTrajectoryPoint current_joints
+```
+
+**為什麼這個是 .action**:
+- 整套動作 5–10 秒,Planner 不能阻塞等
+- 想看「**目前在哪個 phase**」(規劃中?在抓?在移動?)
+- 中途可能要取消(碰撞偵測觸發、緊急停止)
+- 可能失敗(IK 解不出、目標位置碰撞、抓不到)
+- MoveIt 的 `MoveGroupInterface` 底層就是用 .action
+
+#### 三個檔案怎麼一起運作
+
+```
+時間 →
+  持續中  Camera 發 DetectedObjects 30Hz                    📡 .msg
+         JointStates 100Hz
+
+  t=0   Planner 看到 detected: cube at (0.3, 0.2, 0.05)
+        Planner 送 PickAndPlace goal                        🎯 .action goal
+        ← Server accept
+
+  t=0+  feedback: phase="planning"                          🎯 .action feedback
+  t=1   feedback: phase="approaching"
+  t=3   Server 呼叫 SetGripper srv (width=80)               ☎️ .srv (打開)
+        ← success
+  t=4   feedback: phase="grasping"
+        Server 呼叫 SetGripper srv (width=30, force=10)     ☎️ .srv (抓)
+        ← success, object_detected=true
+  t=5   feedback: phase="lifting"
+  t=8   feedback: phase="placing"
+        Server 呼叫 SetGripper srv (width=80)               ☎️ .srv (放)
+  t=9   action result: success=true                         🎯 .action result
+```
+
+**重點**:**.action 內部會呼叫 .srv**(主任務內呼叫小步驟),這是業界很常見的設計。Nav2 的 BT 內部呼叫 `SetGoalCheckerActive.srv`、MoveIt 規劃過程呼叫多個 `srv` 都是這個模式。
+
+---
+
+## 🔍 從兩個情境看出的通用模式
+
+### 1. **三種檔案分工 = 三種「時間尺度」**
+
+| 檔案 | 時間尺度 | 範例 |
+|------|---------|------|
+| 📡 `.msg` | **持續(永遠在發)** | 電量、感測器、狀態 |
+| ☎️ `.srv` | **瞬間(< 1 秒,要 confirm)** | 開關、查詢、設定 |
+| 🎯 `.action` | **長(秒到分鐘,要進度+可取消)** | 主任務、規劃 |
+
+### 2. **大任務(.action)裡常包小動作(.srv)**
+
+掃地的 `CleanRoom.action` 內部會呼叫 `SetCleaningMode.srv`(切到角落清掃模式)。
+手臂的 `PickAndPlace.action` 內部會呼叫 `SetGripper.srv`(開合夾爪)。
+
+**.action 是任務的外殼,.srv 是任務內的小步驟**。
+
+### 3. **.msg 永遠在背景跑**,跟 .srv / .action 同時運作
+
+電池電量不會因為「現在在跑導航 action」就停止發。**三種檔案是同時運作的,不是依序使用**。
+
+### 4. **快速判斷該用哪個 — 3 個問題決策樹**
 
 ```
 問題 1:這個訊息會「持續一直發」嗎?
-   YES → 📡 .msg(感測器、狀態、控制命令)
+   YES → 📡 .msg(感測器、狀態、命令流)
    NO  → 繼續問題 2
 
 問題 2:動作會跑超過 1 秒、或想看進度嗎?
@@ -220,14 +332,13 @@ float32 estimated_minutes_remaining
    YES → ☎️ .srv(開關、校正、查詢)
 ```
 
-### 📊 同一個任務用錯類型會怎樣?
+### 5. **用錯類型會怎樣**
 
 | 任務 | 錯誤選擇 | 後果 |
 |------|---------|------|
 | 廣播電池電量 | 用 .srv | 每個訂閱者都要主動 poll,server 被打爆 |
 | 啟用避障 | 用 .msg | caller 不知道 server 有沒有收到、有沒有成功 |
 | 導航到指定點 | 用 .srv | caller 阻塞 30 秒,UI 完全凍結;不能 cancel |
-| 導航到指定點 | 用 .msg | 沒有「結束」事件,caller 不知道到了沒 |
 | 查詢當前地圖名稱 | 用 .action | 過度設計,3 行 code 變 30 行 |
 
 **核心原則**:**選最簡單夠用的那個**。能用 .msg 不用 .srv,能用 .srv 不用 .action。
