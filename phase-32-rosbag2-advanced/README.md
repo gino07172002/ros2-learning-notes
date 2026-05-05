@@ -269,4 +269,4 @@ python3 ~/ros2_ws/src/my_bag_demo/scripts/parse_odom_csv.py my_slam_bag /odom > 
 
 ---
 
-> **驗證狀態**:⏸ 純文字 + script,WSL 待驗證。Script / launch 結構照 Phase 21A 同模式,理論部分 5 條雷都來自實際踩過。
+> **驗證狀態**:✅ **WSL 完整驗證**(2026-05-05)— colcon build 通過(純 ament_cmake install,無編譯)。理論部分 5 條雷皆實際踩過。詳見 [verify_log.md](../verify_log.md)。

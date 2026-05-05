@@ -370,4 +370,4 @@ phase-30-nav2-bt-advanced/
 
 ---
 
-> **驗證狀態**:⏸ 未在 WSL 驗證 — 寫作當下 WSL 系統卡住,結構照 Phase 23A 同模式。WSL 恢復後跑 colcon build + colcon test,通過後升級成 ✅ 並補實際 gtest 輸出。
+> **驗證狀態**:✅ **WSL 完整驗證**(2026-05-05)— colcon build 通過、colcon test **6 個 gtest case 全過,0 errors / 0 failures**。詳見 [verify_log.md](../verify_log.md)。

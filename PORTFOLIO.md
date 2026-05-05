@@ -10,7 +10,7 @@
 
 ## TL;DR
 
-> 從零開始學 ROS 2 Humble 的實戰筆記。**37 個 phase 資料夾(主線 32 章 + 進階支線 4 條骨架)**,每章可單獨編譯執行,完整覆蓋通訊基礎、系統設計、機器人形體、SLAM/Nav2 自主導航、機械手臂 MoveIt、CI/CD、Docker 部署。**主線 Phase 01–26 + Capstone 全部在 WSL2 真跑過,demo log 與雷區都是實測**;新進階生態 5 章(30/32/35/36/37)結構完整、待 colcon 二次驗證。
+> 從零開始學 ROS 2 Humble 的實戰筆記。**37 個 phase 資料夾(主線 32 章 + 進階支線 4 條骨架)**,每章可單獨編譯執行,完整覆蓋通訊基礎、系統設計、機器人形體、SLAM/Nav2 自主導航、機械手臂 MoveIt、CI/CD、Docker 部署。**主線 Phase 01–26 + Capstone + 進階生態 5 章全部在 WSL2 colcon build/test 過**(2026-05-05 首輪驗證抓到 2 bug,修完全綠;詳見 [verify_log.md](verify_log.md));demo log 與 60+ 條雷區都是實測。
 
 - **語言**:C++(主)+ Python(對照)+ Markdown
 - **平台**:ROS 2 Humble(LTS)on WSL2 Ubuntu 22.04 / TheConstructSim 雲端
@@ -162,12 +162,11 @@ WSL 開的 ros2 launch 即使 `setsid` / `nohup` detach,**wsl 命令結束時背
 - **Phase 資料夾數**:37(主線 32 章 + 4 條 advanced/ 進階支線骨架 + 1 個 Capstone Final)
 - **Code 行數**(實際 `wc -l` 數):**~4600 行 C++ + ~1800 行 Python + ~19200 行 Markdown**
 - **Docker images**:capstone1(Phase 24)+ phase20(Phase 20)+ **capstone-final(整套 1.26GB)**
-- **gtest 測試**:**32 個 case 寫好,17 個已驗過**
-  - ✅ 已 colcon test 通過:Phase 12(8)+ Capstone 1(5)+ Phase 23A(4)= **17**
-  - ⏸ 結構完整、待 WSL 工具鏈恢復後跑:Phase 30(6)+ 36(4)+ 37(5)= 15
+- **gtest 測試**:**32 個 case 寫好,32 個已驗過 ✅**(2026-05-05)
+  - Phase 12(8)+ Capstone 1(5)+ Phase 23A(4)+ Phase 30(6)+ Phase 36(4)+ Phase 37(5)= **32 個 case,0 errors / 0 failures**
 - **驗證狀態**:
-  - ✅ **WSL 完整驗證**:Phase 01–26(20 章)+ 20A/20B/22A/22B/23A + Capstone 1/A/Final — 每章 README 內 demo log 都是 WSL2 真跑輸出
-  - ⏸ **結構完整、待二次驗證**:Phase 30/32/35/36/37(進階生態 5 章)— 寫作期間 WSL 工具鏈卡住,結構照已驗章節同模式;雷區條目仍是實際踩過的
+  - ✅ **WSL 完整驗證**:主線 Phase 01–26 + 20A/20B/22A/22B/23A + Capstone 1/A/Final + 進階生態 5 章(30/32/35/36/37)— 全部 colcon build 過
+  - ✅ **進階生態 5 章驗證腳本**:[`scripts/verify_advanced_phases.sh`](scripts/verify_advanced_phases.sh) 一鍵跑;首輪抓到 2 bug(Phase 37 const 編譯錯 + Phase 35 hard depend 違反獨立性原則),修完全綠;[verify_log.md](verify_log.md) 完整紀錄
   - 🟡 **僅骨架 / 文字草稿**:advanced/ 4 條支線(perception 3 章草稿、multi-robot 1 章草稿,drone-px4/quadruped 純 README)
 
 ---
@@ -178,7 +177,6 @@ WSL 開的 ros2 launch 即使 `setsid` / `nohup` detach,**wsl 命令結束時背
 
 | 項目 | 為什麼還沒做 | 預計什麼時候 |
 |------|-------------|-------------|
-| Phase 30/32/35/36/37 colcon build + colcon test 二次驗證 | WSL 工具鏈在進階章節寫作期卡住,沒 daemon 跑驗證 | WSL 恢復後一次性跑 `verify_advanced_phases.sh`(待寫),全綠後升 ✅ |
 | Phase 21B / 23B / Capstone B(機械手臂進階) | 21B 是 GUI wizard、23B 需視覺驗證 — 都需本機 + Gazebo with GPU | 本機環境改善後,優先做 21B(MoveIt Setup 自動化) |
 | Phase 27 部署實機(Pi/Jetson) | 沒實機硬體 | 取得實機後 |
 | advanced/ 各支線從草稿轉完整章 | 4 條支線只各寫了 0–3 章文字草稿 | 主線驗證債清掉後才回頭 |

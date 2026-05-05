@@ -9,7 +9,9 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>foxglove_bridge</exec_depend>
-  <exec_depend>my_diag_demo</exec_depend>
+  <!-- my_diag_demo 是 demo launch 才需要 — 設成 hard depend 會強制
+       一起 build。launch 內已用 try/except 軟性處理。 -->
+
 
   <export>
     <build_type>ament_cmake</build_type>

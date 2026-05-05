@@ -38,7 +38,9 @@ public:
   CallbackReturn on_shutdown(const rclcpp_lifecycle::State &) override;
 
   // gtest 用:當前狀態 (label like "active") 跟 tick 累計
-  std::string current_state_label() const;
+  // ⚠️ 雷:LifecycleNode::get_current_state() 上游不是 const method,
+  // 所以這個 wrapper 也不能標 const(編譯期錯誤 -fpermissive)
+  std::string current_state_label();
   uint64_t tick_count() const { return tick_count_.load(); }
 
   // gtest 用:模擬一次工作 tick(不走 timer)

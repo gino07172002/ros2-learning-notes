@@ -37,7 +37,7 @@
 
 > 給已經會基本 ROS 2 (Phase 01–26) 的人。這 5 章把「**寫 production-ready ROS 2 系統**」的關鍵套件全部跑過一遍 — Behavior Tree、可觀測性、可視化、Lifecycle 健康監控、離線分析。每章獨立可學,但接起來就是完整的 production stack。
 >
-> ⏸ **驗證狀態**:5 章結構完整、雷區皆實際踩過,但 **colcon build + colcon test 二次驗證待 WSL 工具鏈恢復**(寫作期間 WSL 卡住)。已驗 vs 待驗清單詳見 [PORTFOLIO.md](PORTFOLIO.md#-實際投入2026-05-校正)。
+> ✅ **驗證狀態**(2026-05-05):5 章 colcon build 全過 + 15 個 gtest case 全綠。**首輪驗證抓到 2 個真實 bug 並修完** — Phase 37 const 編譯錯、Phase 35 hard depend 違反獨立性原則。完整故事見 [verify_log.md](verify_log.md);驗證腳本 [`scripts/verify_advanced_phases.sh`](scripts/verify_advanced_phases.sh) 可一鍵重跑。
 
 ```
 ┌── 行為決策 ──┐    ┌── 可觀測性 ──┐    ┌── 可視化 ──┐

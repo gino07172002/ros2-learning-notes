@@ -296,4 +296,4 @@ colcon test-result --test-result-base build/my_diag_demo --verbose
 
 ---
 
-> **驗證狀態**:⏸ 未在 WSL 驗證 — 純 C++ + ROS 2 內建 `diagnostic_*`,結構照 Phase 23A 同模式(library + main + gtest)。WSL 恢復後跑 colcon build + colcon test 升 ✅。
+> **驗證狀態**:✅ **WSL 完整驗證**(2026-05-05)— colcon build 通過、colcon test **4 個 gtest case 全過,0 errors / 0 failures**。詳見 [verify_log.md](../verify_log.md)。

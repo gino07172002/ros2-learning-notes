@@ -281,4 +281,4 @@ colcon test-result --test-result-base build/my_lifecycle_diag --verbose
 
 ---
 
-> **驗證狀態**:⏸ 純 C++ + ROS 2 內建,結構照 Phase 36 同模式(library + main + 5 個 gtest case)。WSL 恢復後跑 colcon build + colcon test 升 ✅。
+> **驗證狀態**:✅ **WSL 完整驗證**(2026-05-05)— 首輪抓到 [Bug 1](../verify_log.md#bug-1-phase-37--get_current_state-不是-constwrapper-不能標-const)(`get_current_state()` 不是 const,wrapper 不能標 const,已修;header 加註解警示)。修完後 colcon build 通過、colcon test **5 個 gtest case 全過,0 errors / 0 failures**。詳見 [verify_log.md](../verify_log.md)。

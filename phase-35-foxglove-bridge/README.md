@@ -274,4 +274,4 @@ ros2 launch my_foxglove_demo diagnostics_with_bridge.launch.py
 
 ---
 
-> **驗證狀態**:⏸ apt 一行裝即用,純 launch + config,無 C++。WSL 恢復後跑 `bridge_only.launch.py` + 瀏覽器連線截圖升 ✅。雷區 5 條(WSL 網路 / 壓縮 CPU / minLevel / send_buffer / capabilities 安全)都來自實際踩過。
+> **驗證狀態**:✅ **WSL colcon build 通過**(2026-05-05)— 首輪驗證抓到 [Bug 2](../verify_log.md#bug-2-phase-35--exec_depend-my_diag_demo-在獨立build時找不到-install-hook)(`exec_depend my_diag_demo` 違反「每章獨立可學」設計原則,已移除)。瀏覽器端連線實測待截圖。雷區 5 條(WSL 網路 / 壓縮 CPU / minLevel / send_buffer / capabilities 安全)皆實際踩過。詳見 [verify_log.md](../verify_log.md)。

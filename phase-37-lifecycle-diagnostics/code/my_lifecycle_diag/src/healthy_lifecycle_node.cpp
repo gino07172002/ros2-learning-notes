@@ -91,7 +91,7 @@ void HealthyLifecycleNode::inject_error(const std::string & reason)
   injected_error_ = reason;
 }
 
-std::string HealthyLifecycleNode::current_state_label() const
+std::string HealthyLifecycleNode::current_state_label()
 {
   return get_current_state().label();
 }
