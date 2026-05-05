@@ -9,6 +9,38 @@
 
 ---
 
+## 2026-05-05(晚上):Phase 06 Parameters 完整 demo 驗證 ✅
+
+### Build
+- `colcon build --packages-select my_cpp_pkg` (Phase 06) **passed in 32.1s**
+- install:`auto_brake_param` 執行檔 + `share/my_cpp_pkg/config/auto_brake_params.yaml` 部署到位
+
+### Runtime — 5 個 Demo 全綠
+
+| Demo | 章節指令 | 預期 | 實測 | 結果 |
+|------|---------|------|------|------|
+| **1 list** | `ros2 param list /auto_brake_param_node` | 看到 3 個自訂 + 內建 (use_sim_time / qos_overrides) | 三個自訂 + use_sim_time + 4 個 qos_overrides 全在 | ✅ |
+| **1 get** | `ros2 param get /...node safe_distance` | `Double value is: 1.0` | 一致 | ✅ |
+| **2 set** | `ros2 param set ... safe_distance 2.5` | `Set parameter successful` + log 印 `safe_distance -> 2.50` | 兩段都印出來,**on_set callback 攔截器運作** | ✅ |
+| **3 攔截 over-range** | `ros2 param set ... max_speed 5.0` | `Setting parameter failed: max_speed must be in [0, 2.0]` | **錯誤訊息一字不差** | ✅ |
+| **3 攔截負值** | `ros2 param set ... safe_distance -1.0` | `Setting parameter failed: safe_distance must be >= 0` | **錯誤訊息一字不差** | ✅ |
+| **3 確認沒被改** | `ros2 param get ... safe_distance` | 還是 2.5(維持 Demo 2 設定) | 2.5 ✅ | ✅ |
+| **4 YAML 載入** | `--params-file ...auto_brake_params.yaml` | 啟動 log 印 `safe_distance=0.80, max_speed=0.15, corridor_width=0.50` | **跟章節 line 217 預期 log 完全一致** | ✅ |
+| **5 plugin 雷** | `rqt --list-plugins` | 看到 `rqt_reconfigure.param_plugin.ParamPlugin`,**沒**舊版的 `rqt_reconfigure.rqt_reconfigure.RqtReconfigure` | 完全符合 | ✅ |
+
+### 沒驗到的(明說)
+- ❌ **Demo 5 GUI 視窗實際畫面** — WSL 沒開 X11、AI 看不到視窗(章節已有截圖)
+- ❌ **fake_lidar.py 觸發避障行為** — Demo 設計需要光達 mock 才能看到 BRAKING log,但**param 機制本身跟 lidar 無關**,Demo 1–4 不需 fake_lidar 也能完整驗
+
+### 結論
+**Phase 06 全章可信**:
+- 所有章節指令 verbatim 可用
+- on_set callback 攔截器(章節核心 takeaway)實測攔下兩種壞值 + 拒絕後保留原值
+- YAML 載入機制完全符合預期
+- Humble 雷區 1(rqt_reconfigure 新舊 plugin 名)寫對
+
+---
+
 ## 2026-05-05(晚上):Phase 01 + Phase 05 手動驗證 ✅
 
 ### Phase 01 — Publisher build + executable 驗
