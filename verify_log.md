@@ -1,10 +1,61 @@
-# Verify Log — 進階生態 5 章 colcon 驗證
+# Verify Log — colcon / runtime 驗證紀錄
 
-> 用 [`scripts/verify_advanced_phases.sh`](scripts/verify_advanced_phases.sh) 跑 Phase 30/32/35/36/37 的 `colcon build` + `colcon test`,記錄每次跑的結果與發現的 bug。
+> 紀錄每次重新驗證的結果。
+>
+> - **進階生態 5 章 (Phase 30/32/35/36/37)** 用 [`scripts/verify_advanced_phases.sh`](scripts/verify_advanced_phases.sh) 跑
+> - **其他章節**手動驗證(主線基礎、Phase 05 工具集等)
+>
+> 紀錄按時間反序(最新在上)。
 
 ---
 
-## 2026-05-05:最終驗證 — 5 章全綠 ✅
+## 2026-05-05(晚上):Phase 01 + Phase 05 手動驗證 ✅
+
+### Phase 01 — Publisher build + executable 驗
+
+| 項目 | 結果 |
+|------|------|
+| Source `/opt/ros/humble/setup.bash` | ✅ ROS_DISTRO=humble |
+| Deploy `my_cpp_pkg` 到 `~/ros2_ws/src/` | ✅(Phase 01 沒撞到既有 phase01_pkg)|
+| `colcon build --packages-select my_cpp_pkg` | ✅ **passed in 39.9s** |
+| `~/ros2_ws/install/my_cpp_pkg/lib/my_cpp_pkg/auto_drive` | ✅ executable 存在 |
+| 部署順序對(沒外部依賴) | ✅ 純 rclcpp + geometry_msgs |
+
+**結論**:Phase 01 主線最基礎章 colcon build 過,**驗證 GETTING_STARTED 推薦的 7 章新手路徑第一站正確**。
+
+### Phase 05 — Debug 工具集可用性驗
+
+Phase 05 是純工具教學沒 code 要 build,改驗 4 個工具是否裝齊 + 章節指令正確。
+
+| 工具 | 章節指令 | 驗證結果 |
+|------|---------|----------|
+| `rqt_graph` | line 45 `rqt_graph` | ✅ 在 `/opt/ros/humble/bin/rqt_graph` |
+| `rqt` 主程式 | line 195 `rqt --standalone ...` | ✅ 在 `/opt/ros/humble/bin/rqt` |
+| `ros2 bag` | line 125 `ros2 bag record ...` | ✅ subcommand 完整,實測 record 成功產出 metadata.yaml + .db3 |
+| `ros2 bag info` | line 133 | ✅ 能讀剛產的 bag 並列 metadata |
+| `rqt --standalone rqt_plot.plot.Plot` | line 195(Humble 雷的解法) | ✅ `rqt --list-plugins` 確認 entry point 名稱**完全正確** |
+| `rqt --standalone rqt_console.console.Console` | line 201 | ✅ 同上,entry point 對 |
+| 全套 rqt 套件 | — | ✅ 20 個 rqt_* package 全裝(rqt_action / bag / console / graph / plot / reconfigure / service_caller / topic 等)|
+
+**驗證細節**:
+```
+ros2 pkg list | grep ^rqt → 20 個套件
+which rqt_graph rqt → /opt/ros/humble/bin/{rqt_graph,rqt}
+rqt --list-plugins | grep -iE 'plot|console' →
+  rqt_console.console.Console
+  rqt_plot.plot.Plot
+  rqt_py_console.py_console.PyConsole
+ros2 bag record /test_topic -o phase05_test_bag → 成功產出 db3 + metadata
+ros2 bag info phase05_test_bag → 正確顯示 metadata
+```
+
+**結論**:Phase 05 README 內所有指令在 Humble 都可用,**特別是 line 192–201「Humble 沒有 rqt_plot 獨立執行檔」這條雷區的解法被驗證正確** — `rqt --standalone <plugin>` 的 plugin 名 `rqt_plot.plot.Plot` 跟 `rqt_console.console.Console` 真的存在於 plugin list。
+
+> ⚠️ **沒驗到的**:rqt_graph / rqt_plot / rqt_console 三個 GUI 視窗實際畫面(WSL2 Headless 不開 X11,且 AI 看不到視窗)。這些章節的截圖驗證需要 gino 本機跑。
+
+---
+
+## 2026-05-05(早):進階生態 5 章 — 最終驗證全綠 ✅
 
 ### 結果
 
