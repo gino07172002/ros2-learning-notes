@@ -29,7 +29,67 @@ Phase 08 你寫了 Approach action server，但只處理「正常完成」一種
 
 ---
 
-## 🎬 故事設計：Countdown action
+## 🕵️ 終端機偵探課:看業界 Action server 長什麼樣
+
+寫自己的進階 action 之前,先**用 CLI 觀察業界 Nav2 / MoveIt 的 action server**,看他們提供哪些介面、怎麼互動。
+
+### 啟動一個有 action server 的系統
+
+```bash
+# Phase 22A 的 Nav2 demo(雲端推薦,GPU 才跑得起來)
+ros2 launch my_nav2_demo nav2_demo.launch.py
+
+# 或最簡單:跑 Phase 08 的 smart_brake_v2(它也是 action server)
+ros2 run phase08_pkg smart_brake_v2
+```
+
+### 看系統內所有 action
+
+```bash
+ros2 action list
+# /approach              ← Phase 08 寫的
+# /navigate_to_pose      ← Nav2 主任務
+# /backup                ← Nav2 後退行為
+# /spin                  ← Nav2 原地轉
+# /follow_path           ← Nav2 沿路徑走
+```
+
+### 看單一 action 的型別 + interface
+
+```bash
+# 看 type
+ros2 action info /navigate_to_pose -t
+# Action: /navigate_to_pose
+#   Action clients: 1
+#   Action servers: 1 [/bt_navigator]
+# Type: nav2_msgs/action/NavigateToPose
+
+# 看 interface 結構(Goal / Result / Feedback 三段)
+ros2 interface show nav2_msgs/action/NavigateToPose
+```
+
+### 從 CLI 直接送 goal 試試看
+
+```bash
+# 給 Nav2 送導航目標
+ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose \
+  "{pose: {header: {frame_id: map}, pose: {position: {x: 1.0, y: 1.0}}}}" \
+  --feedback
+# --feedback 會 print 中途 feedback,看到「distance_remaining 從 5.0 → 0.0」
+# Ctrl+C 會送 cancel 過去
+```
+
+**重點觀察**:
+- 業界 action 的 Goal 通常包 `geometry_msgs/PoseStamped`(複雜結構)— 不是只丟一個數字
+- Feedback 設計成「**進度 + 剩餘時間**」,讓 client 畫進度條
+- Result 通常很簡單(`bool success`)— 真實狀態靠 feedback 已經知道
+- Cancel 是業界標配 — 任何長任務都該支援
+
+**這章要做的事**:寫一個 server 涵蓋 5 種結束方式(REJECT / ACCEPT / SUCCEED / ABORT / CANCEL),寫 client 演示中途 Ctrl+C 觸發 cancel。學完這章你看 Nav2 / MoveIt action server 內部就懂了。
+
+---
+
+## 🎬 故事設計:Countdown action
 
 從 N 倒數到 0 的長任務。**規則設計刻意覆蓋所有情境**：
 

@@ -51,7 +51,51 @@ ros2 launch phase10_pkg 02_remap_and_params.launch.py
 | Bash 啟動腳本 | 一次跑多個 background process |
 | **ROS 2 Launch File** | 上面三個的綜合體 + ROS 特有的 remap/param |
 
-**重要**：ROS 2 的 launch file **是 Python 程式**（不是 YAML 或 XML）。所以可以寫 if/for/讀環境變數，比 docker-compose 靈活很多。
+**重要**:ROS 2 的 launch file **是 Python 程式**(不是 YAML 或 XML)。所以可以寫 if/for/讀環境變數,比 docker-compose 靈活很多。
+
+---
+
+## 🕵️ 終端機偵探課:看 ROS 系統內已有哪些 launch file
+
+ROS 2 套件本身**就帶 launch file**(turtlebot3、Nav2、MoveIt 都是)。寫自己的 launch 之前先看現有的:
+
+```bash
+# 看某個套件提供哪些 launch file
+ros2 launch turtlebot3_gazebo --show-args turtlebot3_world.launch.py
+
+# 列出所有套件的 launch file(可能很多)
+ros2 pkg prefix turtlebot3_gazebo
+ls $(ros2 pkg prefix turtlebot3_gazebo)/share/turtlebot3_gazebo/launch/
+```
+
+預期看到 turtlebot3_gazebo 帶的 launch file:
+```
+empty_world.launch.py
+turtlebot3_house.launch.py
+turtlebot3_world.launch.py
+...
+```
+
+**直接跑業界 launch file 看效果**:
+```bash
+# 這一行 launch 起 Gazebo + turtlebot3 spawn,內部跑 5+ 個 Node
+export TURTLEBOT3_MODEL=burger
+ros2 launch turtlebot3_gazebo empty_world.launch.py
+
+# 開另一 terminal 看實際起了多少 node
+ros2 node list
+# /gazebo
+# /robot_state_publisher
+# /turtlebot3_diff_drive
+# /turtlebot3_imu
+# /turtlebot3_joint_state
+# ...
+```
+
+**重點**:
+- **業界沒人手動 `ros2 run` 多次**,所有 production 系統都靠 launch file
+- launch file 本身是 Python script,你可以**讀別人的 launch file 當教材**(`ros2 pkg prefix <pkg>` + 看 share/launch/)
+- 這章從最簡 launch file 開始,層層加上 remap、parameter、CLI args,最後跟 turtlebot3 那種一樣豐富
 
 ---
 

@@ -34,6 +34,45 @@ if (min_forward_distance > 1.0f) {     // ← 寫死的安全距離
 
 ---
 
+## 🕵️ 終端機偵探課:看 ROS Node 自帶哪些 parameter
+
+**所有 ROS 2 Node 啟動就自動有內建 parameter**(例:`use_sim_time`)。寫自己的 param 之前先看現有的:
+
+```bash
+# 跑任何一個 Node(這裡用 Phase 03 的 auto_brake)
+ros2 run my_cpp_pkg auto_brake &
+
+# 看這個 Node 有哪些 param
+ros2 param list /auto_brake_node
+```
+
+預期看到:
+```
+/auto_brake_node:
+  use_sim_time         ← 內建 param,模擬時用 sim 時間還是 wall time
+```
+
+**最重要的內建 param 是 `use_sim_time`**:
+- 預設 `false`(用真實時鐘)
+- Gazebo / Bag replay 都需要設 `true`(用模擬時間)
+- Phase 17 跑 Gazebo、Phase 22A 跑 Nav2 都會碰到
+
+```bash
+# 試試看查 / 改 / 觀察
+ros2 param get /auto_brake_node use_sim_time
+# Boolean value is: False
+
+ros2 param set /auto_brake_node use_sim_time true
+# Set parameter successful
+
+ros2 param describe /auto_brake_node use_sim_time
+# 看 type、預設值、constraints
+```
+
+**這章要做的事**:**自訂自己的 param**(`safe_distance`、`max_speed`、`corridor_width`),取代 Phase 03 寫死的 magic number。學完之後,**你的 Node 也會在 `ros2 param list` 上出現自訂 param**,跟 `use_sim_time` 並列。
+
+---
+
 ## 💻 改造 Phase 03
 
 完整檔案見 [`code/my_cpp_pkg/src/auto_brake_param.cpp`](code/my_cpp_pkg/src/auto_brake_param.cpp)。
