@@ -320,4 +320,20 @@ frame name 不同就不會衝突。
 
 ---
 
+---
+
+## ⏸ 驗證前 audit checklist(留給跑驗證的人)
+
+從 [`verify_log.md`](../../../verify_log.md) 學到的教訓:**沒跑過的程式碼就是不可信的**,即使長得很像同模式。實際跑 demo 前先逐一看過下面的潛在風險點:
+
+- [ ] **`_read_urdf_with_prefix` 字串替換**:用 sed 替換 `link name=` `joint name=` 加 prefix,但 turtlebot3 URDF 內可能有 hardcode 的 `<gazebo>` plugin block(例 `<bodyName>base_footprint</bodyName>`)— 替換邏輯沒涵蓋,**Gazebo plugin 仍會吃舊 frame name**。實機跑可能發現 odometry TF 還是發到 `base_footprint` 而非 `tb1/base_footprint`
+- [ ] **`-robot_namespace` 是否真的把所有 plugin topic 加 namespace**:gazebo_ros plugin 對 namespace 處理不一致,部分 plugin(舊版)會忽略,只能跑起來看 `ros2 topic list` 確認
+- [ ] **TimerAction 延遲時間夠不夠**:本機 WSL Gazebo 啟動可能 8–10 秒(GPU 弱),`period=2.0` 可能太短,需要拉到 5–8 秒
+- [ ] **3 台同時跑 CPU 是否吃得消**:WSL 沒 GPU 跑 3 台 turtlebot + Gazebo 物理引擎可能 CPU 100%。先測 1 台 → 2 台 → 3 台逐步加
+- [ ] **`frame_prefix` 在 robot_state_publisher 真的有作用嗎**:RViz 打開要能同時看到 3 個 base_link(各帶 prefix),否則代表 prefix 沒生效
+
+跑通後升 ✅,並把實際踩到的雷補進「常見雷」段(目前 5 條都是業界經驗,沒在本 demo 真實踩過)。
+
+---
+
 > **驗證狀態**:⏸ 純文字草稿(2026-05-05) — Launch file 結構照 Phase 17 + 11 同模式,雷 1–5 從業界經驗整理。雲端 / WSL 實際驗證後升級成 ✅。

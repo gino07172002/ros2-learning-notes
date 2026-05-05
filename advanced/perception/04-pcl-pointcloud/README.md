@@ -407,4 +407,22 @@ cloud->is_dense = false;   // 或 true,看你資料
 
 ---
 
-> **驗證狀態**:⏸ 純文字草稿(2026-05-05) — code 結構照 PCL 官方 tutorial + Phase 03 PointCloud 訂閱模式。雷 1–6 從業界 PCL 經驗整理。雲端 / WSL 實際驗證後升 ✅。
+---
+
+## ⏸ 驗證前 audit checklist(留給跑驗證的人)
+
+PCL 是**最容易踩 build 雷**的領域(版本差異、API 改名、CMake 設定多)。跑前先檢:
+
+- [ ] **PCL 版本 vs Humble**:Humble 預設 libpcl-dev 1.12,但某些 API 在 1.13/1.14 改了。例:`pcl::SACSegmentation::setOptimizeCoefficients(true)` 在新版本可能 deprecate
+- [ ] **`PCL_INCLUDE_DIRS` vs `PCL::PCL` target**:CMake 寫 `${PCL_INCLUDE_DIRS}` 跟 `${PCL_LIBRARIES}` 在新 CMake 可能要改 `PCL::common PCL::filters` 之類的 target name
+- [ ] **`pcl_conversions` 的 include**:`<pcl_conversions/pcl_conversions.h>` 在 Humble 確認還在(rolling 已改 `.hpp`)
+- [ ] **`vision_msgs/msg/detection3_d_array.hpp`**:消息名 snake_case 轉換 — `Detection3DArray` → `detection3_d_array`(注意 `3_d` 中間有底線),拼錯就 include 找不到
+- [ ] **TURTLEBOT3_MODEL=waffle_pi 的 RealSense topic**:本章假設 `/intel_realsense_r200_depth/points`,但實際 turtlebot3 SDF 可能用 `/camera/depth/points` 或 `/camera/depth/color/points`,跑 `ros2 topic list | grep -i depth` 確認
+- [ ] **`is_dense` 雷(雷 5)**:程式內沒處理 NaN,實機 PointCloud2 多半 `is_dense=false`,要先 `removeNaNFromPointCloud` 再 fromROSMsg
+- [ ] **CPU 跟得上嗎**:VoxelGrid + RANSAC + clustering 全套在 30Hz × 100k 點下 CPU 可能跟不上(雷 4),先量單幀處理時間
+
+跑通後升 ✅,實際 PCL API / CMake 修正寫進「常見雷」。
+
+---
+
+> **驗證狀態**:⏸ 純文字草稿(2026-05-05) — code 結構照 PCL 官方 tutorial + Phase 03 PointCloud 訂閱模式。**PCL 是最容易踩 build 雷的領域**,需要驗證時很可能修 CMake / API name。雲端 / WSL 實際驗證後升 ✅。

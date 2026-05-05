@@ -107,7 +107,31 @@ phase-08-custom-interfaces  瘦身 967→541 行,選型邏輯抽到 INTERFACE_SE
                             加 TOC、三檔案對照表加用途/時機/例子欄
 phase-09-executors-lifecycle-composition  加 TOC + 閱讀路徑指南
 phase-02-communication-concepts  加「init/spin/shutdown 設計哲學」段(對應 DESIGN_NOTES)
+phase-04-services-toggle    全面整理 8 處(下一步連結 / 偵探課 / takeaway 拉 H2 / 環境標頭)
+phase-06/10/13  延續 Phase 04 慣例,各加「終端機偵探課」段
+                (06: ros2 param list / 10: 看業界 launch file / 13: ros2 action send_goal)
 ```
+
+### 🔬 驗證系統(2026-05-05 加)
+
+```
+✅ scripts/verify_advanced_phases.sh    歷史紀錄版,固定跑進階生態 5 章
+                                         使用:bash scripts/verify_advanced_phases.sh
+                                         產出:verify_log.md(覆寫)+ /tmp/verify_<TS>/*.log
+✅ scripts/verify_phases.sh              通用版,可選 group(2026-05-05 加)
+                                         使用:bash scripts/verify_phases.sh [group] [--keep-build]
+                                         group: mainline-core / mainline-tracks /
+                                                capstones / advanced / advanced-drafts / all
+                                         每章獨立 deploy + build + (test) — 處理同名 my_cpp_pkg 互相覆蓋
+                                         產出:verify_phases_log.md(覆寫)
+✅ scripts/README.md                     兩支腳本的差別說明 + 怎麼擴新章節
+✅ verify_log.md                         驗證紀錄(每次重跑會被覆寫,改前先備份)
+                                         首輪驗證抓到 2 bug 並修(Phase 37 const + Phase 35 hard depend)
+                                         核心精神:「沒跑過的程式碼就是不可信的程式碼」
+```
+
+> 📌 **新章節原則**:寫完不能直接標 ✅,**必須先過 verify 才能升 ✅**(避免「文字看似對但 build 失敗」的速成版)。
+> 目前 advanced/ 4 章(perception/01,02,04 + multi-robot/01)都是 ⏸ 草稿,等實際驗證才能升 ✅。
 
 ### ⏸/⬜ 還沒做的章節(什麼時候該做)
 
@@ -489,6 +513,10 @@ CMakeLists.txt: pluginlib_export_plugin_description_file(base_pkg plugins.xml)
 | [GETTING_STARTED.md](GETTING_STARTED.md) | 新手入口(MQTT 對照、7 章新手路徑、觀念地圖) |
 | [DESIGN_NOTES.md](DESIGN_NOTES.md) | 「ROS 2 為什麼這樣設計」深挖,提煉 library 設計通則(目前 1 篇 + 5 個待寫主題) |
 | [INTERFACE_SELECTION.md](INTERFACE_SELECTION.md) | .msg/.srv/.action 選型指南(2 整合情境 + 業界比例 + 4 問題決策樹) |
+| [verify_log.md](verify_log.md) | 驗證紀錄,記錄 verify_advanced_phases.sh 跑出的結果與發現的 bug |
+| [scripts/verify_advanced_phases.sh](scripts/verify_advanced_phases.sh) | 進階生態 5 章一鍵驗證(歷史紀錄版,跟 verify_log 配對)|
+| [scripts/verify_phases.sh](scripts/verify_phases.sh) | 通用版驗證腳本,group 可選(主線 / Track / Capstone / advanced / all)|
+| [scripts/README.md](scripts/README.md) | 兩支驗證腳本的差別說明 + 怎麼擴新章節 |
 | [ROADMAP.md](ROADMAP.md) | 完整學習路徑、各章狀態 |
 | [SETUP.md](SETUP.md) | 雙環境設定 + 各章雲端可用性對照表(32 章逐一標 ☁️/🟡/🚫) |
 | [AUTHORING_GUIDE.md](AUTHORING_GUIDE.md) | 章節寫作模板（最重要！）|

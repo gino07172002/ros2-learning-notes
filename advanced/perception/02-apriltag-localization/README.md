@@ -322,4 +322,21 @@ ros2 service call /get_model_list ...
 
 ---
 
-> **驗證狀態**:⏸ 純文字草稿(2026-05-05) — code 結構照 apriltag_ros 官方範例 + Phase 16 TF broadcaster。雲端 / WSL 實際驗證後升 ✅。
+---
+
+## ⏸ 驗證前 audit checklist(留給跑驗證的人)
+
+這章**code 是 inline 範例不是完整 package**,風險最高。跑驗證前要做的事:
+
+- [ ] **先建完整 package**:本章只給 inline localizer 範例,沒給完整 `package.xml` + `CMakeLists.txt`。要驗證得自己包成 package(可以參考 perception/01 結構)
+- [ ] **`apriltag_msgs` 在 Humble 是否預裝**:可能要 `sudo apt install ros-humble-apriltag-msgs ros-humble-apriltag-ros`,寫 README 時沒列(疏漏)
+- [ ] **AprilTag `family: 36h11` vs SDF 內 tag 圖**:本章假設 Gazebo 有 AprilTag SDF model,但實際 turtlebot3 場景**沒帶 AprilTag**,要自己生 tag mesh 或下載 ar_track_alvar 等替代品
+- [ ] **`tf2_ros::TransformBroadcaster` 在 Humble 的 include**:可能是 `<tf2_ros/transform_broadcaster.h>` 或 `<tf2_ros/transform_broadcaster.hpp>`
+- [ ] **localizer code 簡化版的旋轉假設**:我寫「假設 tag 與 world 軸平行,只取平移」— 實機完全不會這樣,旋轉計算需要 `tf2::fromMsg` + `transform.inverse()`
+- [ ] **TF tree 衝突**(雷 4 寫過):同時發 `world → odom` 跟 `world → base_link` 會打架,跑前確認設計
+
+**這章準備驗證時建議:**先讓 apriltag_node 跑通(看 `/tag_detections` 有資料),再寫 localizer。
+
+---
+
+> **驗證狀態**:⏸ 純文字草稿(2026-05-05) — code 是 inline 簡化範例,**比 perception/01 風險更高**(沒完整 package、旋轉假設不適用實機)。雲端 / WSL 實際驗證後升 ✅。

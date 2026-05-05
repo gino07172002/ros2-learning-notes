@@ -321,4 +321,21 @@ sudo apt install libopencv-dev
 
 ---
 
+---
+
+## ⏸ 驗證前 audit checklist(留給跑驗證的人)
+
+從 [`verify_log.md`](../../../verify_log.md) 學到:文字草稿就算「同模式」也常 build 失敗。跑 demo 前先看:
+
+- [ ] **`cv_bridge` 在 Humble 的 include path**:Humble 的 `cv_bridge.h` 在 `cv_bridge/cv_bridge.hpp`(C++ 新版)還是 `cv_bridge/cv_bridge.h`(舊),不同版本文件混雜 — 我寫 `.h` 可能要改 `.hpp`
+- [ ] **`sensor_msgs::image_encodings::BGR8`**:這個常數的 namespace 在某些版本是 `sensor_msgs::image_encodings::BGR8`,有些版本要 `#include <sensor_msgs/image_encodings.hpp>` 才有。沒 include 會編譯錯
+- [ ] **CMakeLists `target_link_libraries(... ${OpenCV_LIBS})`**:確認 `find_package(OpenCV REQUIRED)` 之後 OpenCV_LIBS 變數真的有東西(某些 distro 變成 `OpenCV::OpenCV` target)
+- [ ] **turtlebot3 waffle 真的有相機**:雲端 / 本機跑 `TURTLEBOT3_MODEL=waffle` + `ros2 topic list` 看是否有 `/camera/image_raw`(burger 沒,雷 6)
+- [ ] **edge_detector 跑起來 CPU 是否吃不消**:Canny 在 CPU 跑 30 Hz × 1280x720 可能滿載,需要降解析度或限頻
+- [ ] **publish 的 image_out frame_id 是否保留**:dump `ros2 topic echo /camera/edges --field header --once` 確認 frame_id 不是空字串
+
+跑通後升 ✅,把實際踩到的雷補進「常見雷」段。
+
+---
+
 > **驗證狀態**:⏸ 純文字草稿(2026-05-05) — code 結構照 Phase 03 + cv_bridge 官方範例整理。雷 1–6 從業界經驗。雲端 / WSL 實際驗證後升級成 ✅。
