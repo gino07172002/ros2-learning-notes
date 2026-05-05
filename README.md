@@ -36,6 +36,8 @@
 ## 🧰 進階章節:工程化生態(Phase 30+)
 
 > 給已經會基本 ROS 2 (Phase 01–26) 的人。這 5 章把「**寫 production-ready ROS 2 系統**」的關鍵套件全部跑過一遍 — Behavior Tree、可觀測性、可視化、Lifecycle 健康監控、離線分析。每章獨立可學,但接起來就是完整的 production stack。
+>
+> ⏸ **驗證狀態**:5 章結構完整、雷區皆實際踩過,但 **colcon build + colcon test 二次驗證待 WSL 工具鏈恢復**(寫作期間 WSL 卡住)。已驗 vs 待驗清單詳見 [PORTFOLIO.md](PORTFOLIO.md#-實際投入2026-05-校正)。
 
 ```
 ┌── 行為決策 ──┐    ┌── 可觀測性 ──┐    ┌── 可視化 ──┐

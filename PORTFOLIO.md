@@ -10,7 +10,7 @@
 
 ## TL;DR
 
-> 從零開始學 ROS 2 Humble 的實戰筆記。**32 個獨立 phase**,每章可單獨編譯執行,完整覆蓋從通訊基礎、系統設計、機器人形體、SLAM/Nav2 自主導航、機械手臂 MoveIt、CI/CD,到 Docker 化部署。**所有 demo log 都是真實 WSL2 跑出來的輸出,踩過的雷都記下來**。
+> 從零開始學 ROS 2 Humble 的實戰筆記。**37 個 phase 資料夾(主線 32 章 + 進階支線 4 條骨架)**,每章可單獨編譯執行,完整覆蓋通訊基礎、系統設計、機器人形體、SLAM/Nav2 自主導航、機械手臂 MoveIt、CI/CD、Docker 部署。**主線 Phase 01–26 + Capstone 全部在 WSL2 真跑過,demo log 與雷區都是實測**;新進階生態 5 章(30/32/35/36/37)結構完整、待 colcon 二次驗證。
 
 - **語言**:C++(主)+ Python(對照)+ Markdown
 - **平台**:ROS 2 Humble(LTS)on WSL2 Ubuntu 22.04 / TheConstructSim 雲端
@@ -157,14 +157,31 @@ WSL 開的 ros2 launch 即使 `setsid` / `nohup` detach,**wsl 命令結束時背
 
 ---
 
-## 📊 實際投入
+## 📊 實際投入(2026-05 校正)
 
-- **Phase 數**:35(20 個前期 + 14 個本次補,加 1 個 Capstone Final)
-- **Code 行數**:~6500 行 C++ + ~3500 行 Python + ~28000 行 Markdown
-- **驗證標準**:每章 README 內「驗證過」段都是 WSL 真跑的輸出 + 雷區條目都是實際踩過修好的
-- **gtest 測試**:Phase 12 + Capstone 1(5)+ Phase 23A(4)+ Phase 30(6)+ Phase 36(4)+ Phase 37(5)= 約 25 個 gtest case
-- **進階生態 5 章**:Phase 30(BT)+ 36(Diagnostics)+ 35(Foxglove)+ 37(Lifecycle 整合)+ 32(rosbag2)— 一條 launch 串完整 production stack
-- **Docker images**:capstone1:latest(Phase 24)+ phase20:latest(Phase 20)+ capstone-final:latest(整套 1.26GB)
+- **Phase 資料夾數**:37(主線 32 章 + 4 條 advanced/ 進階支線骨架 + 1 個 Capstone Final)
+- **Code 行數**(實際 `wc -l` 數):**~4600 行 C++ + ~1800 行 Python + ~19200 行 Markdown**
+- **Docker images**:capstone1(Phase 24)+ phase20(Phase 20)+ **capstone-final(整套 1.26GB)**
+- **gtest 測試**:**32 個 case 寫好,17 個已驗過**
+  - ✅ 已 colcon test 通過:Phase 12(8)+ Capstone 1(5)+ Phase 23A(4)= **17**
+  - ⏸ 結構完整、待 WSL 工具鏈恢復後跑:Phase 30(6)+ 36(4)+ 37(5)= 15
+- **驗證狀態**:
+  - ✅ **WSL 完整驗證**:Phase 01–26(20 章)+ 20A/20B/22A/22B/23A + Capstone 1/A/Final — 每章 README 內 demo log 都是 WSL2 真跑輸出
+  - ⏸ **結構完整、待二次驗證**:Phase 30/32/35/36/37(進階生態 5 章)— 寫作期間 WSL 工具鏈卡住,結構照已驗章節同模式;雷區條目仍是實際踩過的
+  - 🟡 **僅骨架 / 文字草稿**:advanced/ 4 條支線(perception 3 章草稿、multi-robot 1 章草稿,drone-px4/quadruped 純 README)
+
+---
+
+## ⏸ 待補項(刻意攤開)
+
+把進行中的工作攤出來比假裝全做完更可信。**工程紀律 = 知道哪裡沒做完**。
+
+| 項目 | 為什麼還沒做 | 預計什麼時候 |
+|------|-------------|-------------|
+| Phase 30/32/35/36/37 colcon build + colcon test 二次驗證 | WSL 工具鏈在進階章節寫作期卡住,沒 daemon 跑驗證 | WSL 恢復後一次性跑 `verify_advanced_phases.sh`(待寫),全綠後升 ✅ |
+| Phase 21B / 23B / Capstone B(機械手臂進階) | 21B 是 GUI wizard、23B 需視覺驗證 — 都需本機 + Gazebo with GPU | 本機環境改善後,優先做 21B(MoveIt Setup 自動化) |
+| Phase 27 部署實機(Pi/Jetson) | 沒實機硬體 | 取得實機後 |
+| advanced/ 各支線從草稿轉完整章 | 4 條支線只各寫了 0–3 章文字草稿 | 主線驗證債清掉後才回頭 |
 
 ---
 
