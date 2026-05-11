@@ -14,7 +14,7 @@
 
 ---
 
-## 📋 4 條支線
+## 📋 5 條支線
 
 ### 🚁 [drone-px4/](drone-px4/) — 無人機(PX4 + ROS 2)
 
@@ -60,6 +60,17 @@
 
 ---
 
+### 🧍 [humanoid/](humanoid/) — 人形機器人
+
+**業界**:Tesla Optimus、Figure、Unitree G1/H1、Agility Robotics Digit
+
+**為什麼學**:人形機器人是 2024 年後機器人領域最火熱的終極目標。涉及極度複雜的全身控制 (WBC, Whole-Body Control) 與動態平衡。學會如何在 MuJoCo 中模擬並接入 ROS 2，是進入前沿硬體科技公司的敲門磚。
+
+**前置**:主線 Phase 18(ros2_control)+ Phase 22B(MoveIt C++ API)
+**章節數**:預計 2 章
+
+---
+
 ## 🗺️ 進度狀態
 
 | 支線 | 狀態 | 章節進度 | 備註 |
@@ -67,6 +78,7 @@
 | 🚁 drone-px4 | 🟡 進行中 | **1 / 4 文字草稿** | 01 px4-bridge ⏸ 已寫 |
 | 👁️ perception | 🟡 進行中 | **4 / 4 文字草稿** | 01 cv_bridge / 02 AprilTag / 03 YOLO / 04 PCL ⏸ 已寫 |
 | 🐕 quadruped | 🟡 進行中 | **1 / 3 文字草稿** | 01 champ-simulation ⏸ 已寫 |
+| 🧍 humanoid | 🟡 進行中 | **1 / 2 文字草稿** | 01 mujoco-simulation ⏸ 已寫 |
 | 🤖 multi-robot | 🟡 進行中 | **2 / 2 文字草稿** | 01 namespace-spawn / 02 fleet ⏸ 已寫 |
 
 > **「⏸ 文字草稿」**:README + code 骨架已寫,**沒在實機 / 雲端跑過驗證**。雷區清單從業界經驗整理,實做時可能會修細節 / 踩到沒寫的雷。等 gino 跑過後升 ✅。
@@ -95,6 +107,7 @@
 - 想做飛的:🚁 drone-px4
 - 想做視覺的:👁️ perception
 - 想做四足的:🐕 quadruped
+- 想做人形的:🧍 humanoid
 - 想做多機協調的:🤖 multi-robot
 
 點進去看該支線的詳細規劃,或回主線 [README.md](../README.md) 繼續走線性教程。
