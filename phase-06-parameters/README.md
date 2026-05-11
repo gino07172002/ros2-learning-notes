@@ -300,7 +300,7 @@ ros2 param set /node safe_distance 2.0  // ✅
 ## 下一步
 
 學會了治理單一 Node。但實際系統有多個 Node 要一起啟動，總不能每次手動開好幾個 terminal——
-- Phase 07 — Custom Interfaces（待完成）
+- Phase 07 — Mini Capstone 1：把 Param + Service + LiDAR 整合成一個小作品
 - Phase 09 — Launch Files：用一行 `ros2 launch ...` 啟動整套系統，自動套 YAML 參數
 
 ---

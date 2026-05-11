@@ -184,6 +184,6 @@ colcon build --packages-select px4_ros_com
 
 ## ⏭️ 從哪開始
 
-主線完成後,**跑 [01-px4-bridge](01-px4-bridge/)**(待寫)。
+主線完成後,第一章會是 **01-px4-bridge**(待寫):PX4 SITL + DDS bridge 設定。
 
 > 這條支線目前只有 README 骨架。實際章節會在 gino 開始做時逐章補。

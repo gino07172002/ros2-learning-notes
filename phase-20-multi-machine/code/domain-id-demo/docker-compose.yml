@@ -1,12 +1,10 @@
 # domain-id-demo — 用 docker 模擬「兩台機器」、設不同 ROS_DOMAIN_ID 看隔離效果
 #
-# 直接重用 Phase 24 build 出來的 capstone1:latest image
-# (省得再 build 一次,且這個 image 已經有完整 ROS 環境)
-#
-# 必須先做過 Phase 24:
-#   docker compose -f phase-24-docker/code/docker-capstone/docker-compose.yml build
+# 這章使用 code/Dockerfile build 出 phase20:latest。
+# image 內含 demo_nodes_cpp + Fast DDS RMW,用來做 talker/listener demo。
 #
 # 用法:
+#   docker compose -f phase-20-multi-machine/code/domain-id-demo/docker-compose.yml build
 #   docker compose -f phase-20-multi-machine/code/domain-id-demo/docker-compose.yml up -d
 #   # 看 listener_d11 收 talker_d11 的訊息(同 domain)
 #   docker logs -f p20-listener-d11

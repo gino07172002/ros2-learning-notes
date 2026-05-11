@@ -1,13 +1,13 @@
 # Phase 20A:Odometry + robot_localization (EKF 融合)
 
-> 把**輪式里程計**(會打滑、有系統性偏差)跟 **IMU**(短期準、長期 drift)用 Extended Kalman Filter 融合,得到比單一 sensor 都準的位姿。SLAM / Nav2 的標準前置。
+> 這章把**輪式里程計**和 **IMU** 融合成一個更可信的 `/odom`。輪子提供穩定的線速度,IMU 提供較準的角速度,EKF 負責判斷「哪個 sensor 在哪個維度比較值得相信」。
 
 **學完你會**:
-- 寫一個 ROS 2 node 發 `nav_msgs/Odometry`,正確設定 `pose.covariance` / `twist.covariance`
-- 寫一個 IMU 發布器,正確設定三個 covariance(orientation / angular_velocity / linear_acceleration)
-- 用 `robot_localization` 的 `ekf_node` 融合多個 sensor,寫 YAML config
-- 看穿「為什麼 EKF 沒在融合」的常見原因(missing TF、yaml type、sensor 沒 covariance)
-- 親眼看 EKF 比 wheel-only 累積誤差小 **8 倍** 的數據
+- 寫一個 ROS 2 node 發 `nav_msgs/Odometry`,並正確設定 `pose.covariance` / `twist.covariance`
+- 寫一個 IMU 發布器,填好 orientation / angular velocity / linear acceleration 三組 covariance
+- 用 `robot_localization` 的 `ekf_node` 融合多個 sensor,並寫出可用的 YAML config
+- 看懂 EKF 常見失敗原因:missing TF、YAML type、covariance 設錯
+- 用實測數據看出 EKF 如何把 wheel-only 的累積誤差壓低到約 **1/8**
 
 **前置**:
 - [Phase 16 TF2](../phase-16-tf2/) — EKF 會發 TF + 需要 sensor frame TF
@@ -21,14 +21,15 @@
 - [`code/my_cpp_pkg/config/ekf.yaml`](code/my_cpp_pkg/config/ekf.yaml) — EKF 完整 YAML 設定
 - [`code/my_cpp_pkg/launch/ekf_demo.launch.py`](code/my_cpp_pkg/launch/ekf_demo.launch.py)
 
-**環境**:☁️💻 雙環境通用(純文字驗證,不需 GUI)
+**環境**:☁️💻 雙環境通用。主要流程用 CLI 驗證,也可選擇用 rqt_plot 看曲線。
 
 ---
 
-## 🌉 從 Part 4 跳過來的人:這章為什麼擺這裡
+## 🌉 從 Part 4 到 Part 5:為什麼先做 EKF
 
-Part 4 你做的事:**描述身體**(URDF / TF / Gazebo / ros2_control)。
-Part 5 第一章在做的事:**讓身體知道自己在哪**。
+Part 4 解決的是「機器人的身體長什麼樣」:URDF、TF、Gazebo、ros2_control。
+
+Part 5 開始處理的是「機器人如何理解自己的狀態」。第一步就是把 wheel odometry 和 IMU 變成穩定的位姿估計。
 
 順序是這樣:
 
@@ -41,20 +42,20 @@ URDF + TF           Odometry + EKF     SLAM + Nav2
                     (本章)              (Phase 21A / 22A)
 ```
 
-**為什麼第一章是 Odometry + EKF**:
-- SLAM 演算法問你「**現在位置**」才能往地圖上標 — 沒 odometry 就沒 SLAM
-- Nav2 的 amcl / dwb_local_planner 也都吃 `/odom` 才能跑
-- 所以這條 Track 第一個要解決的是「**把 sensor 的訊號變成可信的位姿估計**」
+**為什麼 Part 5 第一章是 Odometry + EKF**:
+- SLAM 需要知道「現在大概在哪」,才能把 laser scan 放到地圖上
+- Nav2 的 AMCL、local planner 也都依賴穩定的 `/odom`
+- 所以進 SLAM / Nav2 前,要先學會把 sensor 訊號變成可信的位姿估計
 
 ---
 
-## 🎓 觀念速成:Covariance 與 EKF 在做什麼
+## 🎓 觀念速成:Covariance 與 EKF
 
-如果你完全沒碰過卡爾曼濾波,看下面三個圖就懂了。**不需要會數學**。
+如果你沒碰過卡爾曼濾波,先抓住這個直覺就夠了:**EKF 不是魔法平均器,它是依照每筆資料的不確定性決定該信誰**。
 
 ### 1. Covariance 是什麼?「**這個感測器在這個維度上有多準**」
 
-每個 sensor 都會誤差,但**不同 sensor 在不同維度誤差不同**:
+每個 sensor 都會有誤差,但它們擅長的維度不一樣:
 
 ```
 輪式 odometry        IMU
@@ -63,11 +64,11 @@ URDF + TF           Odometry + EKF     SLAM + Nav2
 角速度 wz ❌打滑     角速度 wz ✅gyro 短期準
 ```
 
-Covariance 就是**「我這個資料的不確定性有多大」的數字化表達**。
+Covariance 就是把「這筆資料有多不確定」寫成數字。
 - 數字小(例 `0.001`)= 「這個 measurement 我很有信心」
 - 數字大(例 `1000`)= 「這個值參考就好,不要太信」
 
-ROS 訊息(`Odometry`、`Imu`)都有 `covariance` 欄位,**你發訊息時就要填**。沒填 EKF 會用預設值,通常會壞。
+ROS 的 `Odometry` 和 `Imu` 訊息都有 `covariance` 欄位。**發訊息的人要負責填好它**,不然 EKF 只能用預設值猜,結果通常不會穩。
 
 ### 2. EKF 在做什麼?「**用各 sensor 自己最強的那個維度,加權合成**」
 
@@ -91,30 +92,31 @@ odom    │  │ 0.001│    │ 0.001│          │
             /odometry/filtered
 ```
 
-**EKF 不是平均**,而是**「看誰 covariance 小就比較信誰」的加權**。
-本章會親眼看到 EKF 比單一 sensor 累積誤差小 8 倍。
+**EKF 不是單純平均**,而是依照 covariance 做加權。誰在某個 state 上比較可靠,EKF 就讓誰說話大聲一點。
+
+這章的 demo 會讓你看到:時間拉長後,EKF 的累積誤差約只有 wheel-only 的 1/8。
 
 ### 3. 你只要會做兩件事
 
-1. **發訊息時把 covariance 填對** — 自己擅長的維度寫小,不擅長的寫大
-2. **寫 EKF YAML 告訴它要融合哪些 sensor 的哪些 state** — 例如「我要 wheel 的 vx + IMU 的 wz」
+1. **發訊息時把 covariance 填對** — sensor 擅長的維度寫小,不擅長的維度寫大
+2. **在 EKF YAML 選對 state** — 例如「吃 wheel 的 `vx`,吃 IMU 的 `wz`」
 
-數學細節(Jacobian、線性化)EKF 都幫你做掉。**寫 ROS 2 EKF 不用懂卡爾曼濾波公式**。
+Jacobian、線性化等數學細節由 `robot_localization` 處理。這章的目標不是推公式,而是學會把 ROS 訊息和 YAML 設定到能穩定融合。
 
 ---
 
 ## 為什麼這章重要
 
-**Nav2 的 amcl/dwb_local_planner 都需要一個準確、平滑、不跳變的 `/odom` topic**。
+Nav2 需要一個準確、平滑、不跳變的 `/odom`。這個 `/odom` 通常不是直接相信單一 sensor,而是由 EKF 融合後產生。
 
 但實機上常見的問題:
 - **輪式 odometry 打滑** — 機器人卡到地毯邊、轉彎時內外輪轉速比不對 → yaw 累積誤差
 - **IMU 長期 drift** — 雖然短期準,角速度積分一兩分鐘就 yaw 偏 5°
 - **單一 sensor 都不夠** — wheel 在 yaw 上爛,IMU 在 position 上爛
 
-EKF 把「各 sensor 在自己擅長的 state 上比較準」這件事數學化:**每個 sensor 提供它的不確定性(covariance),EKF 加權平均後產生比任一 sensor 都更貼近真值的估計**。
+EKF 做的事,就是把「每個 sensor 各有所長」這件事變成可計算的融合結果。每個 sensor 先用 covariance 表達自己的不確定性,EKF 再用這些資訊產生更穩定的位姿估計。
 
-業界做法 100% 都是這樣:Nav2 wiki 第一頁就要求 `robot_localization` 在 odom→base_link。
+在實務上,Nav2 專案很常用 `robot_localization` 來產生 `odom→base_link` 這段 TF。先把這段做好,後面的 SLAM / Nav2 才有穩定基礎。
 
 ---
 
@@ -141,13 +143,102 @@ EKF 把「各 sensor 在自己擅長的 state 上比較準」這件事數學化:
                      └──────────────────────────┘
 ```
 
-`fake_wheel_odom` 跟 `fake_imu` 都知道**「真值」是定速圓周運動 (v=0.5, w=0.3)**,但各自把報告值加上不同的偏差,模擬實機上 sensor 必有的誤差來源。EKF 不知道真值,只能靠兩個 sensor 的 covariance 自己猜。
+`fake_wheel_odom` 和 `fake_imu` 都用同一個「真值」產生資料:定速圓周運動 `(v=0.5, w=0.3)`。不同的是,它們各自加入不同偏差來模擬實機 sensor 的誤差。
+
+EKF 不知道真值。它只能根據兩個 sensor 發出的資料和 covariance,推估出最可能的位姿。
+
+---
+
+## 🕵️ 終端機偵探課:判斷 EKF 有沒有真的融合
+
+EKF 最麻煩的地方是:它常常不會大聲報錯。topic 還在發、node 還活著,但某個 sensor 其實沒被吃進 filter。寫 YAML 前,先用 CLI 建立一套檢查順序。
+
+### 偵探 1:三條資料流都有在跑嗎
+
+先完成後面 Step 1 的部署與 build。若你開了新的 terminal,先 source ROS 環境,再啟動 demo:
+
+```bash
+source /opt/ros/humble/setup.bash
+source ~/ros2_ws/install/setup.bash
+ros2 launch phase20a_pkg ekf_demo.launch.py
+```
+
+Terminal 2 看 topic:
+
+```bash
+ros2 topic list | grep -E "wheel|imu|filtered|tf"
+```
+
+預期至少看到:
+
+```text
+/wheel/odometry
+/imu/data
+/odometry/filtered
+/tf
+/tf_static
+```
+
+接著看頻率。`ros2 topic hz` 會持續輸出,看到穩定數字後按 `Ctrl+C` 停止即可:
+
+```bash
+ros2 topic hz /wheel/odometry
+ros2 topic hz /imu/data
+ros2 topic hz /odometry/filtered
+```
+
+預期大約是:
+
+| Topic | 預期頻率 |
+|------|----------|
+| `/wheel/odometry` | 20 Hz |
+| `/imu/data` | 100 Hz |
+| `/odometry/filtered` | 30 Hz |
+
+如果 `/odometry/filtered` 沒有輸出,先查 `ekf_node` 是否 crash。如果 wheel / IMU 有輸出但 EKF 結果怪,往下一步查 TF 和參數。
+
+### 偵探 2:IMU frame 能不能轉到 base_link
+
+EKF 要吃 IMU,必須知道 `imu_link` 和 `base_link` 的關係:
+
+```bash
+ros2 run tf2_ros tf2_echo base_link imu_link
+```
+
+預期看到穩定的 transform,本章 demo 是:
+
+```text
+Translation: [0.000, 0.000, 0.000]
+Rotation: in Quaternion [0.000, 0.000, 0.000, 1.000]
+```
+
+如果這裡一直 timeout,EKF 可能會安靜地丟掉 IMU 訊息。這就是雷 1。
+
+### 偵探 3:EKF 參數真的載進去了嗎
+
+```bash
+ros2 param get /ekf_filter_node frequency
+ros2 param get /ekf_filter_node two_d_mode
+ros2 param get /ekf_filter_node odom0
+ros2 param get /ekf_filter_node imu0
+```
+
+預期看到:
+
+```text
+30.0
+True
+/wheel/odometry
+/imu/data
+```
+
+**這章要做的事**:讓 wheel 提供線速度、IMU 提供角速度,再由 EKF 產生 `/odometry/filtered` 和 `odom→base_link`。只要 topic、TF、param 三件事都對,debug EKF 就有方向。
 
 ---
 
 ## 💻 重點檔案
 
-### 1. fake_wheel_odom.cpp — covariance 是正確融合的關鍵
+### 1. fake_wheel_odom.cpp — 輪速資料與 covariance
 
 完整見 [`code/my_cpp_pkg/src/fake_wheel_odom.cpp`](code/my_cpp_pkg/src/fake_wheel_odom.cpp)。
 
@@ -162,7 +253,9 @@ tc[0]  = 1e-3;  tc[7]  = 1e6;   tc[14] = 1e6;     // vx 非常信任,vy/vz 不�
 tc[21] = 1e6;   tc[28] = 1e6;   tc[35] = 1e-3;    // wz 信任(實際打滑的偏差由 EKF 拒絕)
 ```
 
-**這個矩陣是 EKF 要不要吃這筆訊息的關鍵**。把不可靠的 state(車不會飛 → z 軸)設成 1e6,EKF 自動忽略;把可靠的設成 1e-3,EKF 給高權重。
+這個矩陣是在告訴 EKF:這筆 odometry 哪些欄位可靠,哪些欄位只是形式上存在。
+
+這裡把車子不可能用到的 state,例如 `z`、`roll`、`pitch`,設成 `1e6`,讓 EKF 幾乎忽略;把較可信的速度欄位設成 `1e-3`,讓 EKF 願意使用。
 
 ### 2. fake_imu.cpp — IMU 的三個 covariance 很容易設錯
 
@@ -175,7 +268,7 @@ msg.linear_acceleration_covariance =
   {1e-1, 0, 0,  0, 1e-1, 0,  0, 0, 1e6};        // 加速度有 noise,姑且信
 ```
 
-**注意**:IMU 的 covariance 第一個元素是 -1 代表「整個欄位無效」,而不是「不信任」。我們明確列出 1e6 才會讓 EKF 知道「有讀數,但不信」。
+**注意**:IMU 的 covariance 第一個元素如果是 `-1`,代表「整個欄位無效」,不是「這個欄位很不準」。本章明確填 `1e6`,意思是「有讀數,但這個維度不要太信」。
 
 ### 3. ekf.yaml — sensor_config 是 15 元素 boolean array
 
@@ -204,7 +297,7 @@ ekf_filter_node:
                   false,false,false]
 ```
 
-**設計邏輯**:wheel 給 vx,IMU 給 vyaw。EKF 自己積分得到 x/y/yaw,**完全跳過兩個 sensor 各自不準的 state**。
+**設計邏輯**很單純:wheel 給 `vx`,IMU 給 `vyaw`。EKF 自己把它們積分成 `x/y/yaw`,並跳過兩個 sensor 各自不可靠的 state。
 
 ### 4. ekf_demo.launch.py — 4 個 node 串起來
 
@@ -220,7 +313,7 @@ return LaunchDescription([
 ])
 ```
 
-`static_transform_publisher` **是必須**——沒這條 EKF 找不到 imu_link → base_link 的轉換,會無聲丟掉所有 IMU 訊息(沒任何錯誤訊息,你只會看到 EKF 不轉彎)。詳見雷 1。
+`static_transform_publisher` 是這個 demo 的關鍵之一。沒有 `imu_link → base_link` 的 TF,EKF 會找不到 IMU 的座標轉換,然後安靜地丟掉 IMU 訊息。你不一定會看到錯誤,只會看到 EKF 的結果不會轉彎。詳見雷 1。
 
 ---
 
@@ -273,8 +366,13 @@ t= 16.0s | TRUE  x=-1.660 y= 1.521 yaw= 4.800
 | 10s | 1.00 m | 0.18 m | **5.5×** |
 | 16s | 1.74 m | 0.22 m | **8×** |
 
-剛開始 EKF 比 wheel 差(它需要幾秒鐘收斂初始狀態),但**累積時間越長,EKF 領先得越多**。
-這就是為什麼 SLAM / Nav2 全都用 EKF,沒人單純用 wheel odometry。
+第一秒 EKF 比 wheel 差,這是正常的:filter 需要幾個 sensor cycle 來收斂初始狀態。
+
+時間拉長後差距就很明顯。wheel-only 的誤差會一路累積,EKF 則靠 IMU 修正角速度,所以 16 秒時誤差只剩 wheel-only 的約 1/8。
+
+也可以用 `rqt_plot` 看兩條曲線的差異:
+
+![rqt_plot: EKF filtered x vs wheel odometry x](images/rqt-plot-ekf-vs-wheel-x.png)
 
 ---
 
@@ -292,7 +390,7 @@ ROSject 已預裝 `robot_localization`,流程一模一樣,只需要先把 phase2
 
 **症狀**:`/odometry/filtered` 有發,但 `pose.position.x` 線性增加、`yaw` 永遠 0,EKF 完全不會轉彎。
 
-**原因**:**IMU 的 frame_id 是 `imu_link`,但 TF 樹裡沒有 `imu_link` → `base_link` 的變換**。EKF 預設要把 IMU 從自己 frame 轉到 base_link 才會用,**找不到 TF 就無聲丟掉訊息**(沒 error,沒 warning,你只會看到結果不對)。
+**原因**:IMU 的 `frame_id` 是 `imu_link`,但 TF tree 裡沒有 `imu_link → base_link`。EKF 要先把 IMU 讀數轉到 base frame 才能使用;找不到 TF 時,它可能不明顯報錯,但結果會少掉 IMU 的貢獻。
 
 **解**:launch 加 `static_transform_publisher`:
 ```python
@@ -309,7 +407,7 @@ failed to initialize rcl: Couldn't parse params file:
 Error: Sequence should be of same type. Value type 'integer' do not belong at line_num 64
 ```
 
-**原因**:`process_noise_covariance` 是 15×15 = 225 元素 array,如果寫成 `[0.05, 0, 0, ...]`,YAML parser 會把第一個解成 float、後面的 0 解成 int,**rcl 要求 sequence 內所有 element 同型別**。
+**原因**:`process_noise_covariance` 是 15×15 = 225 元素 array。如果寫成 `[0.05, 0, 0, ...]`,YAML parser 會把 `0.05` 當 float、後面的 `0` 當 int,但 rcl 要求 sequence 裡所有 element 同型別。
 
 **解**:**統一寫成 float**(加 `.0`):
 ```yaml
@@ -322,7 +420,7 @@ process_noise_covariance: [
 
 **症狀**:啟動 EKF 後 `top` 看 ekf_node 持續 80–90% CPU,跟你預期的「30Hz 不該那麼貴」差很多。
 
-**原因**:你 sensor 訊息發太快(例如 IMU 1000 Hz),EKF queue 處理不完,每個 cycle 都在追訊息。
+**原因**:sensor 訊息發太快,例如 IMU 開到 1000 Hz,EKF queue 會處理不完,每個 cycle 都在追資料。
 
 **解**:
 1. IMU 發布頻率降到 100–200 Hz(實機上 IMU 通常 200 Hz 上限)
@@ -333,7 +431,7 @@ process_noise_covariance: [
 
 **症狀**:EKF 輸出的 `/odometry/filtered` 比單一 sensor 還爛。
 
-**原因**:EKF 是「按 covariance 加權平均」的數學工具,**covariance 是它對「這個值該信幾分」的唯一輸入**。
+**原因**:EKF 會依照 covariance 加權。對它來說,covariance 幾乎就是「這個值該信幾分」的主要依據。
 - 設太小(1e-6)→ EKF 完全相信,即使 sensor 在亂報
 - 設太大(1e10)→ EKF 完全忽略,等於沒這個 sensor
 - 設成 0 → **可能直接觸發數值不穩定**(矩陣不可逆)
@@ -347,7 +445,7 @@ process_noise_covariance: [
 
 **症狀**:用 `nohup` / `setsid` 把 `ros2 launch` 拉背景,wsl 命令一結束 process 全沒。
 
-**原因**:WSL 2 的 systemd-user-session 機制,不像實機 systemd 永生。wsl 命令(對應一個 session)結束後,session 內的 process 即使 detach 也會被一起清掉。
+**原因**:WSL 2 的 session 行為不像實機 systemd 那樣穩定。當次 `wsl` 命令結束後,同一個 session 裡的 background process 即使 detach,也可能一起被收掉。
 
 **解**:用 `timeout NN ros2 launch ...` 同步跑完,在這 NN 秒內所有 demo 都完成 + 收 log。本章 README 的 demo 用 `timeout 22` 跑滿 16 秒實驗 + 收尾 6 秒。
 
@@ -357,10 +455,10 @@ process_noise_covariance: [
 
 **症狀**:看 EKF 第一秒的 Δ 比 wheel-only 大,以為 EKF 沒在融合。
 
-**原因**:EKF 需要**幾個 sensor cycle 才能收斂**。剛 init 時內部 covariance 矩陣是預設大值,前幾筆 sensor 訊息只是讓它往正確方向收斂。
+**原因**:EKF 需要幾個 sensor cycle 才能收斂。剛 init 時,內部 covariance 矩陣還很大,前幾筆 sensor 訊息主要是在把 filter 拉往正確狀態。
 
 **解**:看穩態後的數據,不要拿初始化期的數據比較。教學上明確指出「t<2s 是 init 期」。
-真實的成功標準:**t > 5s 後 EKF 持續且大幅勝過單 sensor**——本章 5s 後 EKF 已領先 5 倍,這是預期行為。
+真正要看的成功標準是:**t > 5s 後,EKF 是否持續且明顯勝過單一 sensor**。本章在 5 秒後已領先約 5 倍,這才是穩態表現。
 
 ---
 
@@ -382,7 +480,7 @@ process_noise_covariance: [
 
 1. **加 GPS** — 用 `navsat_transform_node` 把 GPS lat/lon 轉成 odom frame,EKF 第三個 sensor。實機戶外用 EKF + GPS 是 Nav2 標準做法
 2. **改成 UKF** — `robot_localization` 也提供 `ukf_node`(Unscented Kalman Filter),非線性運動更準。比 EKF 慢但對劇烈轉彎更穩
-3. **outlier rejection** — 設 `Mahalanobis distance threshold`,自動丟掉跟預測差太多的 sensor 訊息(實機上 IMU 偶爾抽筋會發 100g 訊號)
+3. **outlier rejection** — 設 `Mahalanobis distance threshold`,自動丟掉跟預測差太多的 sensor 訊息(實機上 IMU 偶爾會出現很離譜的瞬間讀值)
 4. **錄 bag + 後處理** — 錄一段真實機器人的 wheel + IMU bag,離線跑 EKF,fine-tune covariance(這是 robotics 工程師日常工作)
 
 ---
@@ -412,5 +510,6 @@ phase-20A-odometry-ekf/
 │       │   └── ekf.yaml                      ← EKF 完整設定(225 元素 process noise)
 │       └── launch/
 │           └── ekf_demo.launch.py            ← 5 個 node:static_tf + 兩 sensor + ekf + comparator
-└── images/                                  ← (之後補:rqt_plot odom path 截圖)
+└── images/
+    └── rqt-plot-ekf-vs-wheel-x.png          ← rqt_plot:EKF vs wheel x 曲線
 ```

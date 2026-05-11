@@ -316,7 +316,7 @@ frame name 不同就不會衝突。
 
 ## 下一步
 
-- [02. Fleet Coordination](../02-fleet-coordination/)(待寫) — 寫 FleetManager 派任務給多台
+- 02. Fleet Coordination(待寫) — 寫 FleetManager 派任務給多台
 
 ---
 

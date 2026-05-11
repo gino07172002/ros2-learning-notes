@@ -26,7 +26,7 @@ bash scripts/verify_advanced_phases.sh --keep-build
 bash scripts/verify_phases.sh                   # 預設:mainline-core(主線基礎章節)
 bash scripts/verify_phases.sh advanced          # 跟 verify_advanced_phases.sh 等價
 bash scripts/verify_phases.sh capstones         # Capstone 1 / A
-bash scripts/verify_phases.sh tracks            # Track A/B 章節
+bash scripts/verify_phases.sh mainline-tracks   # Track A/B + Part 4 章節
 bash scripts/verify_phases.sh advanced-drafts   # advanced/ 文字草稿(預期會有 fail)
 bash scripts/verify_phases.sh all               # 全部 — 慢
 bash scripts/verify_phases.sh --keep-build all  # incremental build

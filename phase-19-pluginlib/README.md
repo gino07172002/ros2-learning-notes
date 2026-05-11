@@ -343,8 +343,8 @@ pluginlib::ClassLoader<Base>(
 
 ## 下一步
 
-- Phase 18 — ros2_control（待完成）：本章學的 pluginlib 是 ros2_control 的基礎
-- Phase 20 — 多機通訊（待完成）
+- [Phase 18 — ros2_control](../phase-18-ros2-control/)：本章學的 pluginlib 是 ros2_control 的基礎
+- [Phase 20 — 多機通訊](../phase-20-multi-machine/)
 
 ---
 

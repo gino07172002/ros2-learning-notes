@@ -10,7 +10,7 @@
 
 ## TL;DR
 
-> 從零開始學 ROS 2 Humble 的實戰筆記。**37 個 phase 資料夾(主線 32 章 + 進階支線 4 條骨架)**,每章可單獨編譯執行,完整覆蓋通訊基礎、系統設計、機器人形體、SLAM/Nav2 自主導航、機械手臂 MoveIt、CI/CD、Docker 部署。**主線 Phase 01–26 + Capstone + 進階生態 5 章全部在 WSL2 colcon build/test 過**(2026-05-05 首輪驗證抓到 2 bug,修完全綠;詳見 [verify_log.md](verify_log.md));demo log 與 60+ 條雷區都是實測。
+> 從零開始學 ROS 2 Humble 的實戰筆記。**37 個 phase 資料夾(主線 32 章 + 進階支線 4 條骨架)**,每章可單獨閱讀,多數章節自帶可編譯 code,完整覆蓋通訊基礎、系統設計、機器人形體、SLAM/Nav2 自主導航、機械手臂 MoveIt、CI/CD、Docker 部署。**已建立可重跑的驗證腳本**,其中進階生態 5 章在 2026-05-05 以 WSL2 colcon build/test 驗證全綠,首輪抓到 2 bug 並修完;詳見 [verify_log.md](verify_log.md)。主線全量驗證可用 [`scripts/verify_phases.sh`](scripts/verify_phases.sh) 重跑並產出 `verify_phases_log.md`。
 
 - **語言**:C++(主)+ Python(對照)+ Markdown
 - **平台**:ROS 2 Humble(LTS)on WSL2 Ubuntu 22.04 / TheConstructSim 雲端
@@ -162,11 +162,12 @@ WSL 開的 ros2 launch 即使 `setsid` / `nohup` detach,**wsl 命令結束時背
 - **Phase 資料夾數**:37(主線 32 章 + 4 條 advanced/ 進階支線骨架 + 1 個 Capstone Final)
 - **Code 行數**(實際 `wc -l` 數):**~4600 行 C++ + ~1800 行 Python + ~19200 行 Markdown**
 - **Docker images**:capstone1(Phase 24)+ phase20(Phase 20)+ **capstone-final(整套 1.26GB)**
-- **gtest 測試**:**32 個 case 寫好,32 個已驗過 ✅**(2026-05-05)
-  - Phase 12(8)+ Capstone 1(5)+ Phase 23A(4)+ Phase 30(6)+ Phase 36(4)+ Phase 37(5)= **32 個 case,0 errors / 0 failures**
+- **gtest 測試**:**32 個 case 寫好**;其中進階生態 15 個 case 有 2026-05-05 的完整驗證紀錄
+  - Phase 12(8)+ Capstone 1(5)+ Phase 23A(4)+ Phase 30(6)+ Phase 36(4)+ Phase 37(5)= **32 個 case**
+  - 已記錄驗證:Phase 30(6)+ Phase 36(4)+ Phase 37(5)= **15 個 case,0 errors / 0 failures**
 - **驗證狀態**:
-  - ✅ **WSL 完整驗證**:主線 Phase 01–26 + 20A/20B/22A/22B/23A + Capstone 1/A/Final + 進階生態 5 章(30/32/35/36/37)— 全部 colcon build 過
   - ✅ **進階生態 5 章驗證腳本**:[`scripts/verify_advanced_phases.sh`](scripts/verify_advanced_phases.sh) 一鍵跑;首輪抓到 2 bug(Phase 37 const 編譯錯 + Phase 35 hard depend 違反獨立性原則),修完全綠;[verify_log.md](verify_log.md) 完整紀錄
+  - 🟡 **主線全量驗證腳本已備妥**:[`scripts/verify_phases.sh`](scripts/verify_phases.sh) 可分 group 跑 mainline-core / mainline-tracks / capstones / advanced / all,完整輸出會寫入 `verify_phases_log.md`
   - 🟡 **僅骨架 / 文字草稿**:advanced/ 4 條支線(perception 3 章草稿、multi-robot 1 章草稿,drone-px4/quadruped 純 README)
 
 ---

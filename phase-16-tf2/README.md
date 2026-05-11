@@ -290,8 +290,8 @@ auto t = buffer.lookupTransform("world", "base_link", ...);
 
 ## 下一步
 
-- Phase 17 — Gazebo 整合（待完成）
-- Phase 18 — ros2_control（待完成）
+- [Phase 17 — Gazebo 整合](../phase-17-gazebo/)
+- [Phase 18 — ros2_control](../phase-18-ros2-control/)
 
 ---
 

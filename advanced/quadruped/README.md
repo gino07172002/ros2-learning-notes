@@ -153,6 +153,6 @@ colcon build --packages-select champ_description champ_navigation \
 
 ## ⏭️ 從哪開始
 
-主線完成後,**跑 [01-champ-simulation](01-champ-simulation/)**(待寫)。
+主線完成後,第一章會是 **01-champ-simulation**(待寫):CHAMP + Gazebo 模擬通用四足。
 
 > 這條支線目前只有 README 骨架。實際章節會在 gino 開始做時逐章補。

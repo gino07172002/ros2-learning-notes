@@ -330,7 +330,7 @@ colcon test-result --test-result-base build/phase12_pkg/test_results
 
 ## 下一步
 
-- Capstone 1（待完成）：把 Phase 09 (Lifecycle) + Phase 11 (Launch) + Phase 12 (Test) + Phase 13 (Action) 全部整合做一個 demo
+- [Capstone 1](../phase-14-capstone-1/)：把 Phase 09 (Lifecycle) + Phase 11 (Launch) + Phase 12 (Test) + Phase 13 (Action) 全部整合做一個 demo
 
 ---
 

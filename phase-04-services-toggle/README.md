@@ -39,7 +39,7 @@ ros2 service list
 
 預期看到:
 ```
-/auto_brake_node/describe_parameters       ← 內建 5 個 parameter 相關
+/auto_brake_node/describe_parameters       ← 內建 6 個 parameter 相關
 /auto_brake_node/get_parameter_types
 /auto_brake_node/get_parameters
 /auto_brake_node/list_parameters

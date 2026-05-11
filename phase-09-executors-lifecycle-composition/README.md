@@ -508,8 +508,8 @@ ComposableNode(
 
 ## 下一步
 
-- [Phase 12 — 測試（gtest + launch_testing）](../phase-12-testing/)（待完成）
-- [Phase 13 — Actions 進階](../phase-13-actions-advanced/)（待完成）
+- [Phase 12 — 測試（gtest + launch_testing）](../phase-12-testing/)：把本章的節點拆出可測的邏輯
+- [Phase 13 — Actions 進階](../phase-13-actions-advanced/)：長任務、feedback、cancel 的標準寫法
 
 ---
 

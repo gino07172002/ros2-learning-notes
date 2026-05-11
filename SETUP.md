@@ -76,7 +76,7 @@ ros2 run my_cpp_pkg auto_drive
 
 ### 一次性設定（首次用）
 
-完整安裝流程見 **[`SETUP-WSL.md`](SETUP-WSL.md)**（建立中）。摘要：
+完整安裝流程目前先收在本節；之後如果內容膨脹,再拆成獨立 `SETUP-WSL.md`。摘要：
 
 ```bash
 # 1. 設 locale

@@ -277,8 +277,8 @@ sudo apt install ros-humble-ros2-control ros-humble-ros2-controllers
 
 ## 下一步
 
-- Phase 17 — Gazebo 整合（待完成）
-- Phase 20 — 多機通訊（待完成）
+- [Phase 17 — Gazebo 整合](../phase-17-gazebo/)
+- [Phase 20 — 多機通訊](../phase-20-multi-machine/)
 
 ---
 

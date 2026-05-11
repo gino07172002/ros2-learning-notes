@@ -385,7 +385,7 @@ Node(package='phase08_pkg', executable='SmartBrakeV2')     # ❌
 
 ## 下一步
 
-- [Phase 11 — Launch Files 進階](../phase-11-launch-files-advanced/)（待完成）：IncludeLaunchDescription（嵌套 launch）、event_handlers（A 起來後再啟動 B）、條件啟動
+- [Phase 11 — Launch Files 進階](../phase-11-launch-files-advanced/)：IncludeLaunchDescription（嵌套 launch）、event_handlers（A 起來後再啟動 B）、條件啟動
 
 ---
 

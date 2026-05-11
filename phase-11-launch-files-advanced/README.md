@@ -324,7 +324,7 @@ IncludeLaunchDescription(
 
 ## 下一步
 
-- [Phase 09 — Executors / Lifecycle / Composition](../phase-09-executors-lifecycle-composition/)（待完成）：Callback 怎麼被排程、Node 生命週期、多 Node 同 process
+- [Phase 09 — Executors / Lifecycle / Composition](../phase-09-executors-lifecycle-composition/)：Callback 怎麼被排程、Node 生命週期、多 Node 同 process
 
 ---
 

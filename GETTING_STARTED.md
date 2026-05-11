@@ -199,7 +199,7 @@ ROS 2 用 `colcon` 包裝過 CMake,**前 7 章你只會碰到 5 行 CMake**(都�
 
 ### Q3:Python 版在哪?
 
-每章末尾有 `<sub>🐍 想用 Python 寫同一個 X?看 [python/](python/)。</sub>` 的引導。
+有 Python 對照版的章節,末尾會有類似 `<sub>🐍 想用 Python 寫同一個 X?看 python/。</sub>` 的引導。
 但**主章用 C++ 寫,因為**:
 - ROS 2 業界主力是 C++(Nav2、MoveIt、ros2_control 都是 C++)
 - 學 C++ 版會逼你理解編譯、CMake、共享指標等基本功

@@ -9,9 +9,10 @@
 #   所有 client 註冊到 server,server 替它們轉發 discovery metadata
 #   實際 data plane 還是 client 之間 P2P UDP unicast
 #
-# 故意用 bridge network(不是 host),證明:
-#   bridge + multicast = ❌(沒 server 時 talker 跟 listener 看不到彼此)
-#   bridge + Discovery Server = ✅(透過 server 完成 discovery)
+# 本章 demo 採用 host network,讓 Discovery Server 的重點集中在:
+#   client 全部指向同一個 ROS_DISCOVERY_SERVER
+#   RMW_IMPLEMENTATION 必須是 rmw_fastrtps_cpp
+# 真實跨機部署時,把 127.0.0.1 換成 discovery server 的實機 IP。
 #
 # 用法:
 #   先 build image:

@@ -13,7 +13,7 @@
 - [01. Camera + cv_bridge](../01-camera-cv-bridge/) — 訂 Image 觀念
 - [Phase 16 TF2](../../../phase-16-tf2/) — 動態 TF broadcaster
 
-**產出**:[`code/my_apriltag_demo/`](code/my_apriltag_demo/) — apriltag_ros launch + 視覺定位 Node
+**產出**:`code/my_apriltag_demo/` — 目前是草稿骨架。下方提供 config 與 localizer inline 範例,尚未整理成可 build 的完整 package。
 
 **環境**:☁️ TheConstructSim(內建相機 + 自加 AprilTag SDF) / 💻 本機 WSL2
 
@@ -89,7 +89,7 @@ Gazebo 場景:
 
 ## 💻 步驟 1:設定 apriltag_ros
 
-完整 config 見 [`code/my_apriltag_demo/config/apriltag.yaml`](code/my_apriltag_demo/config/apriltag.yaml)。
+目前 config 先放在 README 內,等實機驗證時再落成 `code/my_apriltag_demo/config/apriltag.yaml`。
 
 ```yaml
 # apriltag.yaml — apriltag_ros 設定
@@ -110,7 +110,7 @@ apriltag_node:
 
 ## 💻 步驟 2:Localizer Node — 從 tag pose 反推機器人位置
 
-完整見 [`code/my_apriltag_demo/src/localizer.cpp`](code/my_apriltag_demo/src/localizer.cpp)。
+目前 localizer 先放 inline 範例,等實機驗證時再落成 `code/my_apriltag_demo/src/localizer.cpp`。
 
 ```cpp
 #include <rclcpp/rclcpp.hpp>
@@ -202,6 +202,7 @@ sudo apt install ros-humble-apriltag-ros ros-humble-apriltag-msgs
 cd ~/ros2_ws/src
 git clone https://github.com/gino07172002/ros2-learning-notes.git
 cp -r ros2-learning-notes/advanced/perception/02-apriltag-localization/code/my_apriltag_demo .
+# 注意:目前這章只有草稿骨架,還需要依下方 inline 範例補 package.xml / CMakeLists.txt / src/localizer.cpp
 
 cd ~/ros2_ws
 colcon build --packages-select my_apriltag_demo
@@ -318,7 +319,7 @@ ros2 service call /get_model_list ...
 
 ## 下一步
 
-- [03. YOLO + ROS 2](../03-yolo-ros2/)(待寫) — 從 fiducial 進到一般物件偵測
+- 03. YOLO + ROS 2(待寫) — 從 fiducial 進到一般物件偵測
 
 ---
 

@@ -13,7 +13,7 @@
 - 本章**只能在本機 WSL 跑**(需要 GUI)
 
 **產出**:
-- [`code/my_arm_moveit_config/`](code/my_arm_moveit_config/) — Setup Assistant 自動生成,含:
+- `code/my_arm_moveit_config/` — Setup Assistant 自動生成(本 repo 目前尚未放入,等本機 GUI 跑完後補),含:
   - `config/kinematics.yaml`、`config/ompl_planning.yaml`、`config/joint_limits.yaml`、`config/moveit_controllers.yaml`
   - `config/<arm>.srdf`(更新版,含 self-collision matrix)
   - `launch/`(demo / move_group / setup_assistant 多支)
@@ -226,6 +226,7 @@ my_arm_moveit_config/
 
 ```bash
 # 部署到 ros2_ws + build
+# 等本機 GUI 產出 code/my_arm_moveit_config 後再複製
 cp -r d:/ros_learn/ros2-learning-notes/phase-21B-moveit-setup-assistant/code/my_arm_moveit_config ~/ros2_ws/src/
 cd ~/ros2_ws
 colcon build --packages-select my_arm_moveit_config

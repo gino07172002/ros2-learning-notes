@@ -274,7 +274,7 @@ GitHub free tier 給 ubuntu-22.04 runner 很快。**不要為了「省」自己�
 
 ## 下一步
 
-- Phase 24 — Docker（待完成）：本章用了 Docker，那章深入講 image 最佳實踐
+- Phase 24 — Docker：本章用了 Docker，那章深入講 image 最佳實踐
 - Phase 27 — 部署實機（待完成）：CI 產出的 image 怎麼上 Pi / Jetson
 
 ---

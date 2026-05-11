@@ -432,8 +432,8 @@ ament_target_dependencies(your_node rclcpp rclcpp_action ...)
 
 ## 下一步
 
-- [Phase 12 — 測試（gtest + launch_testing）](../phase-12-testing/)（待完成）
-- [Capstone 1 整合](../phase-14-capstone-1/)（待完成）
+- [Phase 12 — 測試（gtest + launch_testing）](../phase-12-testing/)
+- [Capstone 1 整合](../phase-14-capstone-1/)
 
 ---
 

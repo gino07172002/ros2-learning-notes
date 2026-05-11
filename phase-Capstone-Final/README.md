@@ -17,7 +17,7 @@
 - [`Dockerfile`](code/docker-capstone-a/Dockerfile) — 多階段 build,builder 帶完整 ROS desktop,runtime 帶 Gazebo + Nav2
 - [`docker-compose.yml`](code/docker-capstone-a/docker-compose.yml) — 一鍵啟動
 - [`entrypoint.sh`](code/docker-capstone-a/entrypoint.sh) — source ROS + exec PID 1
-- [`.dockerignore`](code/docker-capstone-a/.dockerignore) — 白名單只把需要的 phase 帶進 build context
+- [repo root `.dockerignore`](../.dockerignore) — 白名單只把需要的 phase 帶進 build context
 
 **環境**:💻 **本機 WSL2 + Docker Desktop / docker CE 才能完整完成本章**(Docker 化是本章核心,雲端跑不了 docker compose)
 
@@ -335,7 +335,7 @@ jobs:
 - ✅ 生產化(Docker / CI/CD / DDS QoS / Capstone Final)
 
 **剩下沒做的**(看 ROADMAP.md):
-- Phase 21B / 22B / 23B Track B MoveIt 系列(視覺主導,等使用者本機)
+- Phase 21B / 23B Track B MoveIt 系列(視覺主導,等使用者本機;Phase 22B 已有手寫 config 路線)
 - Phase 27 部署實機(等買 Pi/Jetson)
 - Capstone B 機械手臂(等 Track B 走完)
 
@@ -344,14 +344,15 @@ jobs:
 ## 📁 完整檔案結構
 
 ```
-phase-Capstone-Final/
-├── README.md
-├── code/
-│   └── docker-capstone-a/
-│       ├── Dockerfile                ← Multi-stage:builder + runtime
-│       ├── docker-compose.yml        ← 一個 service,host network
-│       ├── entrypoint.sh             ← source ROS + exec
-│       ├── .dockerignore             ← 白名單只把需要的 phase 帶進
-│       └── scripts/                  ← 預留將來腳本
-└── images/                           ← (之後補:docker compose up 截圖)
+repo root/
+├── .dockerignore                       ← repo root build context 用的白名單
+└── phase-Capstone-Final/
+    ├── README.md
+    ├── code/
+    │   └── docker-capstone-a/
+    │       ├── Dockerfile              ← Multi-stage:builder + runtime
+    │       ├── docker-compose.yml      ← 一個 service,host network
+    │       ├── entrypoint.sh           ← source ROS + exec
+    │       └── scripts/                ← 預留將來腳本
+    └── images/                         ← (之後補:docker compose up 截圖)
 ```

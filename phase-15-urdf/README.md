@@ -373,7 +373,7 @@ ROS 2 的 launch file 是 Python，不會自動 import。
 
 ## 下一步
 
-- [Phase 16 — TF2](../phase-16-tf2/)（待完成）：學會用 C++/CLI 操作 TF tree、處理時間戳、寫 broadcaster/listener
+- [Phase 16 — TF2](../phase-16-tf2/)：學會用 C++/CLI 操作 TF tree、處理時間戳、寫 broadcaster/listener
 
 ---
 

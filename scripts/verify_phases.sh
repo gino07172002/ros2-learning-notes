@@ -11,7 +11,7 @@
 #   bash scripts/verify_phases.sh                   # 預設跑 mainline-core(風險低、快)
 #   bash scripts/verify_phases.sh advanced          # 進階生態 5 章(等同 verify_advanced_phases.sh)
 #   bash scripts/verify_phases.sh capstones         # 跑 Capstone 1 / A / Final
-#   bash scripts/verify_phases.sh tracks            # Track A/B 章節
+#   bash scripts/verify_phases.sh mainline-tracks   # Track A/B + Part 4 章節
 #   bash scripts/verify_phases.sh advanced-drafts   # advanced/ 文字草稿(預期會 fail!)
 #   bash scripts/verify_phases.sh all               # 全部 — 慢,留給確認重大改動後跑一輪
 #   bash scripts/verify_phases.sh --keep-build all  # 不清舊 build(incremental)
