@@ -64,10 +64,10 @@
 
 | 支線 | 狀態 | 章節進度 | 備註 |
 |------|------|--------|------|
-| 🚁 drone-px4 | ⬜ 骨架 | 0 / 4 | PX4 SITL 環境較重,等 gino 決定優先級 |
-| 👁️ perception | 🟡 進行中 | **3 / 4 文字草稿** | 01 cv_bridge / 02 AprilTag / 04 PCL ⏸ 已寫;03 YOLO 未開始(GPU) |
-| 🐕 quadruped | ⬜ 骨架 | 0 / 3 | champ ROS 2 分支不穩,等 gino 本機驗證 |
-| 🤖 multi-robot | 🟡 進行中 | **1 / 2 文字草稿** | 01 namespace-spawn ⏸ 已寫;02 fleet 待 01 驗證後 |
+| 🚁 drone-px4 | 🟡 進行中 | **1 / 4 文字草稿** | 01 px4-bridge ⏸ 已寫 |
+| 👁️ perception | 🟡 進行中 | **4 / 4 文字草稿** | 01 cv_bridge / 02 AprilTag / 03 YOLO / 04 PCL ⏸ 已寫 |
+| 🐕 quadruped | 🟡 進行中 | **1 / 3 文字草稿** | 01 champ-simulation ⏸ 已寫 |
+| 🤖 multi-robot | 🟡 進行中 | **2 / 2 文字草稿** | 01 namespace-spawn / 02 fleet ⏸ 已寫 |
 
 > **「⏸ 文字草稿」**:README + code 骨架已寫,**沒在實機 / 雲端跑過驗證**。雷區清單從業界經驗整理,實做時可能會修細節 / 踩到沒寫的雷。等 gino 跑過後升 ✅。
 

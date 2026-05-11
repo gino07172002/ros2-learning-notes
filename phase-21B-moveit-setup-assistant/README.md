@@ -2,11 +2,11 @@
 
 > Phase 20B 的 6-DOF 手臂 URDF + SRDF 寫好了,但 Phase 22B 要餵給 `MoveGroupInterface` 的**4 個 yaml**(kinematics / OMPL / joint_limits / controllers)還沒生出來。Setup Assistant 是 MoveIt 官方的 GUI wizard,**幾分鐘自動產出整套 moveit_config 套件**,業界 100% 用它,不會手寫。
 
-**學完你會**:
-- 用 `moveit_setup_assistant` GUI 載入 Phase 20B 的 URDF
-- 設定 self-collision matrix、planning groups、controllers、Kinematics solver
-- 自動產出整個 `<arm>_moveit_config/` 套件(取代 Phase 22B 手寫的 4 個 yaml)
-- 看穿 SRDF 的 disable_collisions 為什麼是「**安全的取消**」而非「資料漏失」
+**這章你將解鎖的業界 MoveIt 技能**：
+- **駕馭官方外掛神器 (`moveit_setup_assistant`)**：不再盯著空白的文字檔發呆。你將學會如何透過圖形化介面，將 Phase 20B 寫好的 URDF 骨架匯入，讓系統自動幫你剖析機器人的關節極限與連桿關係。
+- **配置四大核心模組**：透過點擊與選單，輕鬆設定最複雜的「自我碰撞矩陣 (Self-Collision Matrix)」、「規劃群組 (Planning Groups)」、「硬體控制器 (Controllers)」以及「運動學求解器 (Kinematics Solver)」。
+- **一鍵生成企業級設定檔**：見證奇蹟的時刻。讓 Setup Assistant 幫你自動產生一整個 `<arm>_moveit_config` 套件。這裡面包含了成千上萬行的 YAML 與 Launch 檔，完全取代我們在教學階段辛苦手刻的配置文件。
+- **碰撞矩陣的底層邏輯**：深刻理解為什麼在 SRDF 中大量標記 `disable_collisions` 其實是一種「為了加速運算的安全妥協」，而不是演算法的漏洞。這能讓你的路徑規劃速度提升好幾個數量級。
 
 **前置**:
 - [Phase 20B 手臂 URDF](../phase-20B-arm-urdf/) — 提供 xacro/URDF + 已寫好的 SRDF(會被 Setup Assistant 覆蓋)
@@ -24,14 +24,14 @@
 
 ## 🌉 為什麼有這章
 
-| 問題 | Phase 22B 的做法 | 本章的做法 |
-|------|----------------|-----------|
-| 4 個 yaml 從哪來? | **手寫**(教學用,展示「最少需要什麼」) | **GUI 自動生成**(業界做法) |
-| Self-collision matrix? | 只關掉相鄰 link | GUI 自動跑 10000 次取樣,精準關掉「永遠不會碰」的對 |
-| 加新 controller / planner? | 改 yaml | GUI 點選 |
-| 改 SRDF 的 group? | 手改 XML | GUI 拖曳 |
+**為什麼我們需要學這套 GUI 工具？**
 
-**結論**:Phase 22B 教你「**這些 yaml 在做什麼**」,本章教你「**業界怎麼產**」。**真實專案先跑 Setup Assistant 一次,再拿 22B 的知識微調**。
+- **從「手刻學習」到「自動量產」**：在教學範例中，我們會展示最基礎的 YAML 檔，那是為了讓你弄懂每一行參數背後的物理意義。但在真實工業界，沒有人會手寫這幾千行的配置檔，全部都是透過 Setup Assistant GUI 一鍵生成的。
+- **算力極限的突破 (自我碰撞矩陣)**：如果用手寫，你最多只能設定「相鄰的兩個連桿不計算碰撞」。但 Setup Assistant 會在背景啟動物理引擎，對你的機器人進行高達 10,000 次的隨機姿態取樣，精準抓出「這輩子絕對不可能碰在一起的連桿組合」並將其碰撞檢測關閉。這一招能讓你的路徑規劃速度快上好幾倍。
+- **無痛抽換演算法**：想要測試 RRTConnect 與 PRM 演算法的優劣？想要把位置控制器換成軌跡控制器？不再需要翻找深藏在資料夾底層的 YAML 檔，GUI 上點兩下就能完成設定檔的覆寫。
+- **拖曳式的架構設計**：要新增一個夾爪 (Gripper) 群組，或是改變機器手群組包含的關節，都可以透過視覺化的選單直接拖曳完成，徹底告別容易寫錯 tag 的 XML 噩夢。
+
+**學習心法**：本章教你**「業界如何快速產出骨架」**，而其他章節教你**「骨架裡面裝了什麼藥」**。在真實專案中，永遠是先用這套 GUI 產出基礎包，再憑著你的底層知識進去微調參數。
 
 ---
 
@@ -245,10 +245,10 @@ ros2 launch my_arm_moveit_config demo.launch.py
 
 ## 🎯 學到的關鍵概念
 
-- **Setup Assistant 不是「為了懶」** — 它跑 10000 次 sampling 算 self-collision,人手不可能做到
-- **`my_arm_moveit_config/` 跟 Phase 20B 的 `my_arm_description/` 是兩個 package** — `_config` 依賴 `_description` 提供 URDF
-- 產出後 **可以用 `setup_assistant.launch.py` 重新編輯**,不必整個重來
-- Phase 22B 手寫的 4 個 yaml ≈ Setup Assistant 產出的最小子集 — 兩章可互相對照
+- **不是偷懶，是追求極致效能**：再次強調，使用 Setup Assistant 絕非工程師偷懶。它背後那套跑了 10,000 次蒙地卡羅取樣 (Monte Carlo Sampling) 的自我碰撞矩陣演算法，是人類手刻永遠無法企及的精準度。
+- **結構分明的套件依賴**：你現在應該很清楚 `my_arm_description` (負責提供純粹的 URDF 外觀與物理屬性) 與 `my_arm_moveit_config` (負責提供 MoveIt 規劃演算法所需的各種 YAML 與 SRDF) 是兩個完全獨立卻又緊密相依的 ROS 2 Package。這是業界設計機器人軟體的黃金標準。
+- **支援疊代開發 (`setup_assistant.launch.py`)**：當你在實機測試發現夾爪張開的角度設錯了，不需要從零開始跑精靈。只要執行套件內建的這支 Launch 檔，就能直接讀取舊配置並接續編輯。
+- **知其然，也知其所以然**：當你學完這章，並把產出的複雜套件與後續章節手刻的「最小可行性 YAML」互相對照時，你對 MoveIt 底層架構的理解將會迎來一次量子級的躍升。
 
 ---
 

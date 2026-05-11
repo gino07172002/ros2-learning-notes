@@ -2,7 +2,7 @@
 
 > 從單機(Phase 22A 一台 turtlebot 跑 Nav2)擴到「**多台機器人在同一個世界協作**」。倉儲 / AGV fleet / 群飛無人機都是這個架構。
 
-**狀態**:🟡 進行中 — 01 已寫文字草稿(⏸,等實際驗證);02 留 placeholder
+**狀態**:🟡 進行中 — 01 / 02 已寫文字草稿(⏸,等實際驗證)
 
 ---
 
@@ -35,7 +35,7 @@
 multi-robot/
 ├── README.md                       ← 你正在讀
 ├── 01-namespace-spawn/             ⏸ 文字草稿(2026-05-05)
-└── 02-fleet-coordination/          ⬜ 未開始(等 01 實際驗證後)
+├── 02-fleet-coordination/          ⏸ 文字草稿(已寫)
 ```
 
 > **「⏸ 文字草稿」**:README + launch file 骨架已寫,**沒在實機 / 雲端跑過驗證**。雷區從業界經驗整理。

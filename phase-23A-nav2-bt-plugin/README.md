@@ -2,12 +2,12 @@
 
 > 寫一個 C++ BT condition node `IsBatteryLow`,訂 `/battery_state`,當電量低於閾值回 SUCCESS。**Nav2 自訂行為的標準入口** — 業界擴充 Nav2 8 成都從寫 BT plugin 開始。
 
-**學完你會**:
-- 寫 BT.cpp v3 的 condition node(繼承 `BT::ConditionNode`,實作 `tick()`)
-- 用 `BT_REGISTER_NODES` 巨集把 plugin 註冊給 BT factory
-- 用 `BT::InputPort` 讓 BT XML 可以傳參數進來
-- 從 BT blackboard 取出 nav2 的 `rclcpp::Node::SharedPtr` 做 ROS pub/sub
-- 寫 gtest 整合測試:**load plugin → 餵 ROS 訊息 → 驗 tick 結果**(4 個 case 全過)
+**這章你將解鎖的業界 BT Plugin 技能**：
+- **實作行為樹的心智模型**：捨棄無盡的 `if-else`，學會繼承 `BT::ConditionNode` 來撰寫乾淨、可重用的行為樹節點，並實作核心的 `tick()` 函式來決定回傳 SUCCESS 或 FAILURE。
+- **掌握 Plugin 的註冊魔法 (`BT_REGISTER_NODES`)**：搞懂如何透過特定的 C++ 巨集，將你的程式碼打包成能被 Nav2 系統在啟動時動態載入的共享函式庫，不需要重新編譯整個 Nav2。
+- **打通 XML 與 C++ 的參數橋樑 (`BT::InputPort`)**：學會讓你的 C++ 節點具有高度彈性。透過輸入埠，你可以在不修改原始碼的情況下，直接從 BT XML 檔傳入電量閾值或訂閱的 Topic 名稱。
+- **暗黑公佈欄的秘密 (Blackboard)**：理解行為樹中最重要的通訊機制。學會如何從共用的 Blackboard 中精準撈取 Nav2 提早塞進去的 ROS 2 Node 指標，進而在你的 Plugin 內建立 Publisher 或 Subscriber。
+- **建構無懈可擊的整合測試 (gtest)**：這才是資深工程師的價值。不依賴 Gazebo，直接在純粹的 C++ 測試框架中：載入 Plugin -> 模擬發送電量訊息 -> 驗證 `tick()` 是否如預期回傳正確的狀態，確保這段程式碼在送上實機前是 100% 可靠的。
 
 **前置**:
 - [Phase 19 pluginlib](../phase-19-pluginlib/) — runtime 載 C++ class 的觀念
@@ -337,14 +337,12 @@ ROS 2 Iron 之後升 v4,Humble 階段先別跨。
 
 ## 🎯 學到的關鍵概念
 
-| 概念 | 一句話 |
-|------|------|
-| BT.cpp ConditionNode vs ActionNode | Condition 立刻回 SUCCESS/FAILURE,Action 可回 RUNNING |
-| `BT_REGISTER_NODES` 巨集 | 必要,提供 dlopen 的 entry point |
-| `providedPorts()` | 讓 BT XML 傳參數,類似 ROS parameter |
-| Blackboard 共享 ROS node | nav2 自動塞 `node` key,讓 plugin pub/sub |
-| `add_library(... SHARED ...)` | nav2 dlopen 必需 SHARED |
-| BT.cpp v3 vs v4 | Humble 鎖 v3,別跨版本 |
+- **瞬間判斷 vs 長期抗戰 (Condition vs Action)**：在行為樹的世界裡，這兩種節點的角色涇渭分明。`ConditionNode` (如檢查電量) 必須在一瞬間給出 `SUCCESS` 或 `FAILURE` 的答案；而 `ActionNode` (如導航到目標) 因為需要好幾秒才能完成，所以允許回傳 `RUNNING` 來爭取下一次被呼叫的機會。
+- **靈魂的入口 (`BT_REGISTER_NODES`)**：這是 C++ 動態載入機制的精髓。如果你忘記寫這個巨集，Nav2 的 `dlopen` 函數會像無頭蒼蠅一樣找不到這個 Plugin 的進入點，導致你的外掛形同虛設。
+- **彈性的參數介面 (`providedPorts`)**：這就像是為你的 C++ 類別開了一扇對外的窗。它允許行為樹架構師在編寫 XML 時，像填寫 HTML 標籤屬性一樣，直接把 `min_battery="0.2"` 這種參數傳進底層的 C++ 邏輯中。
+- **跨節點的記憶白板 (Blackboard)**：你可以把它想像成一個所有節點都能讀寫的「全域記憶體」。Nav2 非常聰明地把最重要的 `rclcpp::Node` 指標提早塞在裡面，讓你的 Plugin 可以輕鬆地長出觸角 (Pub/Sub) 與外界溝通。
+- **編譯的生死抉擇 (SHARED vs STATIC)**：在 `CMakeLists.txt` 中，你絕對不能把 Plugin 編譯成 `.a` (靜態函式庫)。為了讓 Nav2 能在執行期隨插即用，它必須被編譯成 `.so` (動態共享函式庫，SHARED)。
+- **版本的鴻溝 (BT.cpp v3 vs v4)**：這是一個血淚教訓。ROS 2 Humble 的 Nav2 系統鎖死了使用 BT.cpp v3 引擎。如果你看著最新的網路教學，用了 v4 的 API 去寫 Plugin，保證會在編譯或載入時迎來慘烈的 ABI 不相容崩潰。
 
 ---
 

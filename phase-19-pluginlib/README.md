@@ -53,12 +53,12 @@
            載入指定 plugin
 ```
 
-**為什麼分離**：
-- `_base`：給所有人用的合約。**不可變**（變了所有 plugin 都要重寫）
-- `_plugins`：實作。第三方可以自己另開套件實作，不需要改 _base
-- `_demo`：主程式。只依賴 _base，runtime 才知道要用哪個 plugin
+**業界為什麼堅持要拆成三個套件？這不是自找麻煩嗎？**
+- **`_base` (合約層)**：這就像是 USB 的硬體插座標準。它定義了所有 Plugin 必須遵守的「純抽象介面 (Pure Virtual Functions)」。這個套件的最高原則是**絕對不可隨意變動**，因為一旦更改了方法名稱或參數，全世界所有依賴它的 Plugin 都會因為編譯失敗而瞬間報廢。
+- **`_plugins` (實作層)**：這就像是各式各樣的 USB 隨身碟或鍵盤。這是具體的 C++ 程式碼實作。最棒的是，**任何人都可以自己建立新的 Plugin 套件**來擴充功能，完全不需要去修改原本的主程式或 Base 套件。這就是 ROS 開源生態系能夠蓬勃發展的核心秘密。
+- **`_demo` (應用層)**：這是你的主程式。在編譯期，主程式完全不知道這世界上有哪些 Plugin 存在，它只認得 Base 合約。直到程式執行 (Runtime) 的那一刻，它才會根據使用者的設定檔 (YAML) 或終端機指令，動態去把指定的 Plugin `.so` 檔載入到記憶體中。
 
-**Nav2 結構完全相同**：`nav2_core` (base) + `nav2_navfn_planner` / `nav2_smac_planner` (plugins) + `nav2_controller_server` (demo) + 你可以寫第四個 planner 套件加進去。
+**這就是 Nav2 的真實架構**：去翻開 Nav2 的源碼庫，你會發現它精準對應了這個模式——`nav2_core` 就是 Base，`nav2_smac_planner` 就是官方提供的實作 Plugin 之一，而 `nav2_planner` 伺服器就是 Demo 應用層。等你學會這招，你就能自己寫一個嶄新的演算法 Planner，無縫掛載進 Nav2 系統裡！
 
 ---
 
@@ -322,13 +322,12 @@ pluginlib::ClassLoader<Base>(
 
 ## 🎯 學到的關鍵概念
 
-- **三套件分離**：base（純 interface） + plugins（實作） + demo（主程式）
-- **`PLUGINLIB_EXPORT_CLASS`** 巨集註冊 plugin
-- **`plugins.xml`** 描述 .so 內含哪些 class
-- **`pluginlib_export_plugin_description_file`** CMake 巨集註冊給 pluginlib
-- **package.xml `<export>`** 也要對應宣告
-- **ClassLoader + createSharedInstance** runtime 載入
-- **業界 Nav2/MoveIt/ros2_control 都這個架構**
+- **架構解耦的藝術 (三套件分離)**：深刻體會 Base (抽象合約)、Plugins (具體實作) 與 Demo (呼叫端) 嚴格分離的威力。這讓你的 ROS 系統擁有無窮的第三方擴充能力，且不用擔心程式碼的依賴污染。
+- **C++ 動態載入的靈魂 (`PLUGINLIB_EXPORT_CLASS`)**：學會在每一個 Plugin 實作檔的最後，烙印上這個關鍵巨集。它會在編譯出的 `.so` 動態連結庫中留下專屬標記，讓 ROS 能在茫茫大海中精準找到它。
+- **身分證文件 (`plugins.xml`)**：這個 XML 檔案就像是 Plugin 的名片，清楚交代了這個套件裡包含了哪些 Class，以及它們分別繼承自哪個 Base 介面。
+- **建構系統的掛鉤 (CMake 與 package.xml)**：千萬不能忘記透過 CMake 的 `pluginlib_export_plugin_description_file` 以及 `package.xml` 中的 `<export>` 標籤，把這張名片正式註冊到 ROS 的大網域中。
+- **魔法的發生點 (`ClassLoader`)**：在主程式中，熟練運用 `pluginlib::ClassLoader` 以及 `createSharedInstance`，在程式執行期間才將指定名稱的演算法「具象化」到記憶體中，實踐真正的多型 (Polymorphism)。
+- **打通開源大神思維的最後一哩路**：再次強調，Nav2 的規劃器、MoveIt 的運動學求解器、ros2_control 的硬體驅動，全部都是建立在這個框架之上。學會它，你就不再只是個「ROS 工具使用者」，而是真正的「ROS 系統開發者」。
 
 ---
 

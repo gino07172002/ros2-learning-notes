@@ -2,7 +2,7 @@
 
 > 業界主流的「**自主無人機**」開發 stack。PX4 是開源飛控韌體,ROS 2 透過 micro-XRCE-DDS bridge 跟 PX4 講話,可以用 ROS 2 程式控制無人機飛行。
 
-**狀態**:⬜ 骨架(等使用者開始實做)
+**狀態**:🟡 進行中 — 01 已寫文字草稿(⏸,等實際驗證)
 
 ---
 
@@ -36,7 +36,7 @@
 ```
 drone-px4/
 ├── README.md                           ← 你正在讀
-├── 01-px4-bridge/                      ← PX4 SITL + DDS bridge 設定
+├── 01-px4-bridge/                      ⏸ 文字草稿(已寫)
 ├── 02-offboard-control/                ← 從 ROS 2 送速度命令飛起來
 ├── 03-mission-action/                  ← 航點任務 + Action server
 └── capstone-indoor-slam-drone/         ← 結合 Track A SLAM 的整合 demo

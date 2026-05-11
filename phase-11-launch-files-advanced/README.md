@@ -100,14 +100,14 @@ return LaunchDescription([
 ])
 ```
 
-**為什麼需要**：
+**為什麼我們需要 Event Handler 來控制順序？**
 
-ROS 預設「啟動順序無關」是設計理念，但實務上有些 corner case：
-- 訂閱方還沒起來，發布方早期訊息丟失（用 QoS Transient Local 可解，但要寫 code）
-- 仰賴 lifecycle node 必須先 configure 才能 activate
-- 啟動 RViz 必須等 robot_state_publisher 先發 TF（不然畫面什麼都沒有）
+ROS 2 的設計哲學是「各節點啟動順序無關緊要，網路會自己尋找彼此連線」，這聽起來很美好，但在實務開發中，我們常常會撞到一些痛苦的邊角情境 (Corner Cases)：
+- **早期訊息被丟失 (Early Message Loss)**：如果發布者 (Publisher) 一啟動就開始狂發重要資料（例如一次性的初始化參數），但訂閱者 (Subscriber) 的節點還在載入中，這段時間內的資料就會永遠消失在虛空中。（雖然這可以透過更改 QoS 為 Transient Local 來解決，但這需要改動 C++ 原始碼，有時不夠彈性。）
+- **Lifecycle Node 的嚴格順序要求**：我們在 Phase 09 學過，Lifecycle Node 必須先被明確呼叫 `configure` 後，才能被 `activate`。如果不管順序讓兩個指令同時發出，節點狀態機就會大混亂報錯。
+- **RViz 畫面一片空白的尷尬**：當你啟動視覺化工具 RViz 時，如果負責廣播機器人骨架座標轉換 (TF) 的 `robot_state_publisher` 還沒準備好發送資料，RViz 就會因為缺乏參考座標而顯示滿江紅的錯誤，或是一片空白，這常常讓新手一頭霧水。
 
-**event_handler 是宣告式解法**——不用改 code，launch 層面控制順序。
+**Event Handler 提供了完美的宣告式解法**——你完全不用改動任何 C++ 或 Python 邏輯碼，只需要在 Launch 腳本層面定義「等 A 節點徹底啟動後，再放行啟動 B 節點」的規則即可。
 
 **驗證輸出**（剛剛測過）：
 ```
@@ -148,10 +148,9 @@ ros2 launch phase11_pkg 03_conditional.launch.py                # 一般模式
 ros2 launch phase11_pkg 03_conditional.launch.py debug:=true    # 開 debug
 ```
 
-**業界用法**：
-- `sim:=true` → 啟動 Gazebo + fake sensors
-- `sim:=false` → 連真機 driver
-- `record_bag:=true` → 一併啟動 ros2 bag record
+**業界最真實的 Conditional 應用場景**：
+- **`sim:=true / false` (虛實一鍵切換)**：開發者可以在同一個 Launch 裡，把「真車硬體驅動」與「Gazebo 模擬器」的節點都寫進去。當設定為 `true` 時只啟動模擬器與虛擬感測器，設為 `false` 時則啟動真實的馬達與光達。同一套腳本，無縫適應開發環境與實車部署。
+- **`record_bag:=true` (自動錄影模式)**：在實車測試時，我們常需要在背景錄製所有 Topic 的資料以供事後分析。透過參數控制，只要加上 `record_bag:=true`，系統就會在所有的控制節點之外，額外幫你掛載啟動 `ros2 bag record` 程序，非常方便。
 
 ---
 
@@ -194,10 +193,10 @@ return LaunchDescription([
 
 **兩台車 topic 不會混到**——ROS 2 namespace 機制等同 Linux PID namespace 或 Kubernetes namespace。
 
-**業界應用**：
-- 倉儲 AGV 車隊（10 台車各自運作）
-- 模擬多 agent 系統訓練
-- 主控 + 副控冗餘架構
+**業界大量依賴 Namespace 的應用場景**：
+- **龐大的倉儲 AGV 車隊**：想像一個亞馬遜物流中心有 50 台無人搬運車。透過 `robot1` 到 `robot50` 的 Namespace，你可以用同一套控制邏輯程式碼，直接啟動 50 份獨立的控制節點，讓每台車乖乖聽從自己的 `/robotX/cmd_vel` 指令，完全不會發生「下指令給 1 號車，結果 50 台車一起往前衝」的慘劇。
+- **多代理人 (Multi-Agent) 強化學習模擬**：在 Gazebo 中同時訓練 10 隻機器狗時，必須把每隻狗的感測器資料與關節狀態嚴格隔離在各自的 Namespace 中，否則神經網路的輸入會把 10 隻狗的數據混在一起大亂。
+- **高安全性的主副控冗餘架構**：在自動駕駛系統中，為了極致的安全，可能會有主電腦與備援電腦同時運行相同的演算法。透過 Namespace，可以讓備援系統默默在背景運算（例如它產出的指令會被丟到 `/backup/steering_cmd`），直到主系統失效時，再瞬間無縫接管控制權。
 
 ---
 

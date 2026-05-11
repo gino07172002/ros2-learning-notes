@@ -2,12 +2,12 @@
 
 > 用 `MoveGroupInterface` C++ API 規劃 6-DOF 手臂(Phase 20B URDF)的軌跡。**4 種 plan target**:SRDF named pose、joint values、Cartesian pose、return home。**完全純 CLI 驗證**(不需要 RViz)。
 
-**學完你會**:
-- 用 `MoveGroupInterface` 在 C++ 寫 plan + execute
-- 設 `setNamedTarget()` / `setJointValueTarget()` / `setPoseTarget()` 三種規劃目標
-- 把 `robot_description` / `robot_description_semantic` / `robot_description_kinematics` 餵給獨立 Node(MoveIt 經典雷)
-- 寫最小 MoveIt config(kinematics / OMPL / joint_limits / controllers 4 個 yaml)
-- 看穿「Unable to sample any valid states for goal tree」這個 IK 解不出來的雷
+**這章你將解鎖的業界 C++ 手臂控制技能**：
+- **駕馭最高階的控制介面 (`MoveGroupInterface`)**：擺脫底層繁瑣的通訊協議，學會用 MoveIt 官方提供的 C++ 類別，只用寥寥數行程式碼就完成複雜的碰撞閃避與路徑規劃。
+- **掌握三種必備的戰略目標**：學會使用預先命名的姿態 (`setNamedTarget`)、六軸關節的絕對數值 (`setJointValueTarget`) 以及末端點的三維空間座標 (`setPoseTarget`) 來下達導航指令，應對工廠中各種不同的夾取情境。
+- **破解 ROS 2 參數傳遞的世紀大雷**：看懂為什麼你的 C++ 程式總是抓不到機器人的 URDF 模型。學會在 Launch 檔中優雅地將三大核心描述參數 (`description`, `semantic`, `kinematics`) 強制餵進獨立的 Node 中。
+- **手刻最小可行性設定檔**：在依賴 GUI 自動產出之前，親手撰寫支撐 MoveIt 運作的四大支柱：運動學 (Kinematics)、路徑演算法 (OMPL)、關節極限 (Joint Limits) 與控制器 (Controllers) YAML 檔。
+- **直面 IK (逆向運動學) 的無解崩潰**：深刻體會終端機噴出 `Unable to sample any valid states` 時的絕望，並學會如何透過放寬容忍度或除錯點位來解決空間中「手骨折也構不到」的座標點。
 
 **前置**:
 - [Phase 20B 手臂 URDF](../phase-20B-arm-urdf/) — 6-DOF arm URDF + SRDF
@@ -325,16 +325,14 @@ moveit_robot_model.robot_model: Could not identify parent group for end-effector
 
 ## 🎯 學到的關鍵概念
 
-| 概念 | 一句話 |
-|------|------|
-| `MoveGroupInterface(node, "arm")` | 高階 API,group 名來自 SRDF |
-| `setNamedTarget("ready")` | 用 SRDF 命名姿態,最方便 |
-| `setJointValueTarget(vec)` | 直接給 6 個 joint 值,確定能解 |
-| `setPoseTarget(pose)` | 給 cartesian pose,內部跑 IK,**會失敗** |
-| `plan.trajectory_.joint_trajectory.points` | 軌跡點數 = OMPL 解的密度 |
-| `plan.planning_time_` | OMPL 花多少 CPU 解這個問題 |
-| `automatically_declare_parameters_from_overrides=true` | MoveIt 2 必設,否則讀不到嵌套 yaml param |
-| 三份 description params | robot_description / semantic / kinematics 必須給 demo Node |
+- **高階大腦 (`MoveGroupInterface`)**：這是我們在 C++ 程式中與 MoveIt 溝通的最高階代理人。實體化它時指定的名稱（如 `"arm"`），必須與你在 SRDF 中定義的 Planning Group 名字一模一樣。
+- **最安全的指令 (`setNamedTarget`)**：這是最穩定的規劃方式。直接呼叫 SRDF 裡預先記好的安全姿態（例如 `home` 或 `ready`），因為沒有牽涉到複雜的逆向運動學，成功率幾乎是 100%。
+- **絕對的關節控制 (`setJointValueTarget`)**：當你確切知道每一軸馬達該轉到哪個角度時使用。這跳過了末端點空間計算，只要指定的角度沒有互相穿透，通常都能輕易算出路徑。
+- **充滿變數的空間座標 (`setPoseTarget`)**：在業界最常用但也最常惹禍。當你要求夾爪末端移動到 `(X, Y, Z)` 時，MoveIt 會在背景瘋狂運算逆向運動學 (IK) 來推導關節角度。很容易因為超出手臂長度或遇到奇異點 (Singularity) 而徹底失敗。
+- **軌跡的密度 (`joint_trajectory.points`)**：這決定了你的手臂動作是平滑還是卡頓。OMPL 演算法算出路徑後，會產生一連串的「中繼點」。點數越多，動作越細膩，但也越吃通訊頻寬。
+- **算力指標 (`planning_time_`)**：觀察演算法花了多少時間才解開這道路徑謎題。如果一個簡單的移動每次都要花上幾秒鐘，通常代表你的場景太擁擠，或是碰撞檢查的精細度設得太高了。
+- **ROS 2 的參數緊箍咒 (`automatically_declare_parameters_from_overrides`)**：這是 ROS 2 特有的安全機制（嚴格宣告）。MoveIt 為了讀取深層嵌套的 YAML 結構，我們必須在 NodeOptions 強制開啟這個後門，否則底層的 IK Solver 會全部失效。
+- **不可或缺的三神兵 (Description Params)**：你的應用程式 Node 想要呼叫 MoveIt，就必須在 Launch 啟動時把 `robot_description` (URDF 外觀)、`semantic` (SRDF 碰撞) 與 `kinematics` (運動學公式) 這三份關鍵文件掛載進去，缺一不可。
 
 ---
 

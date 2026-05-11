@@ -79,11 +79,11 @@ ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose \
 # Ctrl+C 會送 cancel 過去
 ```
 
-**重點觀察**:
-- 業界 action 的 Goal 通常包 `geometry_msgs/PoseStamped`(複雜結構)— 不是只丟一個數字
-- Feedback 設計成「**進度 + 剩餘時間**」,讓 client 畫進度條
-- Result 通常很簡單(`bool success`)— 真實狀態靠 feedback 已經知道
-- Cancel 是業界標配 — 任何長任務都該支援
+**💡 劃重點：觀察業界大神的 Action 介面設計哲學**
+- **Goal 通常是包含大量細節的複雜結構體**：業界不會只傳遞一個單純的數字。例如 Nav2 的目標通常會包裝成 `geometry_msgs/PoseStamped`，裡面精確包含了目標座標、姿態以及 Header (時間戳記和座標系)。這才是設計企業級通訊介面的正確心法。
+- **Feedback 應該具備高度的「 UI 友善性」**：Feedback 的設計目的，就是要讓 Client 能夠輕鬆地在網頁端或 Rviz 上畫出漂亮的「進度條」。所以通常會設計成包含「當前進度百分比」、「剩餘距離」與「預估剩餘時間」，而不只是單調的一堆座標變化。
+- **Result 越簡單越好**：因為在任務執行的漫長過程中，Client 已經透過 Feedback 充分掌握了所有的狀態細節。所以最後的 Result 通常只需要回傳簡單的 `bool success` 或者一個總結性的整數代碼，不需要再把整個軌跡資料重新傳送一次。
+- **Cancel 絕對是長任務的標配**：在真實世界中，任何耗時超過 3 秒的任務（例如機器人走去廚房），都必須無條件支援「中途取消 (Cancel)」。這是防呆與安全機制的核心，如果不寫 Cancel 邏輯，你的 Action 就只是個半成品。
 
 **我們這章的目標**:寫一個 server 涵蓋 5 種結束方式(REJECT / ACCEPT / SUCCEED / ABORT / CANCEL),寫 client 演示中途 Ctrl+C 觸發 cancel。學完這章你看 Nav2 / MoveIt action server 內部就懂了。
 
@@ -411,13 +411,13 @@ ament_target_dependencies(your_node rclcpp rclcpp_action ...)
 
 ## 🎯 學到的關鍵概念
 
-- **5 種 action 結束方式**：REJECT / SUCCEED / ABORT / CANCEL（+ ACCEPT_AND_EXECUTE 是「開始」不是結束）
-- **handle_goal**：在 server 第一時間決定接不接
-- **handle_cancel**：client 想取消時 server 可選擇接受/拒絕
-- **execute thread**：必須開新 thread，不能在 callback 內阻塞
-- **`is_canceling()`**：execute 內每次 loop 必檢查
-- **三個結束 API**：`succeed()` / `abort()` / `canceled()`
-- **client 三個 callback**：goal_response / feedback / result
+- **5 種 Action 結束與狀態切換**：徹底理解 REJECT、SUCCEED、ABORT 與 CANCEL 四種結束分支，以及代表任務正式展開的 ACCEPT_AND_EXECUTE。
+- **防禦性設計的第一關 (`handle_goal`)**：這是 Server 收到請求時的第一個檢查點，你必須在這裡立刻過濾掉所有不合理或非法的 Goal（例如給出負數的距離），並用 REJECT 將其阻擋在外。
+- **取消請求的決策權 (`handle_cancel`)**：Client 有權利隨時喊停，但 Server 擁有最終的決定權。如果任務已經進行到「不可逆」的階段（例如機械臂已經夾緊玻璃杯並舉在半空），Server 絕對有權利拒絕這個取消請求以保護硬體。
+- **絕不能阻塞的主幹道 (Execute Thread)**：Action 最容易踩的坑，就是在 `execute` 內直接寫死迴圈。記住，必須開一條新的 Thread (執行緒) 來跑長任務，否則整個 Node 的事件迴圈會卡死，連 Feedback 都發不出去。
+- **持續監聽取消指令 (`is_canceling()`)**：在 Execute 的耗時迴圈中，每一次迭代 (Loop) 都必須乖乖檢查 `is_canceling()` 標誌。如果不檢查，Client 就算喊破喉嚨，Server 也會無視取消指令繼續跑完。
+- **精準呼叫結束 API**：在任務執行完畢的那個瞬間，務必明確呼叫 `succeed()`、`abort()` 或 `canceled()`，並且附上打包好的 Result，否則 Client 會永遠在痴痴地等。
+- **Client 端的接球三兄弟**：身為呼叫方，你必須實作三個 Callback 來完美接球：`goal_response` (確認有沒有被拒絕)、`feedback` (更新 UI 進度條)、以及 `result` (任務結算畫面)。
 
 ---
 

@@ -16,18 +16,16 @@
 
 Part 1–3 你學完所有**通訊機制**(Pub/Sub/Service/Action/Lifecycle)。但你的 Capstone 1 ApproachController 是個**邏輯概念** — 不知道 lidar 裝在哪、輪距多寬、attack 點是什麼方向。
 
-**Part 4 開始,Node 們有了一個身體**:
+**Part 4 開始，Node 們終於擁有了一個具象化的身體**：
 
-```
-Phase 15 URDF        →   描述身體(joint / link / sensor 位置)
-Phase 16 TF2         →   讓身體上各部位的座標可以互相轉換
-Phase 17 Gazebo      →   把身體丟進物理引擎,讓它能撞牆能滾動
-Phase 18 ros2_control →  讓 Node 真的能驅動關節
-Phase 19 pluginlib   →   讓你能寫客製化的 controller / planner
-Phase 20 多機通訊    →   一台跑感知、另一台跑控制(實機常態)
-```
+- **Phase 15 (URDF) — 賦予骨架與外型**：我們將用 XML 語法撰寫 URDF 檔案，精確定義出機器人的每一個關節 (joint) 和連桿 (link)，以及各種感測器在實體空間中的相對位置。
+- **Phase 16 (TF2) — 賦予空間感知能力**：有了骨架後，我們需要 TF2 系統來處理錯綜複雜的座標轉換。讓機器人能瞬間算出「光達看到的障礙物，相對於車輪中心到底在哪裡」。
+- **Phase 17 (Gazebo) — 賦予物理法則**：只有外殼是不夠的，我們要把這個 URDF 身體丟進 Gazebo 物理引擎中，為它加上重力、摩擦力與碰撞體積，讓它真的能夠撞牆、滾動與受力。
+- **Phase 18 (ros2_control) — 賦予肌肉與神經**：讓純粹的軟體 Node 能夠透過標準化介面，將速度或扭矩指令轉化為驅動關節與馬達的真實動作。
+- **Phase 19 (pluginlib) — 賦予大腦擴充性**：學會使用 Plugin 機制，讓你可以像裝載模組一樣，隨時替換機器人的控制器 (Controller) 或路徑規劃器 (Planner)。
+- **Phase 20 (多機通訊) — 走入實機部署**：在真實的工業場景中，通常是一台運算力強大的電腦負責跑 AI 視覺感知，另一台即時性強的微控制器負責跑馬達控制。我們將學會如何讓它們跨裝置無縫通訊。
 
-**為什麼 SLAM、Nav2、MoveIt 不能直接學**:它們都假設你有 URDF — 沒身體就沒 TF tree、沒 TF tree 就沒辦法把 lidar 看到的東西定位到地圖上。
+**為什麼 SLAM、Nav2、MoveIt 這些超酷的應用不能直接學？**：因為它們全部都假設你已經擁有了一份完美的 URDF 檔案。沒有實體身體就沒有 TF tree，沒有 TF tree 演算法就絕對沒辦法把雷射光達掃描到的障礙物，正確地標記在 2D 地圖上。
 
 ---
 
@@ -79,12 +77,12 @@ URDF 用 `<origin xyz="x y z" rpy="roll pitch yaw"/>` 表示位置與姿態:
 
 ## 🤔 為什麼要 URDF
 
-到 Phase 14 為止你的「機器人」只是邏輯概念：fake_lidar 發訊息、smart_brake 收訊息。但**實際機器人有形狀有空間**：
-- 光達裝在車頂正前方
-- 兩個輪子相距 30 cm
-- 攝影機朝下傾 15 度
+到 Phase 14 為止，你所開發的「機器人」其實只是活在終端機裡的邏輯概念：`fake_lidar` 負責發送偽造的數字，`smart_brake` 負責接收並運算。但**真實世界的機器人是有具體形狀、且佔據物理空間的**：
+- 你的光達是安裝在車頂正前方，還是偏向左側？
+- 兩個驅動輪之間的輪距到底是 30 公分還是 50 公分？這直接影響了車子差速轉彎的半徑計算。
+- 深度攝影機是水平擺放，還是為了看清地面障礙物而朝下傾斜了 15 度？
 
-URDF (Unified Robot Description Format) 就是描述這些**幾何關係**的標準格式。**SLAM、Nav2、MoveIt、Gazebo、RViz 全部都依賴它**。
+**URDF (Unified Robot Description Format)** 就是用來精確描述這些**三維幾何關係與物理屬性**的國際標準格式。千萬不要小看這個 XML 檔案，**舉凡 SLAM 建圖、Nav2 導航、MoveIt 機械臂夾取、Gazebo 物理模擬、到 RViz 的視覺化，全部都必須依賴 URDF 才能運作。沒有 URDF，你的軟體大腦就等於是又瞎又癱的**。
 
 | 你熟悉的 | URDF |
 |---------|------|
@@ -353,12 +351,12 @@ ROS 2 的 launch file 是 Python，不會自動 import。
 
 ## 🎯 學到的關鍵概念
 
-- **URDF 描述機器人物理結構**（link、joint、origin、material）
-- **xacro 是 URDF 的前處理器**：屬性、巨集、include
-- **三種 joint**：fixed / continuous / revolute
-- **robot_state_publisher** 把 URDF + /joint_states → /tf
-- **CLI 驗證**：`tf2_echo` 看單一 transform、`view_frames` 看整棵樹
-- **業界基礎**：Nav2/MoveIt/Gazebo 都從 URDF 開始
+- **URDF 描述實體結構**：掌握了利用 XML 標籤（如 `link` 定義實體部位、`joint` 定義連接關係、`origin` 定義相對位置）來精確建立機器人的 3D 結構。
+- **Xacro 的巨集魔法**：了解純 URDF 的維護有多痛苦後，學會使用 Xacro 這個強大的前處理器，透過變數定義、巨集展開與模組化引入，寫出乾淨俐落的硬體描述檔。
+- **靈活運用三大 Joint**：搞懂了 `fixed` (死鎖固定)、`continuous` (無限旋轉如車輪) 以及 `revolute` (有角度限制如機械臂) 的差異與應用場景。
+- **系統的樞紐 (`robot_state_publisher`)**：它就像是個辛勤的翻譯官，負責把靜態的 URDF 結構檔，加上動態的 `/joint_states` 關節角度變化，即時計算並廣播成整棵空間座標樹 (`/tf`)。
+- **TF 除錯雙雄**：熟練使用 `tf2_echo` 在終端機即時偷看兩個部位的座標關係，以及用 `view_frames` 產出 PDF 架構圖，這在未來 Debug 空間迷失問題時非常關鍵。
+- **開源生態系的入場券**：再次強調，不論是玩 Nav2 導航還是 MoveIt 夾取，第一步永遠是寫好 URDF。你已經跨過了實機開發最重要的一道硬核門檻。
 
 ---
 

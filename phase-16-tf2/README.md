@@ -33,10 +33,10 @@ in lidar frame                                                  in world frame
 
 TF2 自動串連整條鏈路：lidar → base_link → odom → map → world，把每段 transform 乘起來給你最終答案。
 
-業界場景（每天都在做）：
-- 光達點雲（lidar frame）→ 地圖（map frame）做 SLAM
-- 攝影機看到障礙物（camera frame）→ 機器人座標系（base_link）→ 用來避障
-- 機械臂末端（gripper frame）→ 工件座標系（world）→ 規劃抓取軌跡
+**業界場景（ROS 工程師每天都在解的座標題）**：
+- **SLAM 演算法的核心**：光達掃描到一個特徵點位於 `lidar` 座標系中，必須層層轉換到 `map` 座標系，才能在地圖的正確位置畫上障礙物。
+- **自動避障系統**：攝影機偵測到一顆球位於畫面左前方 (`camera` 座標系)，必須轉換到機器人本體中心 (`base_link`)，演算法才能精準計算出「要左轉 15 度才能閃過」的馬達指令。
+- **機械臂抓取任務**：視覺系統在桌面上辨識出一個杯子 (`world` 座標系)，必須轉換到機械臂夾爪的座標系 (`gripper`)，才能精準規劃每個手臂關節要怎麼扭轉。
 
 ---
 
@@ -269,13 +269,13 @@ auto t = buffer.lookupTransform("world", "base_link", ...);
 
 ## 🎯 學到的關鍵概念
 
-- **TF2 三角色**：Static Broadcaster / Dynamic Broadcaster / Listener
-- **`/tf` vs `/tf_static`**：動態 vs latched
-- **Quaternion 必須有效**（最少 `w=1`）
-- **Buffer 必須給 clock**（ROS 2 跟 ROS 1 差異）
-- **lookupTransform 必接 try-catch**
-- **`tf2::TimePointZero`** 是 90% 場景的選擇
-- **業界口訣**：`lookupTransform(target, source)` 查 source 在 target 座標系下
+- **TF2 的黃金鐵三角**：負責發送死鎖固定座標的 `Static Broadcaster`、負責發送會移動或旋轉座標的 `Dynamic Broadcaster`，以及負責攔截並解算整棵座標樹的 `Listener`。
+- **兩條不同性質的廣播通道**：`/tf_static` 是具有 Latched (鎖存) 特性的 Topic，只要發送一次，新來的 Listener 也能瞬間拿到歷史資料，極度節省頻寬。而 `/tf` 則是高頻率的普通 Topic。
+- **四元數 (Quaternion) 的防呆機制**：在 3D 空間中沒有旋轉時，四元數絕對不是全部為零。記得一定要把 `w` 設為 `1.0`，否則 TF2 系統會崩潰罷工。
+- **Buffer 與 Clock 的血脈相連**：在 ROS 2 中，TF Buffer 的時間線必須由節點的時鐘 (`get_clock()`) 提供，這是跟舊版 ROS 1 最大的差異之一。
+- **絕對不可省的 `try-catch`**：`lookupTransform` 是一個極度容易拋出例外 (Exception) 的 API，因為網路延遲或剛開機的瞬間，座標樹常常是不完整的。不包 `try-catch`，你的 Node 一定會閃退。
+- **時間旅行的捷徑 (`TimePointZero`)**：90% 的業務邏輯只需要知道「當下最新」的座標關係，所以傳入 `tf2::TimePointZero` 是最聰明且安全的做法。
+- **方向不迷路的業界口訣**：`lookupTransform(target, source)` 的語意永遠是：「請問 `source` 這個物體，如果用 `target` 的視角來看，位於座標軸的哪裡？」
 
 ---
 

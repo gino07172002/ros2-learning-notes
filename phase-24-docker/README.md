@@ -2,11 +2,11 @@
 
 > 把 **Phase 14 Capstone(ApproachController)** 包成 Docker image,用 `docker compose up` 一鍵起兩個 container 互通。
 
-**學完你會**:
-- 寫 multi-stage Dockerfile,**builder stage colcon build / runtime stage 只帶 install/**(image 體積壓到 < 800MB)
-- 設計 entrypoint.sh 讓 container 自動 source ROS 環境並正確接 SIGTERM
-- 用 `docker compose` 起多 container 跑 ROS 系統,**搞懂為什麼 bridge network 會看得到 topic 卻收不到資料**
-- 跨 container 跑 Topic / Service / Action,真實看到 DDS 在 container 之間運作
+**這章你將解鎖的業界 Docker 部署技能**：
+- **瘦身魔法 (Multi-stage Build)**：告別動輒 3GB 的肥大 Image。學會將編譯用的 `builder` 階段與執行用的 `runtime` 階段完美分離，只把乾淨的 `install/` 目錄複製到最終產品，讓你的容器體積瞬間瘦身 70%。
+- **完美的生命週期管理 (`entrypoint.sh`)**：解決 `docker stop` 總是卡住 10 秒才被強制殺死的窘境。利用 `exec "$@"` 技巧精準傳遞 SIGTERM 訊號，確保 ROS 節點能在關機時優雅地處理收尾工作。
+- **看透容器與實體網路的恩怨情仇**：親手搭建 `docker compose`，並在除錯過程中深刻體會 Docker 預設的 Bridge Network 是如何無情攔截 DDS 的 Multicast (群播) 封包，導致「看的到 Topic 卻收不到資料」的靈異現象。
+- **跨維度的通訊驗證**：在完全隔離的兩個容器之間，真實驗證 Topic、Service 與 Action 三大通訊機制的可靠性，見證底層 DDS (Data Distribution Service) 穿透虛擬網路邊界的強大能力。
 
 **前置**:
 - [Phase 14 Capstone 1](../phase-14-capstone-1/) — 我們要 Docker 化的對象
@@ -22,12 +22,12 @@
 
 ## 🤔 為什麼這章重要
 
-ROS 2 專案要交付,**Docker 是業界標配**。理由:
+在 ROS 2 專案的軟體交付流程中，**Docker 已經是無可取代的業界標配**。如果你的專案還停留在「給別人一包 Source Code 讓他自己編譯」的階段，是很難與專業接軌的。理由如下：
 
-1. **可重現** — `docker run` 在哪台機器都長一樣,不用「在我電腦會跑」
-2. **隔離 ROS distro** — 同一台機器上 Humble、Iron、Jazzy 共存
-3. **CI 友善** — Phase 25 的 GitHub Actions 就是在 container 裡跑
-4. **生產部署** — Pi、Jetson、車機都可以 docker pull image,不用每台都 colcon build
+- **終結「在我的電腦上可以跑」的藉口**：無論是開發者的筆電、測試團隊的伺服器，還是客戶端的實體機器人，只要打下 `docker run`，保證執行環境連同底層的 C++ 依賴庫都 100% 絕對一致。
+- **打破 ROS 版本的排他性**：受夠了為了解決 Ubuntu 版本相依性而瘋狂重灌系統嗎？有了 Docker，你可以在同一台筆電上同時跑 ROS 1 Noetic、ROS 2 Humble，甚至最新的 Jazzy，完全不用擔心環境互相污染。
+- **自動化測試的完美舞台 (CI/CD)**：在下一章 (Phase 25) 中，我們在 GitHub Actions 上執行的自動化編譯與測試，全部都是依賴乾淨、即用即丟的 Container 環境來保證測試的公正性。
+- **量產部署的唯一解 (OTA 更新)**：當你有 100 台無人搬運車 (AGV) 在外工作時，不可能派工程師去每一台車上 `colcon build`。標準做法是在雲端自動構建 Docker Image，再讓車載電腦 (如 Raspberry Pi 或 Nvidia Jetson) 透過網路 `docker pull` 直接更新。
 
 但 Docker + ROS 2 有**幾個非典型 Docker 知識的雷**(DDS / multicast / SHM),這章會把它們全部踩過一輪。
 
@@ -351,15 +351,13 @@ RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build"
 
 ## 🎯 學到的關鍵概念
 
-| 概念 | 一句話 |
-|------|------|
-| Multi-stage build | builder 編完 → runtime 只帶 install/,image 體積小 60–70% |
-| `exec "$@"` in entrypoint | 替換 shell 自己,讓目標 process 變 PID 1 收得到 SIGTERM |
-| `network_mode: host` | DDS discovery 走 multicast,bridge network 會擋住 |
-| `ipc: shareable` | DDS SHM transport 要求同 IPC namespace,bridge 預設不共用 |
-| `ROS_DOMAIN_ID` | 同 host 多個 ROS 系統靠這個隔離,不會互相干擾 |
-| `.dockerignore` 白名單 | build context 傳 daemon 越小越快,跨 phase 共用根目錄時必設 |
-| `docker compose` `build.context` | 設成 repo root 才能讀 sibling phase,但要配合 dockerignore |
+- **減脂大師 (Multi-stage Build)**：這是一個將工廠（編譯環境）與產品（執行環境）分離的藝術。讓帶有笨重編譯器的 Builder 階段完成工作後退場，只留下純粹的執行檔與輕量級的 Runtime 環境，省下數 GB 的寶貴空間。
+- **PID 1 的傳承 (`exec "$@"` )**：Docker 容器的生殺大權 (SIGTERM 訊號) 永遠只會傳給 PID 1。如果不使用 `exec` 將 Shell 的軀殼替換為真正的 ROS Process，你的程式將永遠無法「優雅關機」。
+- **拆除網路的高牆 (`network_mode: host`)**：在不需要實作 Discovery Server 的情況下，這是讓 DDS 的 Multicast 封包順暢通行的最快解法。它讓容器直接借用宿主機的網卡，代價是失去了一部份的網路隔離性。
+- **記憶體的橋樑 (`ipc: shareable`)**：FastDDS 在同主機通訊時會聰明地嘗試使用共享記憶體 (SHM) 以達到極速傳輸。但容器預設是隔離 IPC Namespace 的，我們必須明確宣告 `shareable`，這條捷徑才能通車。
+- **實體機上的平行宇宙 (`ROS_DOMAIN_ID`)**：當我們開啟 Host Network 模式後，所有的 ROS 系統都在同一個大廳裡。設定不同的 Domain ID，就像是為他們分配不同的加密頻道，防止不同專案之間的 Topic 互相干擾。
+- **瘦身的第一道防線 (`.dockerignore`)**：如果你的 Docker Build 每次啟動都要卡住五分鐘，那絕對是忘記寫忽略名單。學會用全黑名單 (`*`) 加上精準的白名單 (`!`)，只把必須編譯的檔案傳給 Docker Daemon。
+- **跨目錄的視野 (`build.context`)**：當一個 Repository 內有多個專案需要共用底層介面 (Interfaces) 時，將 Context 設在根目錄是唯一解，但它永遠必須與嚴格的 `.dockerignore` 搭配服用。
 
 ---
 

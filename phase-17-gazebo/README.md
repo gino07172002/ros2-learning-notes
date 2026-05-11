@@ -2,11 +2,11 @@
 
 > 在 WSL 用 **headless Gazebo Classic 11**(沒 GUI)起一個小 world、spawn TurtleBot3,驗證 sensor topics + nav stack 必須的 TF 結構。後續 SLAM/Nav2 章節的 simulator 基礎。
 
-**學完你會**:
-- 寫 SDF world 檔(Gazebo 自己的 XML 格式),不靠任何現成 world
-- 用 `gazebo.launch.py` 在 launch 內啟動 gzserver headless,**避免 gzserver.launch.py 缺 ros_factory plugin 的雷**
-- 用 `spawn_entity.py` 把 TurtleBot3 SDF 放進 world,動態產生 robot
-- 區分 `turtlebot3_description` 的 URDF(沒 gazebo plugin)跟 `turtlebot3_gazebo` 的 SDF(有完整 sensor plugin),**業界踩過很多次的雷**
+**這章你將解鎖的業界技能**：
+- **親手打造物理世界 (SDF World)**：不再依賴別人寫好的模擬環境，你將學會用 Gazebo 專屬的 XML 格式 (SDF)，從零刻劃出包含陽光、地板與圍牆的客製化測試場地。
+- **無頭模式 (Headless) 穩定啟動**：精準避開新手最常踩的 `gzserver.launch.py` 缺乏 `ros_factory` 插件的世紀大雷，學會用正確的方式在背景啟動 Gazebo 伺服器，省下被 GUI 卡死的寶貴時間與運算資源。
+- **動態召喚機器人 (`spawn_entity`)**：學會如何在世界已經運轉的狀態下，透過指令行或 Python 腳本，隨時將一台設定好的機器人動態「生成 (Spawn)」到指定的 X/Y/Z 座標上。
+- **破解 URDF 與 SDF 的混淆迷宮**：徹底釐清為什麼 `turtlebot3_description` 裡的 URDF 只有空殼（沒有感測器數據），而 `turtlebot3_gazebo` 裡的 SDF 卻能發送光達資料。這是一個讓無數業界新手卡關超過三天的巨大盲點。
 
 **前置**:
 - [Phase 15 URDF](../phase-15-urdf/) — 機器人描述檔基礎
@@ -26,9 +26,9 @@
 ## 🤔 為什麼這章重要
 
 **所有後面 Track A(SLAM、Nav2)章節都需要一個 simulator**。
-業界做法:simulator(Gazebo)≈ 開發環境的「假機器人」。
-- **建圖、調 cost map、debug planner 全部在 simulator 跑**——上實機只是最後一哩
-- Gazebo Classic 雖然 EOL(2025),但 **Humble 預設仍是它,不是新版 Ignition**
+**業界的真實開發日常：Simulator (Gazebo) 就是工程師的「虛擬實驗室」。**
+- **模擬器是開發的 90%，實機測試只是最後一哩路**：當你在開發 SLAM 建圖、微調 Costmap (代價地圖) 參數，或是 Debug 為什麼路徑規劃器 (Planner) 總是撞牆時，絕對不能拿造價百萬的真實機器人來不斷撞擊測試。所有的前期驗證，全部都在 Simulator 中以 10 倍速的迭代效率安全完成。
+- **認清版本現實 (Gazebo Classic vs. Ignition/Harmonic)**：雖然 Gazebo Classic 即將在 2025 年迎來生命週期的終點 (EOL)，但殘酷的現實是，目前工業界最穩定且佔有率極高的 ROS 2 Humble，其預設綁定的物理引擎仍然是 Gazebo Classic 11。所以，搞懂它的脾氣，是你不可逃避的必修課。
 
 這章主要解掉幾個 ROS+Gazebo 整合的常見雷,讓你後面 launch SLAM/Nav2 的時候不用每次重踩。
 
@@ -349,14 +349,12 @@ parameters=[{'use_sim_time': True}]
 
 ## 🎯 學到的關鍵概念
 
-| 概念 | 一句話 |
-|------|------|
-| `gazebo.launch.py` vs `gzserver.launch.py` | 前者帶 ros_factory,spawn_entity 才能用 |
-| URDF vs SDF | URDF 純結構;SDF 帶 ros gazebo plugin |
-| `spawn_entity.py -file` vs `-topic` | file 直接讀 SDF;topic 從 robot_description 拉 |
-| `gui:=false` | 強制 headless,WSL 無 GPU 時必設 |
-| `use_sim_time: True` | 所有 node 跟 Gazebo 同步 /clock,否則 tf 全爛 |
-| `turtlebot3_description/urdf/*` 不含 plugin | 用它 spawn 沒 sensor,要用 turtlebot3_gazebo 的 SDF |
+- **啟動腳本的抉擇 (`gazebo.launch.py` vs `gzserver.launch.py`)**：永遠記得使用前者。因為後者閹割了 `ros_factory` 插件，會導致你的 `spawn_entity` 指令永遠等不到服務上線而卡死。
+- **URDF 與 SDF 的愛恨情仇**：URDF 負責向 ROS 系統報告「我有這些骨架」；而 SDF 則是負責告訴 Gazebo「我的骨架上有這些會受重力影響的鐵塊，以及會發射雷射光的感測器插件」。
+- **生成方式的差異 (`-file` vs `-topic`)**：使用 `-file` 可以直接把強大的 SDF 檔案塞進 Gazebo；而使用 `-topic` 則只能拉取被轉譯過的 URDF 空殼。這決定了你的機器人到底是活的還是死的。
+- **效能救星 (`gui:=false`)**：在沒有獨立顯卡的 WSL 或 Docker 環境中，這是保命符。強制關閉沉重的 3D 渲染視窗，讓運算資源全數投入核心的物理模擬。
+- **時間的相對論 (`use_sim_time: True`)**：當你開啟了 Gazebo，整個 ROS 世界的時間就必須以 Gazebo 發布的 `/clock` 為準。如果有任何一個 Node 忘了加這個設定而繼續使用真實世界的時間，那 TF 樹的時間戳記就會徹底錯亂，演算法全盤崩潰。
+- **模型來源的陷阱 (`turtlebot3_description` 不含 Plugin)**：千萬不要拿這個資料夾裡的檔案去 Spawn 機器人，你會得到一台沒有感測器、沒有動力的植物車。實體模擬必須使用 `turtlebot3_gazebo` 目錄下的 SDF。
 
 ---
 

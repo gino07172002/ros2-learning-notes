@@ -2,7 +2,11 @@
 
 > Part 6 第一章。把 ROS 2 通訊從「能動」變「動得對」。
 
-**學完你會**：🌟 理解 ROS 2 五大 QoS policy、辨識 QoS 不匹配的徵兆、選對 publisher/subscriber QoS、看懂 console 警告、知道何時用 transient_local 做「latched」。
+**這章你將解鎖的業界 DDS 網路技能**：
+- **掌握通訊的五大維度 (QoS Policies)**：從 ROS 1 到 ROS 2 最核心的轉變，就是學會控制封包的「可靠性 (Reliability)」、「耐久性 (Durability)」、「歷史紀錄 (History)」、「傳輸期限 (Deadline)」與「活躍狀態 (Liveliness)」。
+- **終結「幽靈節點」的夢魘**：看穿那些「節點活著，Topic 存在，卻連一筆資料都收不到」的靈異現象。學會如何從 Console 的警告訊息中，精準抓出 QoS 不匹配 (Incompatible QoS) 的病因。
+- **針對場景量身打造通訊策略**：學會不再盲目使用預設值。針對控制指令 (Cmd_vel)、雷射點雲 (Lidar)、靜態地圖 (Map)，精確地配置符合業界標準的 QoS 參數組合。
+- **掌握歷史重現的魔法 (Transient Local)**：深刻理解為什麼 `/robot_description` 與 `/map` 這些只發佈一次的訊息，能讓晚加入的 RViz 瞬間讀取到歷史紀錄。
 
 **前置準備**：[Phase 02 設計哲學](../phase-02-communication-concepts/) — 知道 ROS 2 = DDS 的觀念。
 
@@ -44,10 +48,10 @@ Best Effort (UDP-like)：
   訊息掉了 = 沒了。但延遲低、CPU 省
 ```
 
-**業界選擇**：
-- 控制指令（cmd_vel）：Reliable
-- 感測器資料（雷射、影像）：Best Effort
-- log（rosout）：Reliable
+**業界的血淚經驗談（Reliability 怎麼選？）**：
+- **致命的控制指令 (`cmd_vel`, Action Goal)**：絕對必須使用 `Reliable`。當你下達煞車指令時，寧可封包因為網路延遲而慢了幾毫秒抵達，也絕對不能允許它在空中遺失，導致機器人撞牆。
+- **高頻的感測器巨獸 (雷射點雲, 高解析度影像)**：強烈建議使用 `Best Effort`。這類資料每秒鐘發送數十甚至數百次。如果為了重傳一個遺失的影像幀而卡住後續的即時畫面，會導致感知系統計算出完全過時的結果。丟失一兩幀無所謂，拿到「最新」的畫面才是最重要的。
+- **系統的黑盒子 (`rosout`, TF)**：通常設定為 `Reliable`。Debug 日誌與座標轉換紀錄是工程師除錯的命脈，如果因為網路擁塞而漏失了關鍵的錯誤訊息，將會對事後咎責帶來毀滅性的打擊。
 
 ### 2. Durability：耐久性
 
@@ -61,10 +65,10 @@ Transient Local（latched）：
   晚加入的 subscriber 一連上立刻收到歷史。
 ```
 
-**業界用途**：
-- `/robot_description`：機器人 URDF，**必須是 latched**——RViz 晚啟動也要拿得到
-- `/map`：地圖，latched
-- 一次性發布的「configuration topic」：latched
+**什麼時候該用 Transient Local (Latched)？**
+- **機器人的骨架 (`/robot_description`)**：這個 Topic 通常只在啟動時發佈一次。如果不用 `Transient Local` 將它快取起來，晚一分鐘啟動的 RViz 就會因為收不到模型資料，而在畫面上顯示一堆純白的骨架錯誤。
+- **靜態地圖 (`/map`)**：不管是由 Map Server 讀取的靜態地圖，還是 SLAM 偶爾更新一次的全域地圖。導航節點隨時都可能重新啟動，它必須能在重啟的瞬間，立刻拿到上一秒存在的地圖。
+- **一次性的配置參數 (Configuration Topic)**：某些不常變動但至關重要的系統狀態（例如：目前的工作模式、充電站的絕對座標）。與其讓 Publisher 每秒無意義地重複發送，不如發一次並讓底層 DDS 幫你把這筆資料存起來，等別人需要時自動補發給他。
 
 ---
 
@@ -283,12 +287,12 @@ QoS 是程式碼層面的設定，**改完必須重 build**。改完只重啟程
 
 ## 🎯 學到的關鍵概念
 
-- **5 個 QoS policy**：Reliability / Durability / History / Deadline / Liveliness
-- **Reliability 兼容矩陣**：Reliable Pub 可下接 Best Effort Sub，反過來不行
-- **Transient Local + Reliable** = latched
-- **`SensorDataQoS()`** 是訂閱感測器的標準寫法
-- **`ros2 topic info -v`** debug QoS 必用
-- **「收不到訊息」90% 是 QoS 不匹配**
+- **通訊的五個旋鈕 (QoS Policies)**：我們不再只能選擇「保證送到」或「隨便傳傳」。我們可以透過調整可靠性、耐久度、歷史深度等五個維度，在「CPU/頻寬效能」與「資料完整性」之間取得完美的平衡。
+- **強者可以將就，弱者不能勉強 (相容性法則)**：這是一條鐵則。一個承諾 `Reliable` (保證送達) 的發布者，可以降級去滿足一個只要求 `Best Effort` (盡力就好) 的訂閱者。但反過來，一個只願意 `Best Effort` 的發布者，永遠無法滿足訂閱者 `Reliable` 的苛刻要求。
+- **Latched 的化學公式 (`Transient Local` + `Reliable`)**：這是新手最容易犯的錯。單獨設定耐久度是不夠的，在 DDS 的底層規範中，你必須同時保證這兩者，才能啟動類似 ROS 1 中 `latched=True` 的歷史快取魔法。
+- **感測器的最佳拍檔 (`SensorDataQoS`)**：不要再手寫 Best Effort 加上 Keep Last 5 了。ROS 2 官方早就準備好這個快捷設定，所有頻寬怪獸（如光達、相機）都應該無腦套用這組參數。
+- **終端機裡的照妖鏡 (`ros2 topic info -v`)**：這是你遇到網路靈異事件時的第一件武器。它會扒開 Topic 的外衣，讓底層所有節點的 QoS 設定原形畢露。
+- **收不到訊息的元兇**：再強調一次，在排除了網路實體斷線的問題後，ROS 2 系統中「節點活著卻收不到資料」的災情，有 90% 都是因為你在 Publisher 和 Subscriber 之間寫了不相容的 QoS 所導致的。
 
 ---
 

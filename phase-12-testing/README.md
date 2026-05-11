@@ -16,12 +16,12 @@
 
 ## 🤔 為什麼要測試 ROS code
 
-Phase 03–13 你寫了一堆程式，每次都靠「眼睛看 log」驗證。但實務上：
-- code 改一行可能破壞另一個情境（**回歸 bug**）
-- bug 在 production 才被發現代價高
-- 多人協作時別人改你的 code 不知道有沒有踩到底線
+Phase 03–13 你寫了非常多的控制邏輯，而每次你都是靠「手動 `ros2 run` 後，用眼睛看 terminal 的 log 或 RViz 畫面」來驗證功能有沒有壞掉。但在實務上，這種做法是絕對不可行的：
+- **致命的「回歸 bug」(Regression Bug)**：有時候你為了解決 A 情境的 bug，稍微改了一行判斷式，結果卻不小心讓 B 情境完全掛掉。如果沒有自動化測試，你根本不會發現 B 情境已經被你弄壞了。
+- **Production 環境出包的龐大代價**：如果一個邏輯錯誤（例如遇到負值距離時沒有正確煞停）沒有在開發階段被測試抓出來，直到部署到真實的無人車上才發生，那就不只是程式當掉的問題，可能會造成實體的車損甚至嚴重危險。
+- **多人協作的信任危機**：在大團隊中，別的工程師一定會去修改或重構你的程式碼。如果沒有寫好測試，他們根本不敢動你的程式碼，深怕一不小心就踩破了你預設的底線邏輯。
 
-**自動化測試的回報**：每次 `colcon test` 跑 1 秒就告訴你 50 個情境全 pass / 哪個 fail。
+**自動化測試的回報是巨大的**：每次執行 `colcon test`，系統只要花 1 秒鐘就能告訴你 50 個極端情境全部 Pass，或者精準告訴你哪一行邏輯改壞了。
 
 ROS 2 內建支援 gtest（C++）+ pytest（Python）+ launch_testing（多 Node 整合）。Nav2、MoveIt 都有完整測試套件。
 
@@ -91,9 +91,9 @@ TEST(BrakeCalculatorTest, NegativeDistanceStops) {
 ```
 
 **💡 劃重點**：
-- `TEST(SuiteName, CaseName)` 是 gtest 巨集
-- `EXPECT_DOUBLE_EQ` 完全相等、`EXPECT_NEAR` 含誤差
-- **每個 TEST 獨立運作**——一個 fail 不影響其他
+- **Gtest 巨集 `TEST(SuiteName, CaseName)`**：這是 Google Test 框架的起手式。第一個參數是「測試套件名稱（通常對應你要測的 Class）」，第二個參數是「你要測的情境名稱（必須是清晰明瞭的動詞片語）」。
+- **浮點數比對的致命陷阱**：寫測試時千萬別用 `==` 來比對兩個 `double`，因為浮點數在電腦運算中一定會有微小的精度誤差。請養成習慣，要求精確比對時用 `EXPECT_DOUBLE_EQ`，而允許自訂誤差範圍的比對（例如機器人跑到定位容許 1cm 誤差）則必須使用 `EXPECT_NEAR`。
+- **測試必須絕對隔離**：每一個 `TEST` 區塊在執行時都是完全獨立的。A 測試的失敗，絕對不能干擾到 B 測試的執行。這確保了我們可以在一次測試中，清楚看到到底有哪些情境存活、哪些情境陣亡。
 
 完整 6 個測試見 [`test/test_brake_calculator.cpp`](code/my_cpp_pkg/test/test_brake_calculator.cpp)。
 
@@ -140,10 +140,10 @@ TEST_F(RclcppTestFixture, PubSubRoundtrip) {
 ```
 
 **💡 劃重點**：
-- 用 `TEST_F`（不是 `TEST`）配合 fixture class
-- `SetUp()` / `TearDown()` 每個 test 都跑一次
-- 必須等 DDS discovery（500ms）才能保證訊息送達
-- `spin_some()` 比 `spin()` 好——可以設 timeout
+- **為何改用 `TEST_F` 而不是 `TEST`？**：當你的測試需要共用複雜的初始化流程（例如啟動 ROS 節點、宣告 Publisher）時，我們不該在每個 `TEST` 裡都複製貼上一次。透過繼承 `::testing::Test` 建立 Fixture Class，然後使用 `TEST_F`，就能讓程式碼保持乾淨。
+- **嚴謹的 `SetUp()` 與 `TearDown()`**：這兩個函數會在你「每一個」`TEST_F` 執行前後自動跑一次。確保每個測試情境在開始前，ROS 2 系統都被重置成乾淨狀態，結束後也能優雅地 `shutdown`，避免記憶體洩漏或節點名稱衝突。
+- **DDS Discovery 的時間差**：這是整合測試中最常踩的坑！你剛建立完 Publisher 和 Subscriber 時，底層的 DDS 網路還沒完全對接。如果你立刻 `publish()`，訊息就會直接掉進黑洞。因此，必須給予 500ms 左右的等待時間，確保雙方已經互相發現 (Discovery) 後再傳送訊息。
+- **彈性的 `spin_some()` 取代死板的 `spin()`**：如果在測試中直接用 `rclcpp::spin()`，程式就會永久卡死。所以我們用 `SingleThreadedExecutor::spin_some()` 搭配自訂的 Timeout 迴圈機制，如果超過兩秒都沒收到訊息，就認定測試失敗並跳出，防止整個測試流水線被卡住。
 
 完整 2 個測試見 [`test/test_with_rclcpp.cpp`](code/my_cpp_pkg/test/test_with_rclcpp.cpp)。
 
@@ -310,12 +310,12 @@ colcon test-result --test-result-base build/phase12_pkg/test_results
 
 ## 🎯 學到的關鍵概念
 
-- **抽純邏輯**：把可測試的邏輯抽成獨立 class（不依賴 rclcpp）
-- **gtest 巨集**：`TEST` / `TEST_F` / `EXPECT_*` / `ASSERT_*`
-- **rclcpp 測試需要 fixture**：SetUp/TearDown 管 init/shutdown
-- **DDS discovery 等 500ms+**：別在 publish 前忘了 sleep
-- **`colcon build` + `colcon test` + `colcon test-result`** 三步驟
-- **`if(BUILD_TESTING)`** 是 ROS 標準寫法
+- **設計模式的轉變（抽離純邏輯）**：最好的 ROS 測試，就是「不要測 ROS 本身」。請把你的演算法或數學計算抽離成完全不依賴 `rclcpp` 的獨立 Class，這樣單元測試跑起來才會又快又穩定。
+- **Gtest 的武器庫**：熟練運用 `TEST` (獨立測試)、`TEST_F` (有狀態測試)、`EXPECT_*` (發生錯誤但繼續執行) 以及 `ASSERT_*` (發生錯誤就立刻中斷當前測試) 等核心巨集。
+- **Fixture 的重要性**：在涉及 ROS 2 API 的整合測試中，絕對要用 `SetUp/TearDown` 來嚴格管控 `rclcpp::init` 和 `rclcpp::shutdown` 的生命週期。
+- **不可忽略的網路延遲 (DDS Discovery)**：任何發布與訂閱的整合測試，在建立物件連線後都必須給予適當的 `sleep` 緩衝時間，否則必定會遇到靈異的掉訊息問題。
+- **完整的測試流水線三部曲**：編譯 (`colcon build`) → 執行測試 (`colcon test`) → 視覺化或解析報告 (`colcon test-result`)。
+- **建構系統的防呆設計 (`BUILD_TESTING`)**：永遠記得把測試專用的 Target 包在 CMake 的 `if(BUILD_TESTING)` 區塊裡，這不但是 ROS 官方的標準規範，更能為未來的正式部署與 CI 節省可觀的編譯時間。
 
 ---
 

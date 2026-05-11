@@ -2,7 +2,7 @@
 
 > 用 `champ` 通用四足模擬器跑 ROS 2 stack。Boston Dynamics Spot、Unitree Go 都用同樣的 ros2_control + Nav2 模式。
 
-**狀態**:⬜ 骨架(等使用者開始實做)
+**狀態**:🟡 進行中 — 01 已寫文字草稿(⏸,等實際驗證)
 
 ---
 
@@ -33,7 +33,7 @@
 ```
 quadruped/
 ├── README.md                        ← 你正在讀
-├── 01-champ-simulation/             ← champ + Gazebo 模擬通用四足
+├── 01-champ-simulation/             ⏸ 文字草稿(已寫)
 ├── 02-gait-control/                 ← Trotting / Walking 步態切換
 └── 03-nav2-on-quadruped/            ← Nav2 套用在四足上(cmd_vel 介面通用)
 ```

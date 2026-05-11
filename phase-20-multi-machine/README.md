@@ -2,11 +2,11 @@
 
 > 這章處理兩個部署時很常見的問題:**同一台 host 上有多個 ROS 系統時,怎麼避免彼此干擾**?以及**網路擋 multicast 時,不同機器上的 node 怎麼找到彼此**?
 
-**學完你會**:
-- 用 `ROS_DOMAIN_ID` 在同一台 host 隔離多個 ROS 2 系統,而且**完全不用改 code**
-- 看懂 ROS 2 discovery 為什麼依賴 multicast,以及哪些網路環境會擋它
-- 用 **Fast DDS Discovery Server** 取代 multicast,讓 discovery 改走 server-client 形式的 unicast
-- 用 Docker Compose 模擬「多台機器」做端到端驗證,不需要真的準備兩台電腦
+**這章你將解鎖的業界多機部署技能**：
+- **零程式碼的完美隔離 (`ROS_DOMAIN_ID`)**：學會如何僅靠一行環境變數，就在同一台實體電腦上切出好幾個互不干擾的平行宇宙。不管是平行跑測試，還是同時操控兩台機器人，都不用擔心資料互相污染。
+- **看透 Multicast (群播) 的原罪**：深入理解為什麼 ROS 2 預設的自動發現機制 (Discovery) 總是喜歡在公司或學校的 WiFi 下失蹤。知道它是如何運作的，你才知道網管的防火牆在哪裡擋下了它。
+- **架設企業級 Discovery Server**：直接拋棄不可靠的 Multicast！學會設定 Fast DDS Discovery Server，將發現機制改為類似傳統 Client-Server 的 Unicast (單播) 架構，徹底解決跨網段、跨 VPN 無法通訊的痛點。
+- **Docker Compose 端到端驗證**：不用真的花錢買好幾台電腦，我們將利用 Docker 虛擬出多台機器的網路環境，親手驗證封包是不是真的能穿透限制抵達終點。
 
 **前置**:
 - [Phase 24 Docker](../phase-24-docker/) — 這章重用 Docker 來做可控的「假多機」環境
@@ -29,11 +29,11 @@ ROS 2 在自己的電腦上跑起來通常很單純,但一到部署、測試或�
 
 1. **同台機器跑多個 ROS 系統**:例如筆電同時 debug 兩台機器人,或 CI 在同一台 host 平行跑多組測試。沒有 `ROS_DOMAIN_ID` 隔離時,所有節點都看得到彼此,訊息會互相污染,測試也會互相干擾。
 
-2. **Multicast 被擋住的網路**:ROS 2 預設靠 UDP multicast 做 discovery,但 multicast 在很多環境都不可靠:
-   - **企業 / 校園 WiFi**:大多禁 multicast 防 mDNS / Bonjour
-   - **AWS / GCP VPC**:預設不轉發 multicast
-   - **Docker bridge network**:跨 container multicast 不可靠
-   - **多個 VLAN**:預設不跨 VLAN 轉發
+2. **Multicast (群播) 被無情封殺的網路環境**：ROS 2 預設的 Discovery 機制依賴 UDP Multicast（就像是在大禮堂裡拿著大聲公廣播「有人需要聽雷射光達的資料嗎？」）。但在嚴肅的工業或商業網路中，這種行為通常會被直接封鎖：
+   - **企業或校園的 Enterprise WiFi**：為了防止廣播風暴或是 mDNS / Bonjour 等設備耗盡無線頻寬，網管通常會把無線網路的 Multicast 封包全部丟棄。
+   - **雲端機房 (AWS / GCP VPC)**：在虛擬私有雲中，路由器預設絕對不會轉發 Multicast 封包。所以你想在雲端跑多機 ROS，預設是行不通的。
+   - **Docker 的虛擬網橋 (Bridge Network)**：在多個 Container 之間，預設的網路設定往往無法穩定轉發 Multicast 封包，導致節點互相看不見。
+   - **跨網段的 VLAN**：如果機器人在 `192.168.1.x`，而你的監控電腦在 `192.168.2.x`，Multicast 封包預設是過不了路由器那關的。
 
 好消息是,這兩個問題通常都不用改 ROS code。你只需要掌握幾個環境變數,再加上一個 discovery server 工具。
 
@@ -389,18 +389,16 @@ ros2 topic list --no-daemon           # 第一次跑加 --no-daemon 避免 cache
 
 ## 🎯 學到的關鍵概念
 
-| 概念 | 一句話 |
-|------|------|
-| `ROS_DOMAIN_ID` | DDS 的隔離邊界,不同 domain 的 ROS graph 彼此看不到 |
-| Discovery Server | 用 server-client discovery 取代 multicast,適合 multicast 被擋的網路 |
-| Super-Client | 會主動接收 server 推送 endpoints 的 client,Humble 設 `ROS_DISCOVERY_SERVER` 後會自動啟用 |
-| `RMW_IMPLEMENTATION` | Discovery Server 需要 Fast DDS,Cyclone DDS 不支援這個功能 |
-| Docker Compose 當「假多機」 | 比真的準備兩台電腦更可控,適合教學、debug 和 CI |
+- **平行宇宙的鑰匙 (`ROS_DOMAIN_ID`)**：這是一個介於 0 到 101 之間的整數。只要數字不同，DDS 就會在底層使用完全不同的 UDP Port，從物理層面實現不同 ROS 系統的完美隔離。
+- **無畏防火牆的伺服器 (Discovery Server)**：將預設的「到處大吼大叫 (Multicast)」改為「先向櫃檯報到 (Unicast)」。這是企業級部署解決網路不通最有效的一招。
+- **自動進化的客戶端 (Super-Client)**：在 ROS 2 Humble 中，只要你設定了 `ROS_DISCOVERY_SERVER`，Fast DDS 就會自動開啟這項功能，主動從伺服器接收整個網路的拓樸結構。
+- **底層實作的抉擇 (`RMW_IMPLEMENTATION`)**：務必記住，Discovery Server 這是 `Fast DDS` 特有的武功。如果你底層用的是 `Cyclone DDS`，設定這個變數是完全沒有用的。
+- **虛擬驗證實驗室 (Docker Compose)**：用最少的成本（在單機上）模擬最複雜的（多機）網路部署狀況，這是每個資深工程師都在用的 Debug 手段。
 
-**業界使用場景**:
-- 工廠機器人接公司 WiFi(擋 multicast)→ 中央伺服器跑 Discovery Server
-- AWS 上跑分散式 ROS 系統 → ECS task 各自設 `ROS_DISCOVERY_SERVER` 指向 ELB 後的 broker
-- CI 平行跑多個機器人測試 → 每個 job 自己 random 一個 `ROS_DOMAIN_ID`
+**業界量產時的真實應用場景**：
+- **智慧工廠的 AGV 車隊**：車子連接著訊號不穩定的廠區 WiFi，無法依賴 Multicast。此時會在機房的中控電腦上架設 Discovery Server，所有車輛一開機就向這台伺服器報到。
+- **雲端運算 (AWS/GCP)**：在雲端分散式處理龐大的點雲數據時，每個運算節點 (ECS Task) 都會設定 `ROS_DISCOVERY_SERVER` 指向 Load Balancer 後方的 Broker。
+- **自動化測試流水線 (CI/CD)**：為了讓 10 組自動化測試能同時在一台伺服器上平行跑，CI 腳本會為每一個 Job 分配一個隨機的 `ROS_DOMAIN_ID`，防止它們的 Topic 互相打架。
 
 ---
 

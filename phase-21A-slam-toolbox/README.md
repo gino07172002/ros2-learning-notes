@@ -2,11 +2,11 @@
 
 > 用 **slam_toolbox** online async 模式即時建圖。吃 Phase 17 的 Gazebo + TurtleBot3 提供 `/scan` 跟 `/odom`,持續產出 occupancy grid `/map` 與 `map → odom` TF。
 
-**學完你會**:
-- 寫 `slam_toolbox` 的 YAML 設定(odom_frame、map_frame、solver、map_update_interval)
-- 在 launch 內延後啟動 SLAM,等 simulator 起來再吃資料
-- 看穿 **message filter queue full / discarding** 這個 WSL 必踩的 SLAM 雷
-- 區分 mapping / localization / lifelong 模式
+**這章你將解鎖的業界 SLAM 技能**：
+- **掌控 SLAM 的心臟參數**：學會撰寫 `slam_toolbox` 的巨型 YAML 設定檔。搞懂 `odom_frame`、`map_frame` 的意義，以及如何微調 `solver` 和 `map_update_interval` 來平衡建圖品質與 CPU 負載。
+- **精準的時序控制 (TimerAction)**：在 Launch 檔中實作延遲啟動機制，確保物理模擬器與 TF 樹都已經穩定發送資料後，才讓 SLAM 節點安全上線，避免開機瞬間的崩潰。
+- **破解 WSL 效能魔咒**：一眼看穿為什麼終端機瘋狂洗版 **message filter queue full / discarding** 這個新手必踩的世紀大雷，並理解為什麼業界的 SLAM 演算法總是需要依賴 GPU 加速。
+- **四大模式的戰略選擇**：徹底搞懂純建圖 (Mapping)、純定位 (Localization) 以及長效動態更新 (Lifelong) 模式的差異，讓你知道在不同工業場景下該派誰上場。
 
 **前置**:
 - [Phase 17 Gazebo](../phase-17-gazebo/) — 提供 simulator 跟 turtlebot3
@@ -348,15 +348,13 @@ Message Filter dropping message: ... 'the timestamp on the message is earlier th
 
 ## 🎯 學到的關鍵概念
 
-| 概念 | 一句話 |
-|------|------|
-| `slam_toolbox` 三模式 | mapping(建)/ localization(已有圖)/ lifelong(動態更新)|
-| `map → odom` TF | slam 不動 odom,只發 map 對 odom 的修正,Nav2 標準 |
-| Ceres solver | graph SLAM 後端,每幀都解優化問題,**WSL 沒 GPU 跑不動** |
-| `use_sim_time: true` | 跟 Gazebo `/clock` 同步,沒設 SLAM 安靜失敗 |
-| `base_frame` 因 robot 而異 | turtlebot3 是 `base_footprint`,別信預設 |
-| TimerAction 啟動順序 | Gazebo → SLAM → cmd_vel,避免 race |
-| WSL GPU 不足是 SLAM 的硬上限 | 教學用雲端 / 實機 Jetson,WSL 用來驗證結構 |
+- **因地制宜的三大模式**：`slam_toolbox` 不只是一個建圖工具。它包含了初次探勘用的 `mapping`、日常巡邏用的 `localization`，以及能適應賣場貨架變動的 `lifelong` 模式。
+- **優雅的定位修正 (`map → odom` TF)**：這是最容易誤解的架構設計。SLAM 絕對不會去覆蓋或竄改輪子算出來的 Odometry，而是發布一個 `map` 到 `odom` 的 TF 來修正累積的漂移誤差。這是所有現代導航堆疊 (包含 Nav2) 運作的鐵則。
+- **算力的吞噬者 (Ceres Solver)**：作為 Graph SLAM 的後端優化引擎，它會試圖把每一幀雷射掃描與歷史地圖對齊並解出最小平方法。這也是為什麼在沒有獨立顯卡的 WSL 環境中，它會算到崩潰。
+- **時間戳記的殺手 (`use_sim_time: true`)**：這幾乎是所有 Gazebo 模擬的必備防呆設定。只要忘記加上這一行，SLAM 就會因為收到「未來時間」或「過去時間」的點雲資料而靜默罷工。
+- **不要迷信預設值 (`base_frame`)**：別人教學裡的 `base_link` 未必適用於你的機器人。像是 TurtleBot3 的根節點叫做 `base_footprint`。隨時用 `view_frames` 確認 TF 樹才是硬道理。
+- **優雅的啟動編排 (TimerAction)**：學會讓系統「排隊開機」。Gazebo 先起、SLAM 等 5 秒、馬達指令等 15 秒，徹底消滅 Race Condition 帶來的偶發性啟動失敗。
+- **認清硬體極限**：WSL 的 GPU 不足是 SLAM 開發的硬上限。實務上，我們在 WSL 驗證架構與資料流，然後把真正吃重運算的建圖工作交給雲端機器或實機上的 Nvidia Jetson。
 
 ---
 

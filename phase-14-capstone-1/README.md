@@ -4,12 +4,12 @@
 
 **這個 capstone 證明你會做什麼**：
 
-- ✅ 設計自己的 ROS 訊息協議（Phase 08）
-- ✅ 寫 LifecycleNode 受控啟動/停止（Phase 09）
-- ✅ 用 launch event_handler 自動化生命週期（Phase 11）
-- ✅ 抽純邏輯做單元測試（Phase 12）
-- ✅ 寫 Action Server 處理 cancel/abort/succeed（Phase 13）
-- ✅ 一個 Node 同時擔任 6 種角色（Pub × 2、Sub、Service、Action、Lifecycle）
+- **✅ 從零設計領域專屬的 ROS 訊息協議 (Phase 08)**：你不再只是拿別人的標準型別來套用，而是親手制定了系統專屬的 `.msg`、`.srv` 與 `.action` 介面，這是系統架構師的基本功。
+- **✅ 實作受控的 LifecycleNode 狀態機 (Phase 09)**：放棄了陽春的普通 Node，改用工業級別的 Lifecycle 節點，精準掌控了資源初始化 (`configure`) 與邏輯啟動 (`activate`) 的生命週期。
+- **✅ 用 Launch Event Handler 實現自動化部署 (Phase 11)**：利用事件驅動的特性，讓你的啟動腳本充滿智慧——「等節點的 Process 真正活起來後，再自動幫它切換 Activate 狀態」，完全不需要人工手動介入。
+- **✅ 抽離純邏輯並撰寫嚴謹的單元測試 (Phase 12)**：展現了優良的軟體工程素養，把數學計算邏輯與 ROS 底層通訊完美解耦，並用 Google Test 覆蓋了所有的極端邊角情境。
+- **✅ 實戰最高難度的 Action Server (Phase 13)**：不只會寫「順利跑完」的理想任務，還能優雅地處理「中途被使用者強制取消 (Cancel)」或「發生系統意外而果斷放棄 (Abort)」的複雜非同步流程。
+- **✅ 六神合一的全能節點**：在同一個 Node 裡面，安全且流暢地管理 6 種不同的 ROS 通訊角色，並且完美的處理了執行緒間的同步問題。
 
 **對應業界職位的能力**：「能獨立設計+實作一個 ROS 子系統」。
 
@@ -291,10 +291,10 @@ ros2 lifecycle set /approach_controller activate
 
 完成 Capstone 1 的下一步：
 
-1. **加 Composition**（Phase 09 後半）：把 ApproachController 改成 ComposableNode，跟 fake_lidar 塞同一個 process
-2. **launch_testing**：寫 .test.py 自動驗證「launch 後 5 秒，approach_controller 狀態 = active」
-3. **CI 整合**：寫 GitHub Actions，push 觸發 colcon build + test，PR 自動驗證
-4. **Real robot**：把 ros_humble TurtleBot3 接上去，把 fake_lidar 換成真光達
+1. **挑戰極致效能 (Composition)**：回顧 Phase 09，試著把 `ApproachController` 改寫成 ComposableNode，並跟模擬光達 (fake_lidar) 的程式打包進同一個 Process 裡，享受 Zero-copy 的極速通訊。
+2. **系統級自動化測試 (launch_testing)**：撰寫一個 `.test.py` 整合測試腳本，讓系統能在背景自動跑起來，並自動驗證「啟動後 5 秒內，`approach_controller` 的狀態機是否確實正確切換到了 active」。
+3. **建立專業的持續整合 (CI) 流水線**：把這包程式碼推上 GitHub，並撰寫 GitHub Actions 設定檔。讓未來每一次的 Push 或 PR，雲端伺服器都會自動幫你跑 `colcon build` 與 `colcon test`，確保專案永遠保持在可運作的完美狀態。
+4. **真槍實彈上機測試 (Real Robot)**：準備一台裝了 ROS 2 Humble 的 TurtleBot3 或任何實體移動平台。把假的光達程式拿掉，接上真正的雷射測距儀，體驗軟體走入現實世界的感動。
 
 每個都是真實業界做的事。
 

@@ -2,7 +2,10 @@
 
 > 把這個 repo 變成「**push code 自動跑測試 + 建 image**」的工作流。
 
-**學完你會**：🌟 寫 GitHub Actions workflow 在容器裡跑 colcon build + colcon test、設多 linter matrix、build Docker image 並推到 GHCR。
+**這章你將解鎖的業界 CI/CD 技能**：
+- **打造全自動化流水線 (GitHub Actions)**：學會撰寫自動化腳本，讓 GitHub 在你每次 Push 程式碼時，自動拉起乾淨的 Ubuntu 容器，並在裡面執行 `colcon build` 與 `colcon test`，徹底消滅「只有在你的電腦上會動」的窘境。
+- **矩陣式程式碼體檢 (Linter Matrix)**：配置平行運算的測試矩陣，讓系統同時使用 `cpplint`、`flake8` 等多種工具對你的 C++ 與 Python 程式碼進行嚴格的風格與品質審查。
+- **自動產出交付物 (GHCR)**：建立自動打包流程，讓通過測試的程式碼自動被封裝成 Docker Image，並推送到 GitHub Container Registry (GHCR)，隨時準備好讓終端設備下載更新。
 
 **前置準備**：
 - [Phase 12 測試](../phase-12-testing/) — CI 測試的對象
@@ -16,26 +19,16 @@
 
 ## 🤔 為什麼 CI/CD 重要
 
-寫了 Phase 12 測試卻沒 CI = **沒人會跑那些測試**。
+寫了 Phase 12 測試卻沒 CI，就等於**你寫的測試根本沒人會跑**。人類總有忘記下測試指令的時候。
 
-業界 ROS 專案 push code 流程：
+在專業的 ROS 開源專案 (如 Nav2、MoveIt、ros2_control) 或商業公司中，**你的 PR 如果沒有通過 CI，資深工程師連看都不會看一眼**。業界標準的自動化流程如下：
 
-```
-git push
-   │
-   ▼
-GitHub Actions trigger
-   │
-   ├─ Job 1: lint (cpplint, flake8, xmllint)
-   ├─ Job 2: build + colcon test
-   └─ Job 3: build Docker image
-   │
-   ▼
-全部 pass → PR 顯示 ✅，可以 merge
-任一 fail → PR 顯示 ❌，merge 鎖住
-```
-
-**Nav2、MoveIt、ros2_control 都這樣做**——你的 PR 沒過 CI 連看的人都沒有。
+1. **觸發器 (Trigger)**：當開發者將程式碼 Push 到伺服器，或發起 Pull Request (PR) 時，GitHub 會自動喚醒雲端伺服器。
+2. **平行審查 (Parallel Jobs)**：伺服器會同時分派三個任務：
+   - **Job 1 (靜態分析)**：檢查程式碼有沒有排版錯誤、有沒有宣告未使用的變數。
+   - **Job 2 (編譯與單元測試)**：實際編譯整個 Workspace，並執行所有的 GTest 與 PyTest。
+   - **Job 3 (打包建置)**：驗證 Dockerfile 是否寫錯，能否成功建置出 Image。
+3. **生死門 (Status Check)**：只有當這三個 Job 全數亮起綠燈 (✅) 時，Merge 按鈕才會解鎖。只要有任何一個環節失敗 (❌)，程式碼就會被無情地擋在主分支門外。
 
 ---
 
@@ -253,13 +246,13 @@ GitHub free tier 給 ubuntu-22.04 runner 很快。**不要為了「省」自己�
 
 ## 🎯 學到的關鍵概念
 
-- **GitHub Actions 三大概念**：`on` 觸發 + `jobs` 工作 + `steps` 步驟
-- **官方 osrf/ros image** 省去裝 ROS 2 的麻煩
-- **`rosdep install`** 自動處理 package.xml 內的依賴
-- **`colcon test-result`** 才會讓 CI fail
-- **多階段 Docker build** 縮減 production image
-- **GHCR (ghcr.io)** 免費的 GitHub container registry
-- **Matrix strategy** 同時跑多個 linter
+- **腳本架構的三位一體**：GitHub Actions 的 YAML 檔永遠由三個元素組成：定義何時跑的 `on` (觸發條件)、定義做什麼任務的 `jobs` (平行工作區)，以及定義具體指令的 `steps` (執行步驟)。
+- **站在巨人的肩膀上 (`osrf/ros` Image)**：我們不需要在腳本裡痛苦地寫 `apt-get install ros-humble-...`，直接在 CI 指定使用官方維護的 Docker Image 作為底層容器，省下大把的編譯環境準備時間。
+- **自動依賴解析 (`rosdep install`)**：這是 CI 腳本中最不可或缺的一行。它會去讀取你所有 `package.xml` 裡的 `<depend>` 標籤，然後自動幫你 `apt install` 缺少的函式庫。
+- **測試框架的隱藏陷阱 (`colcon test-result`)**：千萬記住，`colcon test` 就算遇到報錯，它的 Exit Code 依然會是 `0` (成功)。你必須強制加上 `colcon test-result --verbose`，它才會在讀到錯誤報告時吐出非 `0` 值，讓 CI 正確亮紅燈。
+- **為頻寬著想 (Multi-stage Build)**：在 CI 打包映像檔時，透過多階段建置將高達幾 GB 的編譯工具鍊拋棄，只把乾淨的二進位檔案推上雲端，這對實機部署的速度有決定性的影響。
+- **開源界的寶庫 (GHCR)**：不再依賴限制多多的 Docker Hub。GitHub 提供的 GHCR 讓你能免費地將 Image 與原始碼儲存在同一個生態系裡。
+- **平行加速的魔法 (Matrix Strategy)**：要同時測 Python、C++ 與 XML 的風格，不用寫三個 Job。透過 Matrix 設定，GitHub 會自動幫你開好幾台機器，同時執行所有的檢查工具，大幅縮減 CI 執行時間。
 
 ---
 

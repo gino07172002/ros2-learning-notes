@@ -2,7 +2,7 @@
 
 > 從 Phase 03 訂 LiDAR 擴到「**訂相機 → 偵測物件 → 處理 3D 點雲**」的 production-ready 視覺管線。
 
-**狀態**:🟡 進行中 — 01 / 02 / 04 已寫文字草稿(⏸,等實際驗證);03 留 placeholder
+**狀態**:🟡 進行中 — 01 / 02 / 03 / 04 已寫文字草稿(⏸,等實際驗證)
 
 ---
 
@@ -35,7 +35,7 @@ perception/
 ├── README.md                       ← 你正在讀
 ├── 01-camera-cv-bridge/            ⏸ 文字草稿(2026-05-05)
 ├── 02-apriltag-localization/       ⏸ 文字草稿(2026-05-05)
-├── 03-yolo-ros2/                   ⬜ 未開始(GPU 環境較吃資源,待 gino 本機跑)
+├── 03-yolo-ros2/                   ⏸ 文字草稿(已寫)
 └── 04-pcl-pointcloud/              ⏸ 文字草稿(2026-05-05)
 ```
 

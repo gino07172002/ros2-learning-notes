@@ -2,12 +2,12 @@
 
 > **Nav2** 是 ROS 2 的自主導航標準 stack。本章用 `nav2_bringup` 啟動 8 個 lifecycle node(map_server / amcl / controller / planner / smoother / behavior / bt_navigator),載入靜態地圖跑 localization + path planning。
 
-**學完你會**:
-- 認識 Nav2 8 個核心 lifecycle node 的角色與啟動順序
-- 用 `nav2_bringup/bringup_launch.py` 一條指令啟動全套
-- 寫 `nav2_params.yaml` 設定 costmap、planner、controller plugin
-- 用 `ros2 action send_goal /navigate_to_pose` 從 CLI 下導航目標
-- 看穿 `base_link` vs `base_footprint` 這個 turtlebot3 必踩的雷
+**這章你將解鎖的業界 Nav2 技能**：
+- **拆解 Nav2 的八爪魚架構**：徹底搞懂 Nav2 旗下 8 個 Lifecycle Node (如 `map_server`、`amcl`、`planner_server`、`controller_server` 等) 各自扮演的角色，以及它們如何透過 Lifecycle Manager 進行優雅的接力啟動。
+- **一鍵啟動工業級導航堆疊**：不再手動一個個起 Node。學會呼叫官方提供的 `bringup_launch.py`，一鍵拉起包含所有演算法與設定檔的完整導航系統。
+- **掌控 350 行的 YAML 巨獸**：Nav2 的威武在於其高度可調性。你將學會如何撰寫 `nav2_params.yaml`，自由替換底層的 Costmap 範圍、全域路徑規劃器 (Planner) 以及局部軌跡控制器 (Controller) 插件。
+- **Action CLI 終端機遙控**：拋開對 RViz GUI 的依賴，學會直接用 `ros2 action` 敲打指令，把導航目標座標精準地送進 Nav2 核心，並即時監聽反饋資訊 (Feedback)。
+- **破解座標系命名的迷思**：一眼看穿為什麼套用官方預設設定檔常常會失敗，並精準抓出 `base_link` 與 `base_footprint` 這些名稱差異在實機部署時造成的致命打擊。
 
 **前置**:
 - [Phase 17 Gazebo](../phase-17-gazebo/) — simulator
@@ -59,12 +59,12 @@ Nav2 文件裡這些名詞會密集出現,先看完這個表再讀後面就不�
 
 Nav2 是 ROS 2 移動機器人的**事實標準**。會用 Nav2 = 會做掃地機 / AGV / 配送車。
 
-業界 ROS robotics 工程師 80% 工作都在跟 Nav2 打交道:
-- 調 costmap 範圍、解析度、inflation
-- 換 planner(NavfnPlanner / SmacPlanner / Theta*)
-- 換 controller(DWB / RPP / MPC / GracefulMotion)
-- 自訂 BT plugin 加新行為(Phase 23A)
-- 調 amcl 粒子數、init pose
+在工業界，ROS Robotics 工程師有高達 80% 的工作時間都在跟 Nav2 這套系統「鬥智鬥勇」。他們每天的工作日常就是：
+- **調教 Costmap (代價地圖)**：不斷實驗膨脹半徑 (Inflation)、解析度與更新頻率，試圖在「安全不撞牆」與「狹窄走廊順利通行」之間找到完美的平衡點。
+- **抽換 Planner (全域規劃器)**：根據場地大小與障礙物密度，在經典的 `NavfnPlanner`、擅長格子地圖的 `SmacPlanner` 或是能計算非完整車體運動學的 `Theta*` 演算法之間切換。
+- **抽換 Controller (局部控制器)**：為了讓車子轉彎更平滑，工程師會將預設的 DWB 換成純追跡演算法 RPP (`RegulatedPurePursuit`)，甚至引入高階的模型預測控制 (MPC) 來應對高速行駛。
+- **編寫 BT Plugin (行為樹節點)**：當標準的導航行為不敷使用時（例如：需要在抵達目標前 5 公尺發送語音警告），工程師就會運用 Phase 19 學到的 pluginlib，自己寫一個 C++ 行為樹節點掛載進系統。
+- **優化 AMCL 粒子濾波器**：針對不同材質的雷射反光特性，微調粒子的擴散範圍與收斂速度，確保機器人被綁架 (Kidnapped) 時能迅速找回自己在世界中的座標。
 
 ---
 
@@ -374,15 +374,13 @@ ros2 topic pub --once /initialpose geometry_msgs/PoseWithCovarianceStamped \
 
 ## 🎯 學到的關鍵概念
 
-| 概念 | 一句話 |
-|------|------|
-| Nav2 = 8 個 lifecycle node | localization 2 + navigation 6,各組獨立 lifecycle manager |
-| `bringup_launch.py` 是 Nav2 入口 | 一條 launch 把 8 個 node 都帶起來 |
-| `autostart: true` | 讓 lifecycle manager 自動 configure→activate,不用手動 |
-| `robot_base_frame` 因 robot 而異 | turtlebot3 是 `base_footprint`,別信預設 |
-| `/initialpose` 必下 | amcl 啟動不知道車在哪,粒子不收斂 |
-| `bt_navigator` 用 BT.cpp | 規劃失敗時自動 retry / spin / backup,可自訂 BT |
-| WSL GPU 不足 = 結構過、效能不過 | 學習用雲端,實機部署 Jetson |
+- **微服務架構的極致 (8 個 Lifecycle Node)**：Nav2 並不是一個巨大的執行檔，而是由 2 個負責定位 (Localization) 的節點與 6 個負責導航 (Navigation) 的節點共同組成的交響樂團。各自有獨立的 Manager 負責指揮它們的生死循環。
+- **總指揮官 (`bringup_launch.py`)**：這支由官方維護的 Launch 檔是啟動整個 Nav2 系統的標準入口。只要帶對了 YAML 檔與地圖檔，它就能幫你把 8 個節點依序拉起。
+- **全自動點火 (`autostart: true`)**：在無人干預的系統中，這行設定至關重要。它命令 Lifecycle Manager 不要傻傻地停在 Unconfigured 狀態等待指令，而是自動跑完 Configure 與 Activate 進入戰鬥狀態。
+- **別對預設值盲從 (`robot_base_frame`)**：再次強調，不要以為別人的預設值能在你的車上跑。Turtlebot3 的根節點是 `base_footprint`，如果 Nav2 傻傻去找 `base_link`，就會陷入無止盡的 TF Timeout。
+- **定位的第一步 (`/initialpose`)**：AMCL 演算法剛啟動時是個大近視眼，它完全不知道自己在世界座標的哪裡（粒子均勻散佈在全地圖）。你必須透過外部程式或 RViz 給它一個「大概的起始位置」，它的演算法才能開始收斂。
+- **大腦中樞 (`bt_navigator`)**：它使用 BehaviorTree.CPP 引擎來掌控整個導航邏輯。當 Planner 找不到路徑時，它會冷靜地決定要先原地打轉 (Spin) 重新掃描，還是倒車退後 (Backup) 再試一次。
+- **向硬體低頭**：WSL 沒有 GPU，算力就是不足以支撐即時的 AMCL 定位與 Costmap 運算。所以我們在 WSL 驗證架構與 API 正確性，然後把真正的路徑規劃留給雲端伺服器或帶有獨立算力單元的邊緣運算板。
 
 ---
 
