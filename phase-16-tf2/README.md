@@ -1,10 +1,10 @@
-# Phase 16：TF2 進階 — 操作座標轉換樹
+# Phase 16：TF2 進階 — 操作座標轉換樹 🚀
 
-**學完你會**：用 C++ 寫 TF broadcaster 與 listener、處理 TF 時間戳、看懂 TF 例外、用 CLI 工具 debug TF tree。
+**學完你會**：🌟 用 C++ 寫 TF broadcaster 與 listener、處理 TF 時間戳、看懂 TF 例外、用 CLI 工具 debug TF tree。
 
-**前置**：[Phase 15 URDF](../phase-15-urdf/) — 有 TF tree 才有東西可玩。
+**前置準備**：[Phase 15 URDF](../phase-15-urdf/) — 有 TF tree 才有東西可玩。
 
-**產出**：
+**產出目標**：
 - [`src/static_broadcaster.cpp`](code/my_cpp_pkg/src/static_broadcaster.cpp) — 發送固定 TF
 - [`src/dynamic_broadcaster.cpp`](code/my_cpp_pkg/src/dynamic_broadcaster.cpp) — 發送會變的 TF（圓周運動）
 - [`src/tf_listener.cpp`](code/my_cpp_pkg/src/tf_listener.cpp) — 訂閱 TF 並查詢
@@ -13,7 +13,7 @@
 
 ---
 
-## 為什麼 TF2 是核心大魔王
+## 🤔 為什麼 TF2 是核心大魔王
 
 **只有 URDF 不夠**。URDF 描述機器人**自己**的形狀，但機器人在世界中**移動**時呢？
 
@@ -288,7 +288,7 @@ auto t = buffer.lookupTransform("world", "base_link", ...);
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 17 — Gazebo 整合](../phase-17-gazebo/)
 - [Phase 18 — ros2_control](../phase-18-ros2-control/)

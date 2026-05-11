@@ -25,7 +25,7 @@
 
 ---
 
-## 為什麼這章重要
+## 🤔 為什麼這章重要
 
 「LifecycleNode 我會」+「diagnostic_updater 我會」!= 「會把它們**正確接起來**」。
 

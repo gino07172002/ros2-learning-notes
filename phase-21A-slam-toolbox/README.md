@@ -68,7 +68,7 @@ SLAM 是「雞生蛋蛋生雞」問題 — 沒地圖怎麼定位、沒定位怎�
 
 ---
 
-## 為什麼這章重要
+## 🤔 為什麼這章重要
 
 **SLAM(Simultaneous Localization And Mapping)是移動機器人的靈魂技能**。沒地圖就沒 Nav2、沒 Nav2 就沒自動導航。
 

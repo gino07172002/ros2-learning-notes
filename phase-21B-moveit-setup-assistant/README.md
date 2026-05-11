@@ -292,7 +292,7 @@ ros2 launch my_arm_moveit_config demo.launch.py
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 22B MoveIt 2 C++ 程式控制](../phase-22B-moveit-cpp/) — 用本章產出的 config 跑 `MoveGroupInterface` 規劃
 - 想做完整 pick & place:Phase 23B(尚未完成)

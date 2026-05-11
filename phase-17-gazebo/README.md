@@ -23,7 +23,7 @@
 
 ---
 
-## 為什麼這章重要
+## 🤔 為什麼這章重要
 
 **所有後面 Track A(SLAM、Nav2)章節都需要一個 simulator**。
 業界做法:simulator(Gazebo)≈ 開發環境的「假機器人」。

@@ -1,11 +1,11 @@
-# Phase 12：測試（gtest + rclcpp）
+# Phase 12：測試（gtest + rclcpp） 🚀
 
-**學完你會**：用 gtest 寫純邏輯單元測試、寫含 rclcpp 的整合測試（驗證 publish/subscribe）、用 `colcon test` 跑整套測試、看 XML 測試報告。
+**學完你會**：🌟 用 gtest 寫純邏輯單元測試、寫含 rclcpp 的整合測試（驗證 publish/subscribe）、用 `colcon test` 跑整套測試、看 XML 測試報告。
 
-**前置**：
+**前置準備**：
 - 任何 Phase 03+ 都可以——本章測試用的純邏輯是新寫的、不依賴前章
 
-**產出**：
+**產出目標**：
 - [`src/brake_calculator.hpp`](code/my_cpp_pkg/src/brake_calculator.hpp) — 被測試的純邏輯 class
 - [`test/test_brake_calculator.cpp`](code/my_cpp_pkg/test/test_brake_calculator.cpp) — 6 個單元測試
 - [`test/test_with_rclcpp.cpp`](code/my_cpp_pkg/test/test_with_rclcpp.cpp) — 2 個 rclcpp 整合測試
@@ -14,7 +14,7 @@
 
 ---
 
-## 為什麼要測試 ROS code
+## 🤔 為什麼要測試 ROS code
 
 Phase 03–13 你寫了一堆程式，每次都靠「眼睛看 log」驗證。但實務上：
 - code 改一行可能破壞另一個情境（**回歸 bug**）
@@ -90,7 +90,7 @@ TEST(BrakeCalculatorTest, NegativeDistanceStops) {
 }
 ```
 
-**重點**：
+**💡 劃重點**：
 - `TEST(SuiteName, CaseName)` 是 gtest 巨集
 - `EXPECT_DOUBLE_EQ` 完全相等、`EXPECT_NEAR` 含誤差
 - **每個 TEST 獨立運作**——一個 fail 不影響其他
@@ -139,7 +139,7 @@ TEST_F(RclcppTestFixture, PubSubRoundtrip) {
 }
 ```
 
-**重點**：
+**💡 劃重點**：
 - 用 `TEST_F`（不是 `TEST`）配合 fixture class
 - `SetUp()` / `TearDown()` 每個 test 都跑一次
 - 必須等 DDS discovery（500ms）才能保證訊息送達
@@ -328,7 +328,7 @@ colcon test-result --test-result-base build/phase12_pkg/test_results
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Capstone 1](../phase-14-capstone-1/)：把 Phase 09 (Lifecycle) + Phase 11 (Launch) + Phase 12 (Test) + Phase 13 (Action) 全部整合做一個 demo
 

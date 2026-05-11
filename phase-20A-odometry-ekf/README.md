@@ -105,7 +105,7 @@ Jacobian、線性化等數學細節由 `robot_localization` 處理。這章的�
 
 ---
 
-## 為什麼這章重要
+## 🤔 為什麼這章重要
 
 Nav2 需要一個準確、平滑、不跳變的 `/odom`。這個 `/odom` 通常不是直接相信單一 sensor,而是由 EKF 融合後產生。
 
@@ -232,7 +232,7 @@ True
 /imu/data
 ```
 
-**這章要做的事**:讓 wheel 提供線速度、IMU 提供角速度,再由 EKF 產生 `/odometry/filtered` 和 `odom→base_link`。只要 topic、TF、param 三件事都對,debug EKF 就有方向。
+**我們這章的目標**:讓 wheel 提供線速度、IMU 提供角速度,再由 EKF 產生 `/odometry/filtered` 和 `odom→base_link`。只要 topic、TF、param 三件事都對,debug EKF 就有方向。
 
 ---
 

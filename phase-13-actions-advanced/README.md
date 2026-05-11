@@ -1,11 +1,11 @@
-# Phase 13：Actions 進階
+# Phase 13：Actions 進階 🚀
 
-**學完你會**：寫 Action Server 處理 cancel / abort / reject 三種「非正常結束」、寫 Action Client 中途取消、理解業界 Nav2/MoveIt 的 action 介面為什麼這樣設計。
+**學完你會**：🌟 寫 Action Server 處理 cancel / abort / reject 三種「非正常結束」、寫 Action Client 中途取消、理解業界 Nav2/MoveIt 的 action 介面為什麼這樣設計。
 
-**前置**：
+**前置準備**：
 - [Phase 08 Custom Interfaces](../phase-08-custom-interfaces/) — 包含本章用的 Countdown.action interface
 
-**產出**：
+**產出目標**：
 - [`src/countdown_server.cpp`](code/my_cpp_pkg/src/countdown_server.cpp) — 完整 cancel/abort/reject 邏輯
 - [`src/countdown_client.cpp`](code/my_cpp_pkg/src/countdown_client.cpp) — 可用 SIGINT 取消的 client
 
@@ -13,7 +13,7 @@
 
 ---
 
-## 為什麼進階
+## 🤔 為什麼進階
 
 Phase 08 你寫了 Approach action server，但只處理「正常完成」一種情況。實務上 action 有 **5 種結束方式**：
 
@@ -85,7 +85,7 @@ ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose \
 - Result 通常很簡單(`bool success`)— 真實狀態靠 feedback 已經知道
 - Cancel 是業界標配 — 任何長任務都該支援
 
-**這章要做的事**:寫一個 server 涵蓋 5 種結束方式(REJECT / ACCEPT / SUCCEED / ABORT / CANCEL),寫 client 演示中途 Ctrl+C 觸發 cancel。學完這章你看 Nav2 / MoveIt action server 內部就懂了。
+**我們這章的目標**:寫一個 server 涵蓋 5 種結束方式(REJECT / ACCEPT / SUCCEED / ABORT / CANCEL),寫 client 演示中途 Ctrl+C 觸發 cancel。學完這章你看 Nav2 / MoveIt action server 內部就懂了。
 
 ---
 
@@ -122,7 +122,7 @@ rclcpp_action::GoalResponse handle_goal(
 }
 ```
 
-**重點**：reject 在 server 接到 goal 的「**第一時間**」就拒絕。client 收到 `goal_response_callback` 帶的 `nullptr` 表示被拒。
+**💡 劃重點**：reject 在 server 接到 goal 的「**第一時間**」就拒絕。client 收到 `goal_response_callback` 帶的 `nullptr` 表示被拒。
 
 ### execute thread 內處理三件事
 
@@ -430,7 +430,7 @@ ament_target_dependencies(your_node rclcpp rclcpp_action ...)
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 12 — 測試（gtest + launch_testing）](../phase-12-testing/)
 - [Capstone 1 整合](../phase-14-capstone-1/)

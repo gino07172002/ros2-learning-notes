@@ -1,12 +1,12 @@
-# Phase 15：URDF + robot_state_publisher
+# Phase 15：URDF + robot_state_publisher 🚀
 
 > Part 4 第一章。從這裡開始，Node 們**有了一個身體**。
 
-**學完你會**：寫 URDF（用 xacro 巨集系統）描述機器人物理結構、用 robot_state_publisher 把 URDF 的 link 階層自動發布成 TF tree、用 `tf2_echo` 從 CLI 驗證座標關係。
+**學完你會**：🌟 寫 URDF（用 xacro 巨集系統）描述機器人物理結構、用 robot_state_publisher 把 URDF 的 link 階層自動發布成 TF tree、用 `tf2_echo` 從 CLI 驗證座標關係。
 
-**前置**：[Phase 11 Launch 進階](../phase-11-launch-files-advanced/) — 本章需要寫 launch file。
+**前置準備**：[Phase 11 Launch 進階](../phase-11-launch-files-advanced/) — 本章需要寫 launch file。
 
-**產出**：[`code/my_robot_description/`](code/my_robot_description/) — 完整的兩輪差速車 URDF + display launch。
+**產出目標**：[`code/my_robot_description/`](code/my_robot_description/) — 完整的兩輪差速車 URDF + display launch。
 
 **環境**：☁️ TheConstructSim + 💻 本機 WSL 雙環境通用。
 
@@ -77,7 +77,7 @@ URDF 用 `<origin xyz="x y z" rpy="roll pitch yaw"/>` 表示位置與姿態:
 
 ---
 
-## 為什麼要 URDF
+## 🤔 為什麼要 URDF
 
 到 Phase 14 為止你的「機器人」只是邏輯概念：fake_lidar 發訊息、smart_brake 收訊息。但**實際機器人有形狀有空間**：
 - 光達裝在車頂正前方
@@ -126,7 +126,7 @@ URDF (Unified Robot Description Format) 就是描述這些**幾何關係**的標
 
 完整檔案見 [`urdf/diffbot.urdf.xacro`](code/my_robot_description/urdf/diffbot.urdf.xacro)。
 
-### 為什麼用 xacro 而不是純 URDF
+### 🤔 為什麼用 xacro 而不是純 URDF
 
 純 URDF 是 XML，**不能定義變數、不能寫巨集、不能 include**。寫個有兩個輪子的機器人就要複製貼上一大段。
 
@@ -371,7 +371,7 @@ ROS 2 的 launch file 是 Python，不會自動 import。
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 16 — TF2](../phase-16-tf2/)：學會用 C++/CLI 操作 TF tree、處理時間戳、寫 broadcaster/listener
 

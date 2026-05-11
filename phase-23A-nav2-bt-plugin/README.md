@@ -26,7 +26,7 @@
 
 ---
 
-## 為什麼這章重要
+## 🤔 為什麼這章重要
 
 **Nav2 的 bt_navigator 是用 BT.cpp(BehaviorTree.CPP)當決策引擎**。Nav2 預設 BT 規劃失敗 → spin → backup → 再規劃,這串行為就是 BT XML 描述的。
 

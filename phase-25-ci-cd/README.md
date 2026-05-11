@@ -1,20 +1,20 @@
-# Phase 25：CI/CD with GitHub Actions
+# Phase 25：CI/CD with GitHub Actions 🚀
 
 > 把這個 repo 變成「**push code 自動跑測試 + 建 image**」的工作流。
 
-**學完你會**：寫 GitHub Actions workflow 在容器裡跑 colcon build + colcon test、設多 linter matrix、build Docker image 並推到 GHCR。
+**學完你會**：🌟 寫 GitHub Actions workflow 在容器裡跑 colcon build + colcon test、設多 linter matrix、build Docker image 並推到 GHCR。
 
-**前置**：
+**前置準備**：
 - [Phase 12 測試](../phase-12-testing/) — CI 測試的對象
 - 對 GitHub 帳號和 repo 的基本操作
 
-**產出**：[`example/.github/workflows/`](example/.github/workflows/) — 三個範例 workflow（ci.yml / lint.yml / docker.yml）+ Dockerfile
+**產出目標**：[`example/.github/workflows/`](example/.github/workflows/) — 三個範例 workflow（ci.yml / lint.yml / docker.yml）+ Dockerfile
 
 **環境**：💻 GitHub Actions（雲端）
 
 ---
 
-## 為什麼 CI/CD 重要
+## 🤔 為什麼 CI/CD 重要
 
 寫了 Phase 12 測試卻沒 CI = **沒人會跑那些測試**。
 
@@ -93,7 +93,7 @@ jobs:
           path: build/*/test_results/
 ```
 
-**重點**：
+**💡 劃重點**：
 - **`container: osrf/ros:humble-desktop`** — 直接用官方 image，省去自己裝 ROS 2
 - **`rosdep install --from-paths src`** — 自動讀 package.xml 內 `<depend>` 安裝
 - **`colcon test-result --verbose`** — colcon test 即使 fail 也回傳 0，必須這行才能 fail CI
@@ -272,7 +272,7 @@ GitHub free tier 給 ubuntu-22.04 runner 很快。**不要為了「省」自己�
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - Phase 24 — Docker：本章用了 Docker，那章深入講 image 最佳實踐
 - Phase 27 — 部署實機（待完成）：CI 產出的 image 怎麼上 Pi / Jetson

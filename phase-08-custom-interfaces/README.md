@@ -1,14 +1,14 @@
-# Phase 08：Custom Interfaces — 自己定義訊息協議
+# Phase 08：Custom Interfaces — 自己定義訊息協議 🚀
 
 > Part 3 第一章：**核心分水嶺**。從這章開始你不再只是「使用」ROS 通訊，而是「設計」自己的協議。
 
-**學完你會**：寫 .msg/.srv/.action 三種自訂型別、建一個獨立的 interface 套件、在 C++ Node 用自訂型別、知道為什麼業界把 interface 套件分離、了解 rosidl 從文字檔生成 C++ class 的流程。
+**學完你會**：🌟 寫 .msg/.srv/.action 三種自訂型別、建一個獨立的 interface 套件、在 C++ Node 用自訂型別、知道為什麼業界把 interface 套件分離、了解 rosidl 從文字檔生成 C++ class 的流程。
 
-**前置**：
+**前置準備**：
 - [Phase 07 Mini Capstone](../phase-07-mini-capstone-1/) — 你會把它升級成 v2
 - 對 Subscriber + Service 的 callback 簽章熟悉
 
-**產出**：
+**產出目標**：
 - [`code/my_robot_interfaces/`](code/my_robot_interfaces/) — 純 .msg/.srv/.action 定義包
 - [`code/my_cpp_pkg/`](code/my_cpp_pkg/) — 用自訂型別的 smart_brake_v2 + approach_client
 
@@ -32,19 +32,19 @@
 
 ---
 
-## 為什麼這章是「真正的核心」
+## 🤔 為什麼這章是「真正的核心」
 
 Phase 01–07 都用了**現成的 ROS 訊息類型**：
 - `geometry_msgs/Twist`、`sensor_msgs/PointCloud2`、`std_srvs/SetBool`...
 
 這些是社群預先設計給通用機器人用的。**你只是消費者**。
 
-Phase 08 開始，**你是設計者**：
-- 你的系統有獨特的領域名詞 → 寫自己的 .msg
-- 你的服務需要傳多個欄位（不是只有 bool）→ 寫自己的 .srv
-- 你的任務需要長時間執行 + 進度回報 → 寫自己的 .action
+Phase 08 開始，**你要晉升為系統設計者了**：
+- **遇到獨特的領域知識時（定義 .msg）**：假設你在開發一台農業採收機器人，現成的 ROS 裡面絕對找不到「蘋果成熟度」或「籃子剩餘空間」這種專屬的資料格式。這時候你就必須自己撰寫 `.msg` 檔案，定義專屬的資料結構來精準描述你的系統狀態，而不是委屈求全地用標準型別來硬塞資料。
+- **需要傳遞複雜的指令與參數時（定義 .srv）**：如果你要呼叫一個系統服務，且不僅僅是簡單的「開/關 (bool)」，而是需要同時傳遞「模式、速度限制、超時時間」等多個參數，甚至需要對方在執行後回傳詳細的狀態報告與錯誤代碼時，你就必須建立自己的 `.srv` 檔案。
+- **執行耗時任務且需要隨時掌握進度時（定義 .action）**：當機器人進行自主導航或是機械臂進行複雜的連續路徑規劃時，這些任務通常會耗費數秒甚至數十分鐘。這時絕對不能用 Service（因為它會卡死呼叫端直到結束），而是要自己定義 `.action` 檔案。Action 能讓你在任務執行期間持續收到進度回報 (Feedback)，並且在有狀況時隨時發送取消指令中止任務。
 
-業界 ROS 系統 90% 都有自己的 interface 套件。**會寫 = 你能跟 Nav2/MoveIt/任何開源 ROS 系統一樣設計專業介面**。
+在業界，90% 的 ROS 系統都擁有自己專屬的 interface 套件。**學會獨立定義 Interface，代表你具備了和 Nav2、MoveIt 這些頂級開源專案一樣的系統架構與 API 設計能力**。
 
 ---
 
@@ -86,10 +86,10 @@ my_python_pkg/               ← 視覺化包，也依賴 interfaces
 └── ...
 ```
 
-**為什麼分離**：
-- **多語言共用**：C++ 跟 Python 套件依賴同一份 .msg，不會有「兩邊定義不一致」
-- **多團隊並行**：感知團隊、控制團隊、UI 團隊各寫各的，只要對齊 .msg 合約
-- **編譯加速**：interface 套件改動少，邏輯套件可以單獨 rebuild
+**為什麼業界堅持要把它獨立分開？**
+- **跨語言的無縫共用**：在一個大型系統中，底層控制邏輯通常用 C++ 撰寫以求效能，而上層的 AI 視覺辨識或網頁 UI 介面通常用 Python 撰寫。將 Interface 獨立成一個純定義的套件後，C++ 和 Python 套件都可以共同依賴這份 `.msg` 定義。當你修改了資料欄位，ROS 2 的 `rosidl` 工具就會自動幫你重新生成兩種語言的底層序列化程式碼，徹底杜絕「C++ 端傳了三個欄位，Python 端卻只寫了兩個」這種可怕的資料不同步災難。
+- **實現多團隊的高效協作（合約式設計）**：在大規模開發時，感知團隊負責寫視覺、控制團隊負責寫底層驅動、UI 團隊負責寫操作介面。只要大家在專案初期先坐下來，把所有的 `.msg` 和 `.srv` 定義好（這就等於是系統各模組間的「通訊合約」）。合約敲定後，各團隊就能放心回去平行開發自己的邏輯套件，互不干擾。
+- **顯著的編譯加速**：Interface 套件在編譯時，包含了程式碼生成（Code Generation）的複雜步驟，過程相對緩慢。如果把它跟會頻繁修改的 C++ 邏輯混在同一個套件裡，每次你只是稍微改了一行 C++ 邏輯，系統都可能會浪費時間重新檢查或編譯訊息介面。分離之後，因為 Interface 套件的結構很少變動，你平時開發就只需快速編譯邏輯套件即可，每天可以幫你省下大把的發呆時間。
 
 ---
 
@@ -114,7 +114,7 @@ float32 uptime_seconds
 string status_text
 ```
 
-**重點**：
+**💡 劃重點**：
 - 常數會自動生成 `BrakeStatus::MODE_ENABLED` 之類的 C++ static const
 - `std_msgs/Header` 是巢狀型別，必須在 CMake 與 package.xml 宣告依賴
 - 註解放欄位「上方」獨立一行，**不能放欄位後面**
@@ -194,7 +194,7 @@ ament_export_dependencies(rosidl_default_runtime)
 <depend>std_msgs</depend>
 ```
 
-> ⚠️ **新手大坑**：`<member_of_group>rosidl_interface_packages</member_of_group>` 漏寫，build 會過但**下游套件 find_package(...) 找不到生成的型別**。網上很多 tutorial 沒提這行。
+> 😱 **新手大坑注意**：`<member_of_group>rosidl_interface_packages</member_of_group>` 漏寫，build 會過但**下游套件 find_package(...) 找不到生成的型別**。網上很多 tutorial 沒提這行。
 
 ---
 
@@ -291,7 +291,7 @@ sed -i 's|<name>my_cpp_pkg</name>|<name>phase08_pkg</name>|' ~/ros2_ws/src/phase
 sed -i 's|project(my_cpp_pkg)|project(phase08_pkg)|' ~/ros2_ws/src/phase08_pkg/CMakeLists.txt
 ```
 
-> 💡 為什麼本機要改名：本機工作區同時放了 phase01–07 全部套件，避免 colcon 看到兩個 `my_cpp_pkg` 衝突。雲端環境每次重新建一個 ROSject 就乾淨，不用改名。
+> 💡 **溫馨提示**： 為什麼本機要改名：本機工作區同時放了 phase01–07 全部套件，避免 colcon 看到兩個 `my_cpp_pkg` 衝突。雲端環境每次重新建一個 ROSject 就乾淨，不用改名。
 
 ### Step 2：build interface 套件（**順序很重要**）
 
@@ -359,7 +359,7 @@ python3 ~/fake_lidar.py 0.5
 ros2 run phase08_pkg smart_brake_v2
 ```
 
-> 💡 沒有真光達的本機環境必須靠 `fake_lidar.py` 製造 PointCloud2 訊息給 smart_brake_v2 訂閱。雲端因為已經有真模擬，省了這一步。
+> 💡 **溫馨提示**： 沒有真光達的本機環境必須靠 `fake_lidar.py` 製造 PointCloud2 訊息給 smart_brake_v2 訂閱。雲端因為已經有真模擬，省了這一步。
 
 ### Step 5：Demo 1 — 看自訂 Topic 廣播
 
@@ -383,7 +383,7 @@ uptime_seconds: 18.0
 status_text: '[ENABLED] speed=0.15 obstacle=0.50m'
 ```
 
-🎯 **這就是自訂 BrakeStatus 訊息的實際內容**——一個訊息塞 5 個有用欄位，比 `std_msgs/Float32` 強多了。
+🎯 **🎯 這就是自訂 BrakeStatus 訊息的實際內容**——一個訊息塞 5 個有用欄位，比 `std_msgs/Float32` 強多了。
 
 > 💡 **TheConstruct 上要看數值有變化**，因為光達是真模擬，車子接近障礙物時 `closest_obstacle_distance` 會逐漸減少。本機 fake_lidar 是固定值。
 
@@ -529,7 +529,7 @@ TheConstruct 免費帳號每次連線約 1 小時。session 中斷後 `ros2_ws/i
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 09 — Executors / Lifecycle / Composition](../phase-09-executors-lifecycle-composition/)（待完成）：學會 callback 怎麼被排程、Node 生命週期管理、多 Node 同 process
 

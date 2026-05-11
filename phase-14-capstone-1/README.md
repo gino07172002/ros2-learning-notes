@@ -13,11 +13,11 @@
 
 **對應業界職位的能力**：「能獨立設計+實作一個 ROS 子系統」。
 
-**前置**：
+**前置準備**：
 - [Phase 08](../phase-08-custom-interfaces/) ~ [Phase 13](../phase-13-actions-advanced/) 全部
 - 特別是 `my_robot_interfaces` 必須先 build
 
-**產出**：
+**產出目標**：
 - [`src/approach_controller.hpp`](code/my_cpp_pkg/src/approach_controller.hpp) — 純邏輯 SpeedPolicy
 - [`src/approach_controller.cpp`](code/my_cpp_pkg/src/approach_controller.cpp) — 完整 LifecycleNode（260+ 行）
 - [`launch/capstone.launch.py`](code/my_cpp_pkg/launch/capstone.launch.py) — event_handler 自動化

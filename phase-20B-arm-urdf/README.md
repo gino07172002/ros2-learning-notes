@@ -23,7 +23,7 @@
 
 ---
 
-## 為什麼這章重要
+## 🤔 為什麼這章重要
 
 Phase 15 的 URDF 可以描述一台小車,但機械手臂的描述會很快變大。業界常見手臂 URDF 有三個特徵:
 
@@ -131,7 +131,7 @@ ros2 run tf2_ros tf2_echo base_link tool0
 
 預期看到 `/joint_states`、`/robot_description`、`/tf`、`/tf_static`,以及 `base_link → tool0` 的 transform。
 
-**這章要做的事**:先用 terminal 確認模型資料是健康的,再開 RViz 做視覺驗證。這樣看到空白畫面時,你會知道該查 Fixed Frame,而不是懷疑 URDF 全壞了。
+**我們這章的目標**:先用 terminal 確認模型資料是健康的,再開 RViz 做視覺驗證。這樣看到空白畫面時,你會知道該查 Fixed Frame,而不是懷疑 URDF 全壞了。
 
 ---
 

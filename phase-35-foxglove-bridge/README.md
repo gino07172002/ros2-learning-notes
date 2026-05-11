@@ -23,7 +23,7 @@
 
 ---
 
-## 為什麼這章重要
+## 🤔 為什麼這章重要
 
 在 ROS 2 系統長到 5+ node 之後,**RViz 就不夠用了**:
 - RViz 只能看 visualization_msgs / TF / 2D map 那組

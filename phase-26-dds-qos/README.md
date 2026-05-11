@@ -1,12 +1,12 @@
-# Phase 26：DDS QoS 調校
+# Phase 26：DDS QoS 調校 🚀
 
 > Part 6 第一章。把 ROS 2 通訊從「能動」變「動得對」。
 
-**學完你會**：理解 ROS 2 五大 QoS policy、辨識 QoS 不匹配的徵兆、選對 publisher/subscriber QoS、看懂 console 警告、知道何時用 transient_local 做「latched」。
+**學完你會**：🌟 理解 ROS 2 五大 QoS policy、辨識 QoS 不匹配的徵兆、選對 publisher/subscriber QoS、看懂 console 警告、知道何時用 transient_local 做「latched」。
 
-**前置**：[Phase 02 設計哲學](../phase-02-communication-concepts/) — 知道 ROS 2 = DDS 的觀念。
+**前置準備**：[Phase 02 設計哲學](../phase-02-communication-concepts/) — 知道 ROS 2 = DDS 的觀念。
 
-**產出**：[`code/my_cpp_pkg/`](code/my_cpp_pkg/) — qos_demo + qos_subscriber 兩個可組合驗證 QoS 行為的程式。
+**產出目標**：[`code/my_cpp_pkg/`](code/my_cpp_pkg/) — qos_demo + qos_subscriber 兩個可組合驗證 QoS 行為的程式。
 
 **環境**：☁️ TheConstructSim + 💻 本機 WSL 雙環境通用。
 
@@ -301,7 +301,7 @@ QoS 是程式碼層面的設定，**改完必須重 build**。改完只重啟程
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - Phase 27 — 部署實機（待完成）
 - Phase 24 — Docker（待完成）

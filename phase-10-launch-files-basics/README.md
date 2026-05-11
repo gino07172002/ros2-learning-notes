@@ -1,11 +1,11 @@
-# Phase 10：Launch Files 基礎
+# Phase 10：Launch Files 基礎 🚀
 
-**學完你會**：用一行 `ros2 launch` 同時啟動多個 Node、自動 remap topic、注入參數、從 YAML 載入設定、讓使用者從 CLI 傳參數。再也不用開 5 個 terminal 手動 `ros2 run`。
+**學完你會**：🌟 用一行 `ros2 launch` 同時啟動多個 Node、自動 remap topic、注入參數、從 YAML 載入設定、讓使用者從 CLI 傳參數。再也不用開 5 個 terminal 手動 `ros2 run`。
 
-**前置**：
+**前置準備**：
 - [Phase 08 Custom Interfaces](../phase-08-custom-interfaces/) — 本章 launch 會啟動 `phase08_pkg/smart_brake_v2`
 
-**產出**：
+**產出目標**：
 - [`code/my_cpp_pkg/launch/01_minimal.launch.py`](code/my_cpp_pkg/launch/01_minimal.launch.py) — 最簡單範例
 - [`code/my_cpp_pkg/launch/02_remap_and_params.launch.py`](code/my_cpp_pkg/launch/02_remap_and_params.launch.py) — 多 Node + remap
 - [`code/my_cpp_pkg/launch/03_yaml_params.launch.py`](code/my_cpp_pkg/launch/03_yaml_params.launch.py) — 從 YAML 載入
@@ -15,7 +15,7 @@
 
 ---
 
-## 為什麼需要 Launch File
+## 🤔 為什麼需要 Launch File
 
 回想你之前每次跑 demo 要做的事：
 
@@ -92,10 +92,10 @@ ros2 node list
 # ...
 ```
 
-**重點**:
-- **業界沒人手動 `ros2 run` 多次**,所有 production 系統都靠 launch file
-- launch file 本身是 Python script,你可以**讀別人的 launch file 當教材**(`ros2 pkg prefix <pkg>` + 看 share/launch/)
-- 這章從最簡 launch file 開始,層層加上 remap、parameter、CLI args,最後跟 turtlebot3 那種一樣豐富
+**💡 劃重點**:
+- **業界絕對沒有人會手動 `ros2 run` 幾十次**：在正式的 Production 系統（例如自動駕駛汽車或工廠的物流機器人）中，系統通常由數十甚至數百個微小的 Node 組合而成。所有的啟動、參數配置與相依性控制，全都依賴嚴謹編寫的 Launch File 來一鍵自動完成。
+- **Launch File 的本質是強大的 Python 程式**：這意味著你不但可以寫 `if/else` 條件判斷（例如「如果有偵測到光達硬體才啟動感知節點」），還能直接去**讀開源大神的 Launch File 當作最佳教材**。你只需要用 `ros2 pkg prefix <pkg>` 找到套件安裝路徑，進去 `share/launch/` 裡面挖寶，就能學到很多業界的高階寫法。
+- **循序漸進的學習路徑**：這章我們會先教你寫出最陽春的 Launch File，接著一步步加上 Topic 的 Remap、注入參數 (Parameters)，甚至讓它能接收使用者從終端機傳入的指令 (CLI args)。等你破關這章，你也能寫出跟 turtlebot3 一樣專業且功能豐富的啟動腳本。
 
 ---
 
@@ -149,7 +149,7 @@ return LaunchDescription([
 ])
 ```
 
-**重點**：
+**💡 劃重點**：
 - `remappings` 是 list of tuples — `(source, destination)`
 - `parameters` 可以是 dict（在 launch 內 inline 寫）或 file path（下個範例）
 - `output='screen'`：log 印到 terminal。**不加會被吞掉**——你看不到任何 RCLCPP_INFO。
@@ -193,12 +193,12 @@ smart_brake_v2:
     use_sim_time: false
 ```
 
-**為什麼用 YAML 不直接寫 inline**：
-- 同一份 launch 給多場景用（dev/staging/prod 三份不同 YAML）
-- 給非開發者改參數比較友善
-- launch 改動少，CI 不會頻繁重 build
+**為什麼要大費周章用 YAML 檔，而不直接在 Launch 裡寫 inline 字典就好？**
+- **支援多場景的靈活切換**：在實際開發中，你可能會需要「本機開發環境 (dev)」、「雲端測試環境 (staging)」與「實車正式環境 (prod)」三種不同的設定。把參數抽離成 YAML 後，你只需要維護唯一一份 Launch File，啟動時根據當下環境載入對應的 YAML 檔即可，極度乾淨俐落。
+- **對團隊夥伴更友善**：很多時候，負責調校機器人參數的人可能是控制工程師或 QA 測試員，他們不一定懂 Python。提供一份結構清晰的 YAML 讓他們調整 PID 參數或極速限制，會比讓他們去改動 Launch 原始碼安全且方便得多。
+- **避免不必要的 CI/CD 觸發**：在正規專案中，修改 Launch 程式碼可能會觸發漫長的自動化測試流水線 (CI)。但如果只是微調參數，單純修改 YAML 檔案就不會牽動到核心程式的編譯流程。
 
-**業界 ROS 系統 90% 用 YAML**——Nav2 / MoveIt 的 launch 全都是讀 YAML。
+**這也是為什麼業界 ROS 系統高達 90% 的參數都交由 YAML 管理**——你去翻開 Nav2 或 MoveIt 的開源專案，它們的 Launch 腳本幾乎全都是從肥大的 YAML 設定檔裡將參數讀進來的。
 
 > ⚠️ **YAML node 名稱必須跟 launch 內 `Node(name='xxx')` 一致**——打錯字會靜默失敗（用預設值）。
 
@@ -383,7 +383,7 @@ Node(package='phase08_pkg', executable='SmartBrakeV2')     # ❌
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 11 — Launch Files 進階](../phase-11-launch-files-advanced/)：IncludeLaunchDescription（嵌套 launch）、event_handlers（A 起來後再啟動 B）、條件啟動
 

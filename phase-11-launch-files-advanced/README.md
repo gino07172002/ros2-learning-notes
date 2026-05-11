@@ -1,12 +1,12 @@
-# Phase 11：Launch Files 進階
+# Phase 11：Launch Files 進階 🚀
 
-**學完你會**：嵌套 launch（呼叫別的 launch file）、根據事件觸發動作（A 起來才啟動 B）、條件啟動（debug 模式才開 rqt）、多機器人 namespace 隔離。這些是業界 ROS 系統 launch 必備技能。
+**學完你會**：🌟 嵌套 launch（呼叫別的 launch file）、根據事件觸發動作（A 起來才啟動 B）、條件啟動（debug 模式才開 rqt）、多機器人 namespace 隔離。這些是業界 ROS 系統 launch 必備技能。
 
-**前置**：
+**前置準備**：
 - [Phase 10 Launch Files 基礎](../phase-10-launch-files-basics/) — 必須先懂基礎
 - [Phase 08 Custom Interfaces](../phase-08-custom-interfaces/) — 本章 launch 會啟動 smart_brake_v2
 
-**產出**：4 個進階範例 launch file
+**產出目標**：4 個進階範例 launch file
 - [`01_include.launch.py`](code/my_cpp_pkg/launch/01_include.launch.py) — 嵌套 launch
 - [`02_event_handler.launch.py`](code/my_cpp_pkg/launch/02_event_handler.launch.py) — 事件驅動啟動
 - [`03_conditional.launch.py`](code/my_cpp_pkg/launch/03_conditional.launch.py) — 條件啟動
@@ -16,7 +16,7 @@
 
 ---
 
-## 為什麼有進階章
+## 🤔 為什麼有進階章
 
 Phase 10 教的「Node + remap + param」可以啟動單一系統。但業界 ROS 系統有更複雜的需求：
 
@@ -322,7 +322,7 @@ IncludeLaunchDescription(
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 09 — Executors / Lifecycle / Composition](../phase-09-executors-lifecycle-composition/)：Callback 怎麼被排程、Node 生命週期、多 Node 同 process
 

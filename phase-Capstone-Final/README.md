@@ -29,7 +29,7 @@
 
 ---
 
-## 為什麼這個 Capstone 強
+## 🤔 為什麼這個 Capstone 強
 
 對應**履歷上「Production-Ready ROS 2 Robot Stack」一行字**,具體支撐:
 

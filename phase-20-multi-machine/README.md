@@ -23,7 +23,7 @@
 
 ---
 
-## 為什麼這章重要
+## 🤔 為什麼這章重要
 
 ROS 2 在自己的電腦上跑起來通常很單純,但一到部署、測試或多人共用網路,discovery 就會變成第一個不穩定來源。這章先把兩個最常見的情境拆開處理:
 
@@ -146,7 +146,7 @@ Server Addresses: UDPv4:[127.0.0.1]:11811
 rmw_fastrtps_cpp
 ```
 
-**這章要做的事**:不是改 ROS node,而是學會用環境變數改變 DDS discovery 行為。只要 domain、RMW、Discovery Server 三件事對齊,talker/listener 的 code 完全不用動。
+**我們這章的目標**:不是改 ROS node,而是學會用環境變數改變 DDS discovery 行為。只要 domain、RMW、Discovery Server 三件事對齊,talker/listener 的 code 完全不用動。
 
 ---
 

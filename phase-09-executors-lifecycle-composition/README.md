@@ -1,13 +1,13 @@
-# Phase 09：Executors / Lifecycle / Composition
+# Phase 09：Executors / Lifecycle / Composition 🚀
 
 > Part 3 最重的一章。三個觀念合在一起講，因為它們都是「**Node 怎麼被執行**」的內部機制。
 
-**學完你會**：理解 callback 怎麼被排程（為什麼預設單執行緒）、自己選擇 SingleThreaded vs MultiThreaded Executor、寫 LifecycleNode 控制啟動/停止流程、把多個 Node 組進同一個 process（rclcpp_components）。
+**學完你會**：🌟 理解 callback 怎麼被排程（為什麼預設單執行緒）、自己選擇 SingleThreaded vs MultiThreaded Executor、寫 LifecycleNode 控制啟動/停止流程、把多個 Node 組進同一個 process（rclcpp_components）。
 
-**前置**：
+**前置準備**：
 - [Phase 04 Service](../phase-04-services-toggle/) 與 [Phase 07 Mini Capstone](../phase-07-mini-capstone-1/) — 你寫過多 callback Node、用過 `std::atomic` 防 race
 
-**產出**：
+**產出目標**：
 - [`src/executors_demo.cpp`](code/my_cpp_pkg/src/executors_demo.cpp) — 比較 Single/Multi Executor
 - [`src/lifecycle_demo.cpp`](code/my_cpp_pkg/src/lifecycle_demo.cpp) — Lifecycle Node 完整生命週期
 - [`src/composable_publisher.cpp`](code/my_cpp_pkg/src/composable_publisher.cpp) + [`src/composable_subscriber.cpp`](code/my_cpp_pkg/src/composable_subscriber.cpp) — 可組合 Node
@@ -46,7 +46,7 @@
 
 ---
 
-## 為什麼三個放一起講
+## 🤔 為什麼三個放一起講
 
 它們都回答同一個問題：「**ROS Node 內部到底怎麼運作？**」
 
@@ -140,7 +140,7 @@ fast_timer_ = create_wall_timer(100ms, fast_cb, reentrant_group);
 | **Reentrant** | 同 group 內的 callback 可並行 |
 | (Custom) | 自訂優先級、QoS deadline |
 
-### 為什麼預設是 MutuallyExclusive
+### 🤔 為什麼預設是 MutuallyExclusive
 
 避免你不小心寫出 race condition。如果你的 callback 共用狀態而沒加 mutex/atomic，預設行為保證安全。**升級到 MultiThreaded 之前，先確認所有共享狀態都用 `std::atomic` 或 mutex 保護**——這就是為什麼 Phase 07 我堅持用 `std::atomic<bool> brake_enabled_`。
 
@@ -213,9 +213,9 @@ class MyLifecycleNode : public rclcpp_lifecycle::LifecycleNode {
 
 ### 業界用途
 
-- **Nav2 全部 Node 是 LifecycleNode**：bringup 流程用 nav2_lifecycle_manager 控制 20+ 個 Node 的 configure → activate 順序
-- **MoveIt 部分用**：planning_scene_monitor 等核心元件
-- **故障隔離**：某個 Node 進 ErrorProcessing 不影響其他 Node
+- **Nav2 (導航框架) 全面採用 LifecycleNode**：在啟動 (bringup) 流程中，Nav2 會使用一個專門的 `nav2_lifecycle_manager` 節點，有條不紊地控制超過 20 個 Node 的狀態切換順序（必須先確認大家全部 Configure 完成，才會依照相依性依序 Activate）。這完美確保了例如「地圖伺服器還沒把地圖讀取完畢前，路徑規劃器絕對不會開始亂跑」的系統穩定性。
+- **MoveIt (機械臂框架) 核心元件依賴它**：像是負責監控環境碰撞的 `planning_scene_monitor` 等核心元件，需要明確知道何時該開始監聽感測器資料、何時可以暫停以節省資源，LifecycleNode 的設計完美符合這個需求。
+- **強大的系統故障隔離機制**：如果在執行過程中，某個 LifecycleNode 發生致命錯誤（例如感測器實體線路突然斷開），它會進入專屬的 ErrorProcessing 狀態。開發者可以讓系統自動捕捉這個狀態變化，進行重試或重新 Configure 的修復流程，而不會因為一個節點死掉就導致整台機器人的 ROS 系統直接崩潰，這是工業級應用不可或缺的防護網。
 
 ### 控制 LifecycleNode
 
@@ -256,7 +256,7 @@ publisher_->on_deactivate();  // inactive 不能 publish
 
 ## Part 3: Composition — 多 Node 同 process
 
-### 為什麼要這樣做
+### 🤔 為什麼要這樣做
 
 你之前每個 Node 一個 `ros2 run`：
 ```bash
@@ -265,7 +265,7 @@ ros2 run pkg node_b    # process 2
 ros2 run pkg node_c    # process 3
 ```
 
-每個訊息從 A → B 都要：**序列化 → 跨 process IPC → 反序列化**。
+如果每個 Node 都分開跑，每個訊息從節點 A 傳遞到節點 B 時，都必須經歷一段昂貴的旅程：**先把資料序列化 (Serialization) 成二進位格式，透過作業系統層級的跨進程通訊 (IPC) 傳遞過去，最後再由節點 B 進行反序列化 (Deserialization) 還原成資料**。當你傳遞的是像 `PointCloud2` 這種包含幾十萬個光達點的龐大資料時，這個反覆打包與解包的過程會瞬間吃光你的 CPU 資源。
 
 如果 A/B/C 是緊耦合的（例如 perception pipeline），合理做法：**塞進同一個 process**。
 
@@ -275,10 +275,10 @@ ros2 component load /my_container pkg pkg::NodeA  # 在 container 內載入 A
 ros2 component load /my_container pkg pkg::NodeB  # 載入 B
 ```
 
-**好處**：
-- 同 process Node 之間用 **intra-process communication**（直接記憶體共享，零拷貝）
-- 啟動快（不用啟多個 process）
-- 共用 Executor（能精細排程）
+**Composition 帶來的三大絕對優勢**：
+- **實現真正的零拷貝通訊 (Zero-copy)**：同一個 Process 內的 Node 之間會自動啟動 **intra-process communication**。也就是說，Node A 發送的超大點雲資料，Node B 可以直接透過記憶體指標 (Pointer) 瞬間讀取，完全不需要任何額外的序列化或反序列化步驟，效能提升極為驚人，這是 ROS 2 效能超越 ROS 1 的關鍵武器。
+- **啟動速度極快**：作業系統啟動多個獨立 Process 其實是非常耗時的。而使用 Composition 時，我們只需要啟動一個 Process (Container)，其他所有的 Node 就像是載入外掛模組 (`.so` library) 一樣瞬間完成載入。
+- **統一且精細的資源排程**：因為所有 Node 都跑在同一個 Container 裡，它們可以共用同一個 Executor。這意味著你可以更精確地分配整體的 CPU 資源，例如優先處理緊急的控制 Callback，而不必依賴作業系統那難以預測的 Process 排程機制。
 
 ### Nav2 / MoveIt 的實況
 
@@ -506,7 +506,7 @@ ComposableNode(
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 12 — 測試（gtest + launch_testing）](../phase-12-testing/)：把本章的節點拆出可測的邏輯
 - [Phase 13 — Actions 進階](../phase-13-actions-advanced/)：長任務、feedback、cancel 的標準寫法

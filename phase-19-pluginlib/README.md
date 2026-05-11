@@ -1,10 +1,10 @@
-# Phase 19：pluginlib — Runtime 載入 C++ class
+# Phase 19：pluginlib — Runtime 載入 C++ class 🚀
 
 > 業界 Nav2 / MoveIt / ros2_control 全部用這個機制。學會它你就能擴充任何 ROS 系統。
 
-**學完你會**：寫 base interface、寫具體 plugin 實作、註冊 plugins.xml、用 ClassLoader 在 runtime 載入指定 plugin。
+**學完你會**：🌟 寫 base interface、寫具體 plugin 實作、註冊 plugins.xml、用 ClassLoader 在 runtime 載入指定 plugin。
 
-**前置**：C++ 多型概念（virtual function、繼承）。**不需要**前面的 ROS 章節。
+**前置準備**：C++ 多型概念（virtual function、繼承）。**不需要**前面的 ROS 章節。
 
 **產出**（三個 ROS 套件，業界標準分離）：
 - [`brake_strategy_base/`](code/brake_strategy_base/) — 純抽象介面
@@ -15,7 +15,7 @@
 
 ---
 
-## 為什麼這章是業界職缺剛需
+## 🤔 為什麼這章是業界職缺剛需
 
 業界 ROS 開發者最常被問：「**你能寫 Nav2 BT plugin 嗎？**」「**你能擴充 MoveIt planner 嗎？**」「**你能寫 ros2_control controller 嗎？**」
 
@@ -84,7 +84,7 @@ public:
 }
 ```
 
-**重點**：純抽象 class、virtual destructor、無建構子參數。
+**💡 劃重點**：純抽象 class、virtual destructor、無建構子參數。
 
 ### 2. 具體 Plugin（[brake_strategy_plugins/src](code/brake_strategy_plugins/src/)）
 
@@ -341,7 +341,7 @@ pluginlib::ClassLoader<Base>(
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 18 — ros2_control](../phase-18-ros2-control/)：本章學的 pluginlib 是 ros2_control 的基礎
 - [Phase 20 — 多機通訊](../phase-20-multi-machine/)

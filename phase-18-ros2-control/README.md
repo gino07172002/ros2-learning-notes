@@ -1,12 +1,12 @@
-# Phase 18：ros2_control — 硬體抽象層
+# Phase 18：ros2_control — 硬體抽象層 🚀
 
 > 業界 AGV、協作手臂、所有實體機器人的標準框架。學會它你能讓「同一份控制程式」跑在 Gazebo 模擬、跑在實機，零改動。
 
-**學完你會**：URDF 內加 `<ros2_control>` 區塊、寫 controllers.yaml、用 controller_manager 載入 controller、送速度命令觀察 state 變化、了解硬體抽象層為什麼業界必備。
+**學完你會**：🌟 URDF 內加 `<ros2_control>` 區塊、寫 controllers.yaml、用 controller_manager 載入 controller、送速度命令觀察 state 變化、了解硬體抽象層為什麼業界必備。
 
-**前置**：[Phase 15 URDF](../phase-15-urdf/) + [Phase 19 pluginlib](../phase-19-pluginlib/)（ros2_control 內部就是 pluginlib）
+**前置準備**：[Phase 15 URDF](../phase-15-urdf/) + [Phase 19 pluginlib](../phase-19-pluginlib/)（ros2_control 內部就是 pluginlib）
 
-**產出**：`my_robot_bringup` 套件含 URDF + controllers.yaml + 整套 launch
+**產出目標**：`my_robot_bringup` 套件含 URDF + controllers.yaml + 整套 launch
 
 **環境**:☁️💻 雙環境通用 — 本章用 `mock_components`(假硬體),**不需要 Gazebo / GPU / 實機**,所以雲端 TheConstructSim 也能完整跑。
 
@@ -14,7 +14,7 @@
 
 ---
 
-## 為什麼 ros2_control 業界必備
+## 🤔 為什麼 ros2_control 業界必備
 
 業界寫機器人控制最大痛點：**模擬與實機不一樣**。
 - 在 Gazebo 模擬時，「送速度給輪子」是 publish 到 Gazebo plugin
@@ -275,7 +275,7 @@ sudo apt install ros-humble-ros2-control ros-humble-ros2-controllers
 
 ---
 
-## 下一步
+## 👣 下一步去哪？
 
 - [Phase 17 — Gazebo 整合](../phase-17-gazebo/)
 - [Phase 20 — 多機通訊](../phase-20-multi-machine/)
