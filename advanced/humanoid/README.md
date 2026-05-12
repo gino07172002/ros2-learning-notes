@@ -33,16 +33,28 @@
 ```
 humanoid/
 ├── README.md                        ← 你正在讀
-├── 01-mujoco-simulation/            ⏸ 文字草稿(已寫)
-├── 02-whole-body-control/           ⏸ 文字草稿(已寫)
-└── 03-theconstructsim-nao/          ⏸ 文字草稿(已寫)
+├── 01-theconstructsim-humanoid/       ⏸ 文字草稿(已寫)
+├── 02-mujoco-simulation/            ⏸ 文字草稿(已寫)
+└── 03-whole-body-control/           ⏸ 文字草稿(已寫)
 ```
 
 ---
 
 ## 🧭 章節預告
 
-### 01. MuJoCo Simulation — 高效能動態模擬
+### 01. TheConstructSim (Cloud) — 雲端人形機器人實戰 (免費仔首選)
+
+**學完你會**:
+- 在瀏覽器中免安裝直接啟動 TALOS / NAO 等百萬級人形機器人。
+- 透過高階指令 (`cmd_vel` 或 Action) 直接命令雙足機器人走路。
+- 控制機器人的頭部攝影機與手臂，實作「邊走邊看」的複合任務。
+- 理解為何應用層工程師可以跳過底層動態平衡，直接進入 AI 開發。
+
+**環境**: ☁️ 專為 TheConstructSim 雲端設計
+
+---
+
+### 02. MuJoCo Simulation — 高效能動態模擬
 
 **學完你會**:
 - 安裝並啟動 `mujoco` 與 `mujoco_ros2_control`。
@@ -61,7 +73,7 @@ humanoid/
 
 ---
 
-### 02. Whole-Body Control (WBC) — 全身控制基礎
+### 03. Whole-Body Control (WBC) — 全身控制基礎
 
 **學完你會**:
 - 寫一個 C++ / Python Node，同時控制人形機器人的雙臂與雙腿。
@@ -103,4 +115,5 @@ sudo apt install ros-humble-ros2-control ros-humble-ros2-controllers
 
 ## ⏭️ 從哪開始
 
-主線完成後，進入 **[01-mujoco-simulation](01-mujoco-simulation/)**，把機器人叫出來！
+主線完成後，如果你沒有獨立顯卡或不想配環境，請從 **[01-theconstructsim-humanoid](01-theconstructsim-humanoid/)** 開始，直接在雲端玩起來！
+如果你立志成為硬核控制工程師，請進入 **[02-mujoco-simulation](02-mujoco-simulation/)**，把機器人叫出來自己算平衡！

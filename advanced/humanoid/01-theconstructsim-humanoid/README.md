@@ -1,11 +1,13 @@
-# 03. TheConstructSim (Cloud) — 雲端人形機器人實戰
+# 01. TheConstructSim (Cloud) — 雲端人形機器人實戰 (免費仔首選)
 
 > 如果你的本機電腦沒有獨立顯卡跑不動 MuJoCo，或者你不想經歷痛苦的環境配置，TheConstructSim 提供了一個極佳的替代方案。我們將在這裡使用經過「官方魔改」的 Gazebo 與預設配置好的全身控制器，在網頁瀏覽器中直接控制 NAO 或 TALOS 人形機器人。
 
 **學完你會**:
-- 了解如何在 TheConstructSim 的 Public ROSjects 中尋找並複製現成的人形機器人環境。
-- 明白雲端環境是如何透過調整 Gazebo 參數與外掛，繞過複雜的接觸動力學問題。
-- 透過高階指令 (如 `cmd_vel` 或 Action) 驅動預先寫好的步行控制器 (Walking Controller)。
+- 在瀏覽器中免安裝直接啟動 TALOS / NAO 等百萬級別的人形機器人。
+- 透過高階指令 (`cmd_vel` 或 Action) 直接命令雙足機器人平穩走路。
+- 操作機器人的「頭部關節 (Neck/Head)」，實作邊走邊看的複合行為。
+- 讀取頭部的 RGB-D 深度相機，為未來的「視覺感知 + 雙足行走」打下基礎。
+- 理解應用層工程師與底層控制工程師的分工邊界。
 
 **前置**:
 - 擁有 TheConstructSim 的免費帳號
@@ -56,11 +58,18 @@ ros2 launch talos_gazebo talos_gazebo.launch.py
 ```bash
 ros2 control list_controllers
 ```
-你會看到類似 `walking_controller`, `head_controller`, `arm_controller` 等等。這證明了「全身控制」已經被拆解成幾個高階模組並在背景默默運作了。
+你會看到類似 `walking_controller`, `head_controller`, `left_arm_controller` 等等。這證明了「全身控制」已經被拆解成幾個高階模組並在背景默默運作了。
+
+### 震撼教育：看看真實人形機器人的 TF 樹
+在終端機輸入：
+```bash
+ros2 run tf2_tools view_frames
+```
+打開產生的 PDF，你會發現有別於 Turtlebot 的 10 幾個 frame，TALOS 有超過 **50 到 80 個 Frames**！每一根手指、腳趾、胸腔、頭部攝影機都有獨立的座標系。這是學習人形機器人的第一道門檻。
 
 ---
 
-## 🎮 步驟 3: 讓機器人走起來 (Python Node)
+## 🎮 步驟 3: 讓機器人走起來 (基礎移動)
 
 既然底層已經幫我們顧好平衡了，我們就可以把它當作一台輪型車 (Turtlebot) 來下達速度指令。
 
@@ -78,7 +87,7 @@ class CloudHumanoidWalker(Node):
     def __init__(self):
         super().__init__('cloud_humanoid_walker')
         
-        # 注意：Topic 名稱可能依機器人不同 (例如 /talos_controller/cmd_vel 或 /cmd_vel)
+        # 注意：Topic 名稱可能依機器人不同 (例如 /talos_controller/cmd_vel)
         self.cmd_pub = self.create_publisher(Twist, '/walking_controller/cmd_vel', 10)
         self.timer = self.create_timer(0.1, self.timer_callback)
         self.start_time = time.time()
@@ -92,7 +101,6 @@ class CloudHumanoidWalker(Node):
         if t < 5.0:
             # 前 5 秒：往前直走
             msg.linear.x = 0.2  # 每秒 20 公分
-            msg.angular.z = 0.0
             self.get_logger().info("往前走...")
         elif t < 10.0:
             # 5 到 10 秒：原地左轉
@@ -119,7 +127,35 @@ if __name__ == '__main__':
     main()
 ```
 
-執行這個 Node 後，切換到 Gazebo 畫面，你會看到 TALOS 機器人開始「踏步」，並穩穩地向前移動。它的雙手可能會自然擺動以維持平衡，這都是底層外掛的功勞。
+執行這個 Node 後，切換到 Gazebo 畫面，你會看到機器人開始「踏步」，並穩穩地向前移動。它的雙手可能會自然擺動以維持平衡，這都是底層外掛的功勞。
+
+---
+
+## 👁️ 步驟 4: 轉動頭部與獲取視覺 (複合操作)
+
+人形機器人最大的價值，是可以「像人一樣」用視覺去感知世界。除了走路，我們還可以獨立控制它的頭部 (`head_controller`)。
+
+### 1. 轉動頭部 (發送 JointTrajectory)
+人形機器人的頭部通常有兩個關節：`head_1_joint` (左右轉，Yaw) 與 `head_2_joint` (上下點頭，Pitch)。
+你可以直接從命令列送出軌跡，讓它轉頭看左邊：
+```bash
+ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
+  trajectory: {
+    joint_names: ['head_1_joint', 'head_2_joint'],
+    points: [{
+      positions: [0.5, 0.2], 
+      time_from_start: {sec: 2, nanosec: 0}
+    }]
+  }
+}"
+```
+*這時候在 Gazebo 裡，你會看到機器人一邊踏步，一邊把頭轉向了左下方！*
+
+### 2. 透過 RViz 看相機畫面
+在 TheConstructSim 中打開 RViz2 工具。
+- 新增一個 **Image** 顯示單元。
+- 將 Topic 選擇為 `/xtion/rgb/image_raw` (具體名稱依機器人頭部的相機型號而定)。
+你就會看到機器人眼中的第一人稱畫面。結合前面的「走路」與「轉頭」，你就完成了人形機器人「邊走邊巡視」的初步功能。
 
 ---
 
@@ -139,5 +175,5 @@ if __name__ == '__main__':
 
 ## 🎯 總結：本機 vs 雲端 的選擇
 
-- **選本機 (MuJoCo + WBC)**：如果你想成為「**控制演算法工程師**」，想親自寫數學公式來控制馬達扭矩、研究 RL 強化學習，你必須走這條硬核路線。
-- **選雲端 (TheConstructSim)**：如果你想成為「**應用層工程師**」，想研究如何讓雙足機器人結合 LLM 大語言模型做自然語言交互、或是結合 Yolo 做視覺抓取，利用雲端現成的穩定底層是最高效的做法。
+- **選雲端 (TheConstructSim)**：如果你想成為「**應用層 (Application) 工程師**」，想研究如何讓雙足機器人結合大語言模型 (LLM) 做自然語言交互、或是結合 YOLO 做視覺辨識，利用本章介紹的雲端現成底層是最高效的做法。
+- **選本機 (MuJoCo + WBC)**：如果你想成為「**控制演算法 (Control) 工程師**」，想親自寫數學公式來控制馬達扭矩、研究 ZMP 平衡或是強化學習，那麼請準備好你的顯卡，進入下一章硬核領域！
